@@ -1,0 +1,15 @@
+{
+  "scan_interval_hours": 2,
+  "target_subnets": [
+    "192.168.1.0/24"
+  ],
+  "enable_industrial": true,
+  "industrial_protocols": ["modbus", "ethernetip"],
+  "passive_timeout_seconds": 15,
+  "passive_packet_count": 200,
+  "arp_timeout_seconds": 3,
+  "icmp_timeout_seconds": 1,
+  "industrial_probe_delay_seconds": 0.5,
+  "snapshot_dir": "reports/inventory",
+  "max_snapshots_retained": 168
+}

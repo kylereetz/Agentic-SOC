@@ -1,0 +1,6 @@
+scapy
+pandas
+paramiko
+python-nmap
+schedule
+reportlab

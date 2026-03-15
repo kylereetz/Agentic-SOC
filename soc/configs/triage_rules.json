@@ -1,0 +1,70 @@
+{
+  "rules": [
+    {
+      "id": "BENIGN_001",
+      "name": "Printer Reboot",
+      "pattern": {"event_type": "asset_missing", "mac_prefix": ["00:00:48", "00:1B:A9", "3C:2A:F4"]},
+      "severity": "INFO",
+      "classification": "benign",
+      "description": "Known printer MAC disappeared — likely a routine reboot.",
+      "nist_control": "3.4.1"
+    },
+    {
+      "id": "BENIGN_002",
+      "name": "DHCP Renewal",
+      "pattern": {"event_type": "asset_changed", "changed_field": "ip_address"},
+      "severity": "INFO",
+      "classification": "benign",
+      "description": "Asset IP changed — consistent with DHCP renewal on IT VLAN.",
+      "nist_control": "3.4.1"
+    },
+    {
+      "id": "SUSPICIOUS_001",
+      "name": "Unknown Asset on OT VLAN",
+      "pattern": {"event_type": "asset_new", "subnet_match": ["10.0.0.0/8", "172.16.0.0/12"]},
+      "severity": "WARNING",
+      "classification": "suspicious",
+      "description": "New unrecognised device appeared on an OT-designated subnet.",
+      "nist_control": "3.1.1"
+    },
+    {
+      "id": "SUSPICIOUS_002",
+      "name": "MAC Address Changed",
+      "pattern": {"event_type": "asset_changed", "changed_field": "mac_address"},
+      "severity": "WARNING",
+      "classification": "suspicious",
+      "description": "MAC address changed for a known IP — possible ARP spoofing or NIC swap.",
+      "nist_control": "3.13.1"
+    },
+    {
+      "id": "CRITICAL_001",
+      "name": "Modbus Write from Unknown Source",
+      "pattern": {"protocol": "modbus", "function_codes": [5, 6, 15, 16]},
+      "severity": "CRITICAL",
+      "classification": "malicious",
+      "description": "Modbus write command (FC 5/6/15/16) detected from a non-whitelisted source.",
+      "nist_control": "3.14.6"
+    },
+    {
+      "id": "CRITICAL_002",
+      "name": "PROFINET DCP Set Command",
+      "pattern": {"protocol": "profinet", "service_id": 4},
+      "severity": "CRITICAL",
+      "classification": "malicious",
+      "description": "PROFINET DCP Set command detected from unknown MAC — possible PLC reconfiguration attempt.",
+      "nist_control": "3.14.6"
+    },
+    {
+      "id": "CRITICAL_003",
+      "name": "Unauthorized EtherNet/IP Session",
+      "pattern": {"protocol": "ethernetip", "command": "RegisterSession", "source_whitelisted": false},
+      "severity": "CRITICAL",
+      "classification": "malicious",
+      "description": "EtherNet/IP RegisterSession from non-whitelisted source — possible unauthorized CIP access.",
+      "nist_control": "3.1.1"
+    }
+  ],
+  "whitelisted_sources": [],
+  "ot_subnets": ["10.0.0.0/8", "172.16.0.0/12"],
+  "printer_mac_prefixes": ["00:00:48", "00:1B:A9", "3C:2A:F4", "00:17:C8"]
+}
