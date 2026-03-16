@@ -1,0 +1,6 @@
+{
+  "rule_id": "LATERAL_001",
+  "rule_name": "SMB Lateral",
+  "severity": "WARNING",
+  "source_ip": "10.hive.audit.1"
+}

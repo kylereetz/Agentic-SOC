@@ -1,0 +1,7 @@
+{
+  "severity": "CRITICAL",
+  "source_ip": "192.168.1.99",
+  "rule_id": "RECON_001",
+  "rule_name": "Recon Scan",
+  "description": "Port scan detected"
+}

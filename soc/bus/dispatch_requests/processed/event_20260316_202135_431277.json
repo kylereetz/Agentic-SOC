@@ -1,0 +1,10 @@
+{
+  "case_id": "INC-20260316-B77B5E32",
+  "severity": "CRITICAL",
+  "summary": "Temporal correlation detected a EXFIL progression across 3 events. High confidence linkage.\n[ALERT RECURRENCE] 20:21 - Temporal correlation detected a EXFIL progression across 3 events. High confidence linkage.",
+  "hypothesis": "Awaiting initial investigation",
+  "destinations": [
+    "slack",
+    "pagerduty"
+  ]
+}

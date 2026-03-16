@@ -1,0 +1,10 @@
+{
+  "case_id": "INC-RAG-SYNC-TEST",
+  "severity": "CRITICAL",
+  "summary": "RAG Synchronisation Stress Test",
+  "hypothesis": "Testing for race condition fix.",
+  "destinations": [
+    "slack",
+    "pagerduty"
+  ]
+}

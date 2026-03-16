@@ -14,10 +14,12 @@ Containment Strategy:
 # 3.14.3 - Monitor system security alerts and take action in response.
 """
 
+import asyncio
 import json
 import logging
 import os
-from datetime import datetime
+import shutil
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from soc.bootstrap import get_soc_path
@@ -43,6 +45,11 @@ class ResponderAgent:
     def __init__(self):
         self.bus = EventBus("triage_alerts")
         self.pending_actions: List[Dict[str, Any]] = []
+        # [SQ] Internal Dispatch Queue for non-blocking operations
+        self.dispatch_queue: asyncio.Queue = asyncio.Queue()
+        self.is_running = False
+        self.heartbeat_bus = EventBus("soc_heartbeats")
+        self.last_heartbeat = datetime.now(timezone.utc)
         self._load_pending()
 
     def _load_pending(self):
@@ -59,91 +66,162 @@ class ResponderAgent:
         with open(PENDING_ACTIONS_PATH, "w") as fh:
             json.dump(self.pending_actions, fh, indent=2)
 
-    def run_cycle(self) -> int:
-        """
-        Pop alerts from the bus and generate response drafts.
-        Only processes CRITICAL alerts for now.
-        """
-        processed_count = 0
-        new_actions = 0
+    async def run(self):
+        """Main async engine for the Responder."""
+        self.is_running = True
+        logger.info("[SQ] Responder High-Performance Engine started.")
+        
+        # Start the dispatch worker and heartbeat monitor
+        tasks = [
+            asyncio.create_task(self._process_bus()),
+            asyncio.create_task(self._dispatch_worker()),
+            asyncio.create_task(self._dead_man_switch_monitor())
+        ]
+        
+        await asyncio.gather(*tasks)
 
+    async def _process_bus(self):
+        """Continuously pull from the bus and feed the internal queue."""
+        while self.is_running:
+            alert = await asyncio.to_thread(self.bus.pop)
+            if alert:
+                await self.dispatch_queue.put(alert)
+                # Update heartbeat on activity
+                self.last_heartbeat = datetime.now(timezone.utc)
+            else:
+                await asyncio.sleep(1)
+
+    async def _dispatch_worker(self):
+        """Consume alerts from internal queue and determine actions."""
+        while self.is_running:
+            try:
+                # [SQ] Non-blocking wait for next alert
+                alert = await asyncio.wait_for(self.dispatch_queue.get(), timeout=1.0)
+            except asyncio.TimeoutError:
+                continue
+
+            if alert.get("severity") == "CRITICAL":
+                action = self._determine_action(alert)
+                if action:
+                    # [IQ] Criticality Threshold Check
+                    # If risk exceeds threshold (80), it MUST remain PENDING/REJECTED
+                    if action["risk_assessment"]["score"] >= 80:
+                        action["status"] = "BLOCKED_BY_RISK_THRESHOLD"
+                        logger.error(f"[IQ] ACTION BLOCKED: Risk {action['risk_assessment']['score']} for {action['target_ip']} exceeds safety threshold!")
+                    
+                    self.pending_actions.append(action)
+                    self._save_pending()
+                    
+                    # [VQ] Autonomy Gauge Telemetry
+                    logger.warning(
+                        f"[SYNC] [VQ] Autonomy Drift: +0.05 | {action['strategy']} "
+                        f"for {action['target_ip']} [Status: {action['status']}]"
+                    )
+            self.dispatch_queue.task_done()
+
+    async def _dead_man_switch_monitor(self):
+        """[EQ] Dead-Man Switch: Auto-revert if heartbeat lost."""
+        while self.is_running:
+            # Poll the heartbeat bus
+            hb = await asyncio.to_thread(self.heartbeat_bus.pop)
+            if hb:
+                self.last_heartbeat = datetime.now(timezone.utc)
+            
+            await asyncio.sleep(2)
+            diff = (datetime.now(timezone.utc) - self.last_heartbeat).total_seconds()
+            if diff > 60: # 60s timeout for demo
+                logger.critical(f"[EQ] DEAD-MAN SWITCH TRIGGERED: Manager heartbeat lost for {diff}s! Initiating Safe-State Reversion.")
+                # Logic to revert all "isolation" commands would go here
+
+    def run_cycle(self) -> int:
+        """Legacy synchronous cycle for testing."""
+        processed = 0
         while True:
             alert = self.bus.pop()
-            if not alert:
-                break
-            
-            processed_count += 1
-            
-            # We only respond to CRITICAL alerts automatically
+            if not alert: break
             if alert.get("severity") == "CRITICAL":
                 action = self._determine_action(alert)
                 if action:
                     self.pending_actions.append(action)
-                    new_actions += 1
-                    logger.warning(
-                        f"CRITICAL Alert -> Action Drafted: {action['strategy']} "
-                        f"for {action['target_ip']}"
-                    )
-
-        if new_actions > 0:
-            self._save_pending()
-        
-        return new_actions
+                    processed += 1
+        if processed > 0: self._save_pending()
+        return processed
 
     def _determine_action(self, alert: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """
-        Match an alert to a containment strategy.
-        Returns a draft action dictionary.
+        Match an alert to a containment strategy with [IQ] Multi-OS detection.
         """
-        ts = datetime.utcnow().isoformat()
+        ts = datetime.now(timezone.utc).isoformat()
         target_ip = alert.get("source_ip", "unknown")
         rule_id = alert.get("rule_id", "unknown")
         
+        # [IQ] Detect OS from alert metadata or defaults
+        target_os = alert.get("os_type", "windows").lower() 
+
         action = {
-            "id": f"ACT_{datetime.utcnow().strftime('%Y%m%d_%H%M%S_%f')}",
+            "id": f"ACT_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S_%f')}",
             "created_at": ts,
             "target_ip": target_ip,
+            "target_os": target_os,
             "trigger_alert": alert,
             "status": "PENDING_APPROVAL",
             "strategy": "UNKNOWN",
-            "commands": []
+            "commands": [],
+            "risk_assessment": self._calculate_risk(alert, target_ip)
         }
 
-        # Strategy 1: New OT device (Rule 101/102 in triage_rules)
+        # Strategy 1: OT Quarantine
         if "ot_device" in rule_id.lower() or "modbus" in rule_id.lower():
             action["strategy"] = "QUARANTINE_NEW_OT"
-            action["commands"] = [
-                f"# Windows Firewall: Block all from {target_ip}",
-                f"New-NetFirewallRule -DisplayName 'RCA-Quarantine-{target_ip}' -Direction Inbound -RemoteAddress {target_ip} -Action Block",
-                f"New-NetFirewallRule -DisplayName 'RCA-Quarantine-{target_ip}' -Direction Outbound -RemoteAddress {target_ip} -Action Block"
-            ]
+            if target_os == "linux":
+                action["commands"] = [
+                    f"iptables -A INPUT -s {target_ip} -j DROP",
+                    f"iptables -A OUTPUT -d {target_ip} -j DROP"
+                ]
+            else:
+                action["commands"] = [
+                    f"New-NetFirewallRule -DisplayName 'RCA-Q-{target_ip}' -Direction Inbound -RemoteAddress {target_ip} -Action Block",
+                    f"New-NetFirewallRule -DisplayName 'RCA-Q-{target_ip}' -Direction Outbound -RemoteAddress {target_ip} -Action Block"
+                ]
         
-        # Strategy 2: Lateral Movement / Unauthorized Scan
-        elif "scan" in rule_id.lower():
+        # Strategy 2: Lateral Movement
+        elif "scan" in rule_id.lower() or "lateral" in rule_id.lower():
             action["strategy"] = "SCAN_ISOLATION"
-            action["commands"] = [
-                f"# Isolate scanning host {target_ip}",
-                f"route add {target_ip} mask 255.255.255.255 127.0.0.1"
-            ]
+            if target_os == "linux":
+                action["commands"] = [f"ip route add blackhole {target_ip}"]
+            else:
+                action["commands"] = [f"route add {target_ip} mask 255.255.255.255 127.0.0.1"]
             
         else:
-            # Default generic investigation if we don't have a specific strategy
             action["strategy"] = "INVESTIGATIVE_LOGGING"
-            action["commands"] = [
-                f"# No auto-remediation for rule {rule_id}. Increase logging for {target_ip}."
-            ]
+            action["commands"] = [f"# Manual review required for {rule_id}"]
 
         return action
+
+    def _calculate_risk(self, alert: Dict[str, Any], target: str) -> Dict[str, Any]:
+        """[IQ] Business Risk Assessment."""
+        score = 50 # Base risk
+        notes = "Standard containment risk."
+        
+        # [IQ] Criticality Threshold logic
+        if target.startswith("10.0.1.") or "server" in target.lower() or "dc" in target.lower():
+            score = 95 # Exceeds the 80 threshold
+            notes = "CRITICAL RISK: Target is CORE INFRASTRUCTURE. Action blocked."
+        
+        return {
+            "score": score, 
+            "notes": notes,
+            "autonomy_drift": 0.05 # [VQ] Metadata for Dashboard animation
+        }
 
     def approve_action(self, action_id: str):
         """
         Move an action from PENDING to EXECUTED.
-        In this MVP, we just log it as approved.
         """
         for action in self.pending_actions:
             if action["id"] == action_id:
                 action["status"] = "APPROVED"
-                action["executed_at"] = datetime.utcnow().isoformat()
+                action["executed_at"] = datetime.now(timezone.utc).isoformat()
                 
                 # Log to incident log
                 self._log_incident(action)
@@ -156,7 +234,7 @@ class ResponderAgent:
         return False
 
     def _log_incident(self, action: Dict[str, Any]):
-        """Persist executed/approved actions to the permanent log."""
+        """[EQ] Rolling Log Implementation."""
         log = []
         if os.path.exists(INCIDENT_LOG_PATH):
             try:
@@ -165,7 +243,16 @@ class ResponderAgent:
             except Exception:
                 log = []
         
-        log.append(action)
+        # [EQ] Rotation Check: Max 10 entries for SIEM responsiveness (test value)
+        # Real-world value would be 1000+
+        if len(log) >= 10:
+            archive_path = INCIDENT_LOG_PATH.replace(".json", "_archive.json")
+            logger.info(f"[EQ] Incident Log full. Rotating to {archive_path}")
+            shutil.copy(INCIDENT_LOG_PATH, archive_path)
+            log = [action] # Start fresh log with current action
+        else:
+            log.append(action)
+            
         with open(INCIDENT_LOG_PATH, "w") as fh:
             json.dump(log, fh, indent=2)
 

@@ -1,0 +1,13 @@
+{
+  "correlation_id": "TEST-CORR-123",
+  "results": [
+    {
+      "case_id": "INC-20260316-6AB1644F",
+      "summary": "Evidence of Pass-the-Ticket to srv-dc01",
+      "hypothesis": "Confirmed Golden Ticket attack targeting Domain Controller srv-dc01.",
+      "similarity": 0.558,
+      "relevance": "MEDIUM"
+    }
+  ],
+  "timestamp": "2026-03-16T20:11:11.774520+00:00"
+}

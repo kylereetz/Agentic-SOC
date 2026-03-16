@@ -1,0 +1,7 @@
+{
+  "timestamp": "2026-03-16T21:07:35.147009+00:00",
+  "rule_id": "LATERAL",
+  "rule_name": "SMB Exec",
+  "severity": "CRITICAL",
+  "source_ip": "192.168.10.10"
+}

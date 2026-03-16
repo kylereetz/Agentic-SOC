@@ -1,0 +1,35 @@
+{
+  "supply_chain_rules": [
+    {
+      "id": "VG_CVE_001",
+      "name": "Vulnerable Library Detected",
+      "severity": "CRITICAL",
+      "description": "A highly vulnerable library version was detected in the SBOM.",
+      "cve_mapping": {
+        "log4j": {
+          "vulnerable_versions": ["2.0-beta9", "2.12.1", "2.14.1"],
+          "cve": "CVE-2021-44228",
+          "title": "Log4Shell"
+        },
+        "spring-core": {
+          "vulnerable_versions": ["5.3.0", "5.3.17"],
+          "cve": "CVE-2022-22965",
+          "title": "Spring4Shell"
+        }
+      }
+    }
+  ],
+  "vendor_risk_rules": [
+    {
+      "id": "VG_BEC_001",
+      "name": "Vendor Impersonation/BEC Pattern",
+      "severity": "CRITICAL",
+      "description": "External communication matches common BEC or impersonation patterns.",
+      "keywords": ["wire transfer", "bank account update", "urgent payment", "invoice attachment"],
+      "lookalike_domains": {
+        "microsoft.com": ["micros0ft.com", "mircosoft.com", "office-365-update.com"],
+        "sentinel.io": ["sentinel-support.io", "sontinel.io"]
+      }
+    }
+  ]
+}

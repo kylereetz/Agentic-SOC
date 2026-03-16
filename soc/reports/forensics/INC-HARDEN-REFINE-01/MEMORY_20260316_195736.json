@@ -1,0 +1,37 @@
+{
+  "evidence_id": "EVD_20260316_195736_260",
+  "case_id": "INC-HARDEN-REFINE-01",
+  "target_ip": "192.168.1.105",
+  "artifact_type": "MEMORY",
+  "collected_at": "2026-03-16T19:57:36.472286+00:00",
+  "findings_summary": "Potential threat headers found: SHELLCODE_STUB, PE_HEADER_IN_MEM.",
+  "artifact_path": "C:\\Users\\kyler\\Documents\\GitHub\\Agentic SOC\\soc\\reports\\forensics\\INC-HARDEN-REFINE-01\\MEMORY_20260316_195736.json",
+  "iq_analysis": {
+    "pattern_detection": [
+      {
+        "header": "SHELLCODE_STUB",
+        "offset": "0x00000450",
+        "risk": "CRITICAL"
+      },
+      {
+        "header": "PE_HEADER_IN_MEM",
+        "offset": "0x00400000",
+        "risk": "HIGH"
+      }
+    ],
+    "threat_score": 90
+  },
+  "eq_integrity": {
+    "algorithm": "SHA-256",
+    "hash": "5303301c66bcf5f2341cd354de17eb637eb3ada1efbb7be91f3fa0af718957e2",
+    "seal": "ALIGNED_WITH_NIST_3.14.3"
+  },
+  "sq_optimization": {
+    "storage_mode": "SINGLE_PAGE",
+    "page_count": 1,
+    "total_size_bytes": 241
+  },
+  "data_pages": [
+    "{\"pid\": 9912, \"process\": \"svchost.exe\", \"indicators\": [{\"type\": \"reflective_load\", \"address\": \"0x00401000\", \"size\": \"1.2MB\"}, {\"type\": \"suspicious_string\", \"value\": \"sekurlsa::logonpasswords\"}, {\"type\": \"beacon_pattern\", \"interval\": \"60s\"}]}"
+  ]
+}

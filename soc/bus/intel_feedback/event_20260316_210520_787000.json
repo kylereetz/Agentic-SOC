@@ -1,0 +1,7 @@
+{
+  "entity_id": "192.168.10.10",
+  "file_hashes": [],
+  "intelligence_type": "KNOWN_CAMPAIGN_ACTOR",
+  "confidence": 0.9,
+  "timestamp": "2026-03-16T21:05:20.787000+00:00"
+}

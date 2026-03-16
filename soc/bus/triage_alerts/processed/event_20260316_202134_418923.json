@@ -1,0 +1,14 @@
+{
+  "timestamp": "2026-03-16T20:21:34.418923+00:00",
+  "rule_id": "CORR_CAMPAIGN_DETECTED",
+  "rule_name": "Multi-Stage Campaign: EXFIL",
+  "severity": "CRITICAL",
+  "source_ip": "192.168.5.50",
+  "description": "Temporal correlation detected a EXFIL progression across 3 events. High confidence linkage.",
+  "correlation_strength": 0.7,
+  "event_chain": [
+    "Network Recon Scan",
+    "SMB Lateral Pivot",
+    "Data Exfiltration via DNS"
+  ]
+}

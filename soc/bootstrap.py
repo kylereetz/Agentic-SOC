@@ -44,6 +44,10 @@ BUS_CHANNELS = [
     "discovery_events",
     "triage_alerts",
     "patch_manifests",
+    "identity_events",
+    "vanguard_events",
+    "deception_events",
+    "hunting_events",
 ]
 
 

@@ -1,0 +1,9 @@
+{
+  "timestamp": "2026-03-16T21:18:35.201970+00:00",
+  "rule_id": "FORENSICS_THREAT_HASH",
+  "rule_name": "Malicious Artifact",
+  "severity": "WARNING",
+  "source_ip": "172.16.1.100",
+  "file_hash": "abc1234567890abcdef",
+  "description": "Linked via hash."
+}

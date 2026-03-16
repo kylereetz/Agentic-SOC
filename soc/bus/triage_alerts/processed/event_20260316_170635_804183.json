@@ -1,0 +1,10 @@
+{
+  "timestamp": "2026-03-16T17:06:35.804183+00:00",
+  "rule_id": "RULE_INTEGRATION_TEST",
+  "rule_name": "Integration Test Alert",
+  "severity": "CRITICAL",
+  "source_ip": "10.0.0.5",
+  "description": "Integration Test Description",
+  "mitre_ttp": "T1614",
+  "nist_control": "3.1.1"
+}

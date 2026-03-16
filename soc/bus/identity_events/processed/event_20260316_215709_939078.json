@@ -1,0 +1,6 @@
+{
+  "timestamp": "2026-03-11T21:57:09.939078+00:00",
+  "event_type": "mfa_failure",
+  "user_id": "malicious.actor@apt29.com",
+  "source_ip": "1.2.3.4"
+}

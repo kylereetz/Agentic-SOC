@@ -185,7 +185,7 @@ def start(
         from soc.agents.scout import ScoutAgent
         config_path = os.path.join("soc", "configs", "scout_config.json")
         agent_obj = ScoutAgent(config_path=config_path)
-        agent_obj.start()
+        asyncio.run(agent_obj.start())
     
     elif agent == "triage":
         from soc.agents.triage import TriageAgent
@@ -211,6 +211,11 @@ def start(
         import uvicorn
         logger.info("Starting SOC API at http://127.0.0.1:8000")
         uvicorn.run("soc.api.main:app", host="127.0.0.1", port=8000, reload=True)
+        
+    elif agent == "orchestrate":
+        from soc.agents.orchestrator import OrchestratorAgent
+        orchestrator = OrchestratorAgent()
+        orchestrator.start()
         
     else:
         console.print(f"[bold red]Error:[/bold red] Unknown agent '{agent}'")

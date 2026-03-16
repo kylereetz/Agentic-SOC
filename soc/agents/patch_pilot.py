@@ -50,6 +50,7 @@ class PatchDraft:
     finding_description: str
     script_content: str
     rollback_content: str
+    target_host: str = "unknown"
     status: str = "PENDING_APPROVAL"
     filepath: str = ""
     created_at: str = field(
@@ -72,15 +73,18 @@ _PS_TEMPLATE = '''# ============================================================
 # ===========================================================================
 
 # ---- PRE-FLIGHT CHECK ----
-Write-Host "[RCA Patch Pilot] Starting remediation: {title}"
-Write-Host "[RCA Patch Pilot] NIST Control: {nist_control}"
+Write-Host "[RCA_EVENT] {{ 'task': 'preflight', 'status': 'starting', 'title': '{title}' }}"
+{idempotency_guard}
 
 # ---- FIX ----
+Write-Host "[RCA_EVENT] {{ 'task': 'fix', 'status': 'executing' }}"
 {fix_commands}
 
 # ---- VERIFICATION ----
+Write-Host "[RCA_EVENT] {{ 'task': 'verify', 'status': 'executing' }}"
 {verify_commands}
 
+Write-Host "[RCA_EVENT] {{ 'task': 'complete', 'status': 'success' }}"
 Write-Host "[RCA Patch Pilot] Remediation complete. Please verify manually."
 '''
 
@@ -111,15 +115,19 @@ _BASH_TEMPLATE = '''#!/bin/bash
 # ===========================================================================
 set -euo pipefail
 
-echo "[RCA Patch Pilot] Starting remediation: {title}"
-echo "[RCA Patch Pilot] NIST Control: {nist_control}"
+# ---- PRE-FLIGHT CHECK ----
+echo "[RCA_EVENT] {{ \\"task\\": \\"preflight\\", \\"status\\": \\"starting\\", \\"title\\": \\"{title}\\" }}"
+{idempotency_guard}
 
 # ---- FIX ----
+echo "[RCA_EVENT] {{ \\"task\\": \\"fix\\", \\"status\\": \\"executing\\" }}"
 {fix_commands}
 
 # ---- VERIFICATION ----
+echo "[RCA_EVENT] {{ \\"task\\": \\"verify\\", \\"status\\": \\"executing\\" }}"
 {verify_commands}
 
+echo "[RCA_EVENT] {{ \\"task\\": \\"complete\\", \\"status\\": \\"success\\" }}"
 echo "[RCA Patch Pilot] Remediation complete. Please verify manually."
 '''
 
@@ -132,11 +140,11 @@ _BASH_ROLLBACK_TEMPLATE = '''#!/bin/bash
 # ===========================================================================
 set -euo pipefail
 
-echo "[RCA Patch Pilot] Rolling back: {title}"
+echo "[RCA_EVENT] {{ \\"task\\": \\"rollback\\", \\"status\\": \\"executing\\", \\"title\\": \\"{title}\\" }}"
 
 {rollback_commands}
 
-echo "[RCA Patch Pilot] Rollback complete."
+echo "[RCA_EVENT] {{ \\"task\\": \\"rollback\\", \\"status\\": \\"success\\" }}"
 '''
 
 
@@ -150,12 +158,10 @@ REMEDIATION_LIBRARY: Dict[str, Dict[str, Any]] = {
         "title": "Enable Credential Guard",
         "nist_control": "3.5.3",
         "target_os": "windows",
+        "guard_cmd": "if ((Get-CimInstance -ClassName Win32_DeviceGuard -Namespace root\\Microsoft\\Windows\\DeviceGuard).SecurityServicesRunning -contains 1) { Write-Host '[RCA_EVENT] { \"task\": \"preflight\", \"status\": \"skipped\", \"reason\": \"already_enabled\" }'; exit 0 }",
         "fix_commands": (
-            "# Enable Credential Guard via registry\n"
             "Set-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\DeviceGuard' "
             "-Name 'EnableVirtualizationBasedSecurity' -Value 1 -Type DWord\n"
-            "Set-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\DeviceGuard' "
-            "-Name 'RequirePlatformSecurityFeatures' -Value 1 -Type DWord\n"
             "Set-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Lsa' "
             "-Name 'LsaCfgFlags' -Value 1 -Type DWord"
         ),
@@ -177,6 +183,7 @@ REMEDIATION_LIBRARY: Dict[str, Dict[str, Any]] = {
         "title": "Disable Guest Account",
         "nist_control": "3.1.1",
         "target_os": "windows",
+        "guard_cmd": "if ((Get-LocalUser -Name 'Guest').Enabled -eq $false) { Write-Host '[RCA_EVENT] { \"task\": \"preflight\", \"status\": \"skipped\", \"reason\": \"already_disabled\" }'; exit 0 }",
         "fix_commands": "Disable-LocalUser -Name 'Guest'",
         "verify_commands": (
             "Get-LocalUser -Name 'Guest' | Select-Object Name, Enabled"
@@ -194,36 +201,34 @@ REMEDIATION_LIBRARY: Dict[str, Dict[str, Any]] = {
         ),
         "rollback_commands": "Set-SmbServerConfiguration -EncryptData $false -Force",
     },
-    # --- Rocky 9: PAM MFA ---
+    # --- Linux: PAM MFA ---
     "linux_mfa": {
         "title": "Configure PAM TOTP (Google Authenticator)",
         "nist_control": "3.5.3",
         "target_os": "linux",
-        "fix_commands": (
-            "dnf install -y google-authenticator\n"
-            "# Add PAM module to sshd (insert before common-auth)\n"
-            "grep -q 'pam_google_authenticator' /etc/pam.d/sshd || "
-            "sed -i '1i auth required pam_google_authenticator.so' /etc/pam.d/sshd\n"
-            "# Enable ChallengeResponseAuthentication\n"
-            "sed -i 's/^ChallengeResponseAuthentication no/ChallengeResponseAuthentication yes/' "
-            "/etc/ssh/sshd_config\n"
-            "systemctl restart sshd"
-        ),
+        "variants": {
+            "rocky": {
+                "fix_commands": "dnf install -y google-authenticator\nsystemctl restart sshd",
+                "guard_cmd": "if rpm -q google-authenticator; then echo 'already_installed'; exit 0; fi"
+            },
+            "ubuntu": {
+                "fix_commands": "apt-get update && apt-get install -y libpam-google-authenticator\nsystemctl restart ssh",
+                "guard_cmd": "if dpkg -l | grep -q google-authenticator; then echo 'already_installed'; exit 0; fi"
+            }
+        },
+        "fix_commands": "dnf install -y google-authenticator", # Fallback
         "verify_commands": "grep 'pam_google_authenticator' /etc/pam.d/sshd",
-        "rollback_commands": (
-            "sed -i '/pam_google_authenticator/d' /etc/pam.d/sshd\n"
-            "systemctl restart sshd"
-        ),
+        "rollback_commands": "sed -i '/pam_google_authenticator/d' /etc/pam.d/sshd",
     },
     # --- Rocky 9: Guest Account ---
     "linux_guest": {
         "title": "Lock Guest Account",
         "nist_control": "3.1.1",
         "target_os": "linux",
+        "guard_cmd": "if ! grep -q 'guest:[!|*]' /etc/shadow; then echo '[RCA_EVENT] { \"task\": \"preflight\", \"status\": \"skipped\", \"reason\": \"already_locked\" }'; exit 0; fi",
         "fix_commands": (
             "# Lock the guest account if it exists\n"
-            "id guest &>/dev/null && usermod -L guest && "
-            "echo 'Guest account locked.' || echo 'No guest account found.'"
+            "id guest &>/dev/null && usermod -L guest || echo 'No guest account found.'"
         ),
         "verify_commands": "passwd -S guest 2>/dev/null || echo 'No guest user'",
         "rollback_commands": "usermod -U guest",
@@ -263,7 +268,7 @@ class PatchPilotAgent:
         self.drafts: List[PatchDraft] = []
 
     def draft_from_alerts(
-        self, alerts_path: str = None
+        self, alerts_path: Optional[str] = None
     ) -> List[PatchDraft]:
         """
         Read triage alerts and generate remediation scripts for
@@ -308,6 +313,7 @@ class PatchPilotAgent:
             self._generate_script(
                 REMEDIATION_LIBRARY[remediation_key],
                 finding_description=alert.get("description", ""),
+                target_host=alert.get("ip_address", "unknown")
             )
 
     def _draft_for_hardening_finding(
@@ -330,6 +336,7 @@ class PatchPilotAgent:
             self._generate_script(
                 REMEDIATION_LIBRARY[key],
                 finding_description=result.get("detail", ""),
+                target_host=result.get("ip_address", "unknown")
             )
 
     def _match_remediation(
@@ -345,12 +352,23 @@ class PatchPilotAgent:
         self,
         remediation: Dict[str, Any],
         finding_description: str,
+        target_host: str = "unknown",
     ) -> PatchDraft:
         """Create the actual script files and return a PatchDraft."""
         ts = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
         patch_id = f"RCA-{ts}-{remediation['nist_control'].replace('.', '')}"
         title = remediation["title"]
         target_os = remediation["target_os"]
+
+        # [IQ] Context-Aware Logic: Check for OS variants
+        fix_cmds = remediation["fix_commands"]
+        guard_cmd = remediation.get("guard_cmd", "")
+        
+        # Determine variant (simplified mockup)
+        variant = "ubuntu" if "ubuntu" in finding_description.lower() else "rocky"
+        if "variants" in remediation and variant in remediation["variants"]:
+            fix_cmds = remediation["variants"][variant]["fix_commands"]
+            guard_cmd = remediation["variants"][variant].get("guard_cmd", "")
 
         if target_os == "windows":
             ext = ".ps1"
@@ -360,7 +378,8 @@ class PatchPilotAgent:
                 nist_control=remediation["nist_control"],
                 finding=finding_description,
                 timestamp=ts,
-                fix_commands=remediation["fix_commands"],
+                idempotency_guard=guard_cmd,
+                fix_commands=fix_cmds,
                 verify_commands=remediation["verify_commands"],
             )
             rollback = _PS_ROLLBACK_TEMPLATE.format(
@@ -376,7 +395,8 @@ class PatchPilotAgent:
                 nist_control=remediation["nist_control"],
                 finding=finding_description,
                 timestamp=ts,
-                fix_commands=remediation["fix_commands"],
+                idempotency_guard=guard_cmd,
+                fix_commands=fix_cmds,
                 verify_commands=remediation["verify_commands"],
             )
             rollback = _BASH_ROLLBACK_TEMPLATE.format(
@@ -403,6 +423,7 @@ class PatchPilotAgent:
             finding_description=finding_description,
             script_content=script,
             rollback_content=rollback,
+            target_host=target_host,
             filepath=fix_path,
         )
         self.drafts.append(draft)
@@ -417,10 +438,17 @@ class PatchPilotAgent:
         return [d for d in self.drafts if d.status == "PENDING_APPROVAL"]
 
     def write_manifest(self) -> str:
-        """Write a JSON manifest of all drafts for review."""
+        """
+        [SQ] Write a JSON manifest of all drafts, grouped by host.
+        """
         manifest_path = os.path.join(_DRAFTS_DIR, "manifest.json")
-        data = [
-            {
+        
+        # Group by host for parallel responder dispatch
+        grouped_data: Dict[str, List[Dict[str, Any]]] = {}
+        for d in self.drafts:
+            if d.target_host not in grouped_data:
+                grouped_data[d.target_host] = []
+            grouped_data[d.target_host].append({
                 "patch_id": d.patch_id,
                 "title": d.title,
                 "target_os": d.target_os,
@@ -428,12 +456,11 @@ class PatchPilotAgent:
                 "status": d.status,
                 "filepath": d.filepath,
                 "created_at": d.created_at,
-            }
-            for d in self.drafts
-        ]
+            })
+
         with open(manifest_path, "w") as fh:
-            json.dump(data, fh, indent=2)
-        logger.info(f"Patch manifest written → {manifest_path}")
+            json.dump(grouped_data, fh, indent=2)
+        logger.info(f"Patch manifest (grouped) written → {manifest_path}")
         return manifest_path
 
 

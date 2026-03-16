@@ -1,0 +1,10 @@
+{
+  "case_id": "INC-20260316-17EB7868",
+  "severity": "CRITICAL",
+  "summary": "Ransomware update 2",
+  "hypothesis": "Active Ransomware infection. Immediate isolation required.",
+  "destinations": [
+    "slack",
+    "pagerduty"
+  ]
+}

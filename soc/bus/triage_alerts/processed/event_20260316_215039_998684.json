@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-03-16T21:50:39.998684+00:00",
+  "rule_id": "VG_BEC_001",
+  "rule_name": "Vendor Impersonation/BEC Pattern",
+  "severity": "CRITICAL",
+  "source_ip": "External",
+  "description": "External communication matches common BEC or impersonation patterns. Sender: support@micros0ft.com. Lookalike domain for microsoft.com detected.",
+  "nist_control": "3.14.3",
+  "mitre_ttp": "T1566",
+  "raw_event": {
+    "timestamp": "2026-03-16T21:50:39.991528+00:00",
+    "event_type": "external_comm",
+    "sender": "support@micros0ft.com",
+    "subject": "Security Update Required",
+    "content": "Please click the link to secure your account."
+  }
+}

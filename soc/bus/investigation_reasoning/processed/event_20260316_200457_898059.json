@@ -1,0 +1,6 @@
+{
+  "investigation_id": "INC-20260316-18FD76FC",
+  "type": "FINDING",
+  "content": "Observed lateral movement attempts via SMB",
+  "autonomy_drift": 0.1
+}

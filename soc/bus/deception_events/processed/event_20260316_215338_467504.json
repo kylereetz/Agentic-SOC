@@ -1,0 +1,8 @@
+{
+  "timestamp": "2026-03-16T21:53:38.467504+00:00",
+  "decoy_id": "DEC_CRED_01",
+  "decoy_type": "decoy_credential",
+  "source_ip": "192.168.1.102",
+  "action": "login_attempt",
+  "detail": "Login with svc_mfg_root credential detected in SQL log."
+}

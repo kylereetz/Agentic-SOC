@@ -80,6 +80,40 @@ async def get_pending_actions():
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Error reading pending actions: {exc}")
 
+@app.get("/cases")
+async def get_cases():
+    """Retrieve all active investigation cases."""
+    cases_dir = get_soc_path("reports", "incidents", "cases")
+    if not os.path.exists(cases_dir):
+        return []
+    
+    cases = []
+    for filename in os.listdir(cases_dir):
+        if filename.endswith(".json"):
+            try:
+                with open(os.path.join(cases_dir, filename), "r") as fh:
+                    cases.append(json.load(fh))
+            except Exception:
+                continue
+    return sorted(cases, key=lambda x: x.get("created_at", ""), reverse=True)
+
+@app.get("/forensics/{case_id}")
+async def get_forensics(case_id: str):
+    """Retrieve forensic artifacts for a specific case."""
+    forensics_dir = get_soc_path("reports", "forensics", case_id)
+    if not os.path.exists(forensics_dir):
+        return []
+    
+    artifacts = []
+    for filename in os.listdir(forensics_dir):
+        if filename.endswith(".json"):
+            try:
+                with open(os.path.join(forensics_dir, filename), "r") as fh:
+                    artifacts.append(json.load(fh))
+            except Exception:
+                continue
+    return artifacts
+
 @app.post("/approve/{action_id}")
 async def approve_action(action_id: str):
     """Approve and execute a containment action (Human Approval Gate)."""

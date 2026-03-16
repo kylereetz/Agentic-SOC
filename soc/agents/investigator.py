@@ -37,12 +37,33 @@ import time
 import uuid
 from dataclasses import dataclass, field, asdict
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Dict, Any, List, Optional
 
 import google.generativeai as genai
 
 from soc.bootstrap import get_soc_path
 from soc.bus.event_queue import EventBus
+
+@dataclass
+class CaseMemory:
+    """[IQ] Shared state between multiple specialists investigating the same case."""
+    case_id: str
+    findings: List[Dict[str, Any]] = field(default_factory=list)
+    entities: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    conclusion_consensus: List[str] = field(default_factory=list) # List of agent names who concluded
+
+    def add_finding(self, agent: str, content: str, mitre: Optional[str] = None):
+        self.findings.append({
+            "agent": agent,
+            "content": content,
+            "mitre": mitre,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        })
+
+    def update_entity(self, entity_id: str, data: Dict[str, Any]):
+        if entity_id not in self.entities:
+            self.entities[entity_id] = {}
+        self.entities[entity_id].update(data)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -90,22 +111,20 @@ STEP_TYPES = ("THOUGHT", "ACTION", "OBSERVATION", "CONCLUSION", "ERROR")
 @dataclass
 class ReasoningStep:
     """A single step in the ReAct reasoning chain."""
-    step_id: str = field(default_factory=lambda: str(uuid.uuid4())[:8])
+    step_id: str = field(default_factory=lambda: str(uuid.uuid4()).split("-", 1)[0])
     investigation_id: str = ""
     agent: str = "SENTINEL-01"
-    type: str = "THOUGHT"                  # THOUGHT | ACTION | OBSERVATION | CONCLUSION
+    type: str = "THOUGHT"                  # THOUGHT | ACTION | OBSERVATION | CONCLUSION | ERROR
     content: str = ""                      # Human-readable text
     tool: Optional[str] = None             # Populated for ACTION steps
     tool_args: Optional[Dict] = None       # Arguments passed to the tool
     tool_result: Optional[str] = None      # Populated for OBSERVATION steps
     mitre: Optional[str] = None            # MITRE ATT&CK TTP if applicable
     confidence: int = 75                   # 0–100
-    duration: Optional[str] = None        # e.g. "1.2s"
-    evidence: List[str] = field(default_factory=list)
+    duration: Optional[str] = None
     reasoning: str = ""                    # Expanded reasoning (for Explain modal)
-    timestamp: str = field(
-        default_factory=lambda: datetime.now(timezone.utc).strftime("%H:%M:%S.%f")[:-3]
-    )
+    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    hive_contribution: bool = False        # [IQ] True if info came from Hive Memory
 
 
 # ---------------------------------------------------------------------------
@@ -205,16 +224,104 @@ class InvestigatorTools:
             "Memory strings match Mimikatz sekurlsa::logonpasswords signature."
         )
 
+    @staticmethod
+    def collect_forensics(target_ip: str = "", artifact_type: str = "MEMORY", **kwargs) -> str:
+        """Collect forensic artifacts (MEMORY, PCAP, REGISTRY) for the Evidence Inspector."""
+        logger.info(f"[Tool] collect_forensics(target_ip={target_ip}, artifact_type={artifact_type})")
+        from soc.agents.forensics import ForensicsAgent
+        agent = ForensicsAgent()
+        case_id = kwargs.get("investigation_id", "INC-AUTO-COLLECT")
+        path = agent.collect_evidence(case_id, target_ip, artifact_type)
+        return f"Forensic collection successful. Artifact '{artifact_type}' saved to: {path}. Linked to {case_id}."
+
+    @staticmethod
+    def inspect_modbus_traffic(target_ip: str = "", port: int = 502, **_) -> str:
+        """[OT Specialist Only] Deep packet inspection for Modbus/TCP industrial protocol."""
+        logger.info(f"[Tool] inspect_modbus_traffic(target_ip={target_ip}, port={port})")
+        return (
+            f"Modbus Inspection for {target_ip}:{port}: "
+            "Detected high frequency of 'Function Code 5' (Write Single Coil) targeting registers 0x0001-0x000F. "
+            "Traffic pattern deviates from 'PLC-Maintenance-Baseline' by 84%. "
+            "Source MAC matches unauthorized engineering laptop [MAC: 00:0A:95:9D:68:16]. "
+            "Potential Impact: Emergency Shutdown override attempted."
+        )
+
+    @staticmethod
+    def audit_ad_privileges(entity_id: str = "", **_) -> str:
+        """[Identity Specialist Only] Audit Active Directory privilege changes and GPO modifications."""
+        logger.info(f"[Tool] audit_ad_privileges(entity_id={entity_id})")
+        return (
+            f"AD Privilege Audit for '{entity_id}': "
+            "Detected modification to 'Default Domain Controllers Policy' 4 hours ago. "
+            "Account '{entity_id}' added to 'Domain Admins' via temporary nested group bypass. "
+            "Security Event ID 4728 (Member added to security-enabled global group) flagged. "
+            "Risk Level: CRITICAL - Privilege Escalation confirmed."
+        )
+
+    @staticmethod
+    def verify_remediation_safety(strategy: str = "", target_ip: str = "", **_) -> str:
+        """[Remediation Specialist Only] Simulate a containment action to check for critical service disruption."""
+        logger.info(f"[Tool] verify_remediation_safety(strategy={strategy}, target={target_ip})")
+        CRITICAL_SERVICES = {
+            "192.168.1.10": "Primary Domain Controller (SRV-DC01)",
+            "192.168.40.5": "Plant HMI Operator Station",
+            "10.0.0.1":     "Enterprise Gateway",
+        }
+        if target_ip in CRITICAL_SERVICES:
+            return (
+                f"SAFETY WARNING: Target {target_ip} ({CRITICAL_SERVICES[target_ip]}) is a CRITICAL service. "
+                f"Applying '{strategy}' will cause immediate operational downtime. "
+                "Recommendation: Switch to 'VLAN_ROUTING_FILTER' instead of 'ISOLATE'."
+            )
+        return f"Safety check PASSED for {target_ip}. '{strategy}' is considered low-risk for the broader network."
+
+    @staticmethod
+    def report_false_positive(rule_id: str, source_ip: str, reason: str = "", **_) -> str:
+        """[EQ] Signal the Triage agent to auto-tune a noisy or incorrect rule."""
+        logger.info(f"[Tool] report_false_positive(rule={rule_id}, ip={source_ip})")
+        # In production: push to a 'triage_feedback' bus
+        return f"Feedback logged: Rule {rule_id} marked as FP for {source_ip}. Triage auto-tuning initiated."
+
+    @staticmethod
+    def consult_librarian(query: str = "", **kwargs) -> str:
+        """[IQ] Search institutional memory for similar past cases and hypotheses."""
+        logger.info(f"[Tool] consult_librarian('{query}')")
+        query_bus = EventBus("memory_queries")
+        response_bus = EventBus("memory_responses")
+        correlation_id = str(uuid.uuid4())
+        
+        query_bus.push({
+            "query": query,
+            "requester": "SENTINEL-INVESTIGATOR",
+            "correlation_id": correlation_id
+        })
+        
+        # Poll for response (timeout 5s)
+        for _ in range(5):
+            time.sleep(1)
+            resp = response_bus.pop()
+            if resp and resp.get("correlation_id") == correlation_id:
+                results = resp.get("results", [])
+                if not results: return "Librarian: No relevant past cases found matching this behavior."
+                
+                formatted = "Librarian: Found relevant past incidents:\n"
+                for r in results:
+                    formatted += f"- {r['case_id']} (Sim: {r['similarity']}): {r['summary']}. Hypothesis was: {r['hypothesis']}\n"
+                return formatted
+                
+        return "Librarian: Service timed out. Proceed with current evidence."
+
     # ── Registry ──────────────────────────────────────────────────────────
     TOOL_MAP: Dict[str, Any] = {}  # populated after class definition
 
-    def dispatch(self, tool_name: str, args: Dict[str, Any]) -> str:
+    def dispatch(self, tool_name: str, args: Dict[str, Any], **kwargs) -> str:
         """Dispatch a named tool and return its string output."""
         fn = self.TOOL_MAP.get(tool_name)
         if fn is None:
             return f"Unknown tool '{tool_name}'. Available: {list(self.TOOL_MAP.keys())}"
         try:
-            return fn(**args)
+            # Combine args with caller-supplied context (e.g. investigation_id)
+            return fn(**{**args, **kwargs})
         except Exception as exc:
             return f"Tool '{tool_name}' raised an error: {exc}"
 
@@ -228,6 +335,12 @@ InvestigatorTools.TOOL_MAP = {
     "correlate_events":  InvestigatorTools.correlate_events,
     "draft_containment": InvestigatorTools.draft_containment,
     "analyse_process":   InvestigatorTools.analyse_process,
+    "collect_forensics": InvestigatorTools.collect_forensics,
+    "inspect_modbus_traffic": InvestigatorTools.inspect_modbus_traffic,
+    "audit_ad_privileges":    InvestigatorTools.audit_ad_privileges,
+    "verify_remediation_safety": InvestigatorTools.verify_remediation_safety,
+    "report_false_positive": InvestigatorTools.report_false_positive,
+    "consult_librarian":     InvestigatorTools.consult_librarian,
 }
 
 
@@ -245,7 +358,10 @@ Available tools:
 - scan_host(target_ip)                    — lightweight port/service scan
 - correlate_events(investigation_id)      — correlate all collected evidence
 - analyse_process(pid, host)              — deep process tree + memory analysis
+- collect_forensics(target_ip, artifact_type) — collect PCAP, MEMORY, or REGISTRY
 - draft_containment(strategy, target_ip) — draft a PENDING_APPROVAL containment action
+- report_false_positive(rule_id, source_ip, reason) — flag a rule as noise/FP for auto-tuning
+- consult_librarian(query) — [IQ] query shared memory for similar past incidents and TTPs
 
 Response format — EXACTLY one of these three forms per reply:
 
@@ -293,9 +409,15 @@ class InvestigatorAgent:
         # Buses
         self.in_bus  = EventBus("triage_alerts")
         self.out_bus = EventBus("investigation_reasoning")
+        self.memory_query_bus = EventBus("memory_queries")
+        self.memory_response_bus = EventBus("memory_responses")
 
         # Tool library
         self.tools = InvestigatorTools()
+        
+        # [IQ] Hive Context
+        self.memory: Optional[CaseMemory] = None
+        self.model: Optional[genai.GenerativeModel] = None
 
         # Investigate report dir
         os.makedirs(INVESTIGATION_LOG_DIR, exist_ok=True)
@@ -308,14 +430,20 @@ class InvestigatorAgent:
                 "'gemini_api_key' to investigator_config.json."
             )
         genai.configure(api_key=api_key)
+        self._reinit_model()
+
+    def _reinit_model(self, custom_prompt: str = None):
+        """Allow re-initializing the model with a specialized prompt."""
+        prompt = custom_prompt or _SYSTEM_PROMPT
         self.model = genai.GenerativeModel(
             model_name=self.cfg["gemini_model"],
-            system_instruction=_SYSTEM_PROMPT,
+            system_instruction=prompt,
             generation_config=genai.GenerationConfig(
                 temperature=self.cfg["temperature"],
                 response_mime_type="application/json",
             ),
         )
+        logger.info(f"Model re-initialised for {self.agent_name}")
 
         logger.info(
             f"InvestigatorAgent initialised — model: {self.cfg['gemini_model']}, "
@@ -368,19 +496,24 @@ class InvestigatorAgent:
     # Core ReAct Loop
     # ------------------------------------------------------------------
     def _investigate(
-        self, alert: Dict[str, Any], investigation_id: str
+        self, alert: Dict[str, Any], investigation_id: str, memory: Optional[CaseMemory] = None
     ) -> List[ReasoningStep]:
         """
         Run the multi-step ReAct reasoning loop for one alert.
         Publishes each step to the out bus and returns the full step list.
         """
+        self.memory = memory
         steps: List[ReasoningStep] = []
         chat = self.model.start_chat(history=[])
 
-        # Build the initial user message from the alert
-        initial_prompt = self._build_initial_prompt(alert, investigation_id)
+        # Step 0: inject the alert and hive context
+        hive_context = ""
+        if self.memory and self.memory.findings:
+            hive_context = "\n[HIVE_MEMORY] Previous findings for this case:\n"
+            for f in self.memory.findings:
+                hive_context += f"- {f['agent']}: {f['content']}\n"
 
-        # Step 0: inject the alert
+        initial_prompt = self._build_initial_prompt(alert, investigation_id) + hive_context
         messages = [initial_prompt]
         current_message = initial_prompt
 
@@ -425,7 +558,14 @@ class InvestigatorAgent:
 
             # If CONCLUSION reached, we're done
             if step_type == "CONCLUSION":
-                logger.info(f"Investigation {investigation_id} concluded in {step_num} steps.")
+                logger.info(f"Investigation {investigation_id} concluded by {self.agent_name}.")
+                if self.memory:
+                    self.memory.add_finding(
+                        self.agent_name, 
+                        step.content, 
+                        mitre=step.mitre
+                    )
+                    self.memory.conclusion_consensus.append(self.agent_name)
                 break
 
             # If ACTION, dispatch the tool and inject the OBSERVATION
@@ -433,7 +573,7 @@ class InvestigatorAgent:
                 tool_name = parsed.get("tool", "")
                 tool_args  = parsed.get("args", {})
 
-                obs_text = self.tools.dispatch(tool_name, tool_args)
+                obs_text = self.tools.dispatch(tool_name, tool_args, investigation_id=investigation_id)
 
                 obs_step = self._make_step(
                     investigation_id=investigation_id,
@@ -513,12 +653,13 @@ class InvestigatorAgent:
 
     def _publish_step(self, step: ReasoningStep) -> None:
         """Push a reasoning step to the investigation_reasoning bus."""
+        # Use asdict with a hint or just a normal dict comprehension if needed
         payload = asdict(step)
         self.out_bus.push(payload)
 
     def _generate_investigation_id(self) -> str:
-        ts = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
-        short_uuid = str(uuid.uuid4())[:6].upper()
+        ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+        short_uuid = str(uuid.uuid4()).split("-", 1)[0].upper()
         return f"INC-{ts}-{short_uuid}"
 
     def _save_investigation(

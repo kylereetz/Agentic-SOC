@@ -1,0 +1,26 @@
+{
+  "case_id": "INC-20260316-A7289D61",
+  "created_at": "2026-03-16T16:11:04.077654+00:00",
+  "updated_at": "2026-03-16T16:11:04.077654+00:00",
+  "severity": "CRITICAL",
+  "status": "TRIAGE",
+  "summary": "Testing investigation manager wire-up",
+  "source_ip": "192.168.1.100",
+  "mitre_ttp": "T1059.001",
+  "nist_control": "3.14.6",
+  "alert_details": {
+    "timestamp": "2024-03-16T12:00:00Z",
+    "rule_id": "RULE_TEST",
+    "rule_name": "Manual Test Alert",
+    "severity": "CRITICAL",
+    "source_ip": "192.168.1.100",
+    "description": "Testing investigation manager wire-up",
+    "nist_control": "3.14.6",
+    "mitre_ttp": "T1059.001"
+  },
+  "evidence_ids": [],
+  "reasoning_steps": [],
+  "actions_taken": [],
+  "hypothesis": "Awaiting initial investigation",
+  "confidence": 50
+}

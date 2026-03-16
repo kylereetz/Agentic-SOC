@@ -1,0 +1,25 @@
+{
+  "document_title": "Enterprise Chain of Custody Log",
+  "compliance": "NIST 800-171 Rev 3 (3.3.1, 3.6.1)",
+  "organisation": "Reetz Cyber Automation",
+  "events": [
+    {
+      "timestamp": "2026-03-16T19:55:29.799359+00:00",
+      "event": "COLLECTION",
+      "evidence_id": "EVD_20260316_195529_862",
+      "case_id": "INC-HARDEN-TEST-001",
+      "target": "192.168.1.105",
+      "actor": "FORENSICS-01",
+      "status": "SECURED"
+    },
+    {
+      "timestamp": "2026-03-16T19:57:36.473806+00:00",
+      "event": "COLLECTION",
+      "evidence_id": "EVD_20260316_195736_260",
+      "case_id": "INC-HARDEN-REFINE-01",
+      "target": "192.168.1.105",
+      "actor": "FORENSICS-01",
+      "status": "SECURED"
+    }
+  ]
+}

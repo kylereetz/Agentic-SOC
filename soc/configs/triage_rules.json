@@ -7,7 +7,8 @@
       "severity": "INFO",
       "classification": "benign",
       "description": "Known printer MAC disappeared — likely a routine reboot.",
-      "nist_control": "3.4.1"
+      "nist_control": "3.4.1",
+      "mitre_ttp": "None"
     },
     {
       "id": "BENIGN_002",
@@ -16,7 +17,8 @@
       "severity": "INFO",
       "classification": "benign",
       "description": "Asset IP changed — consistent with DHCP renewal on IT VLAN.",
-      "nist_control": "3.4.1"
+      "nist_control": "3.4.1",
+      "mitre_ttp": "None"
     },
     {
       "id": "SUSPICIOUS_001",
@@ -25,7 +27,8 @@
       "severity": "WARNING",
       "classification": "suspicious",
       "description": "New unrecognised device appeared on an OT-designated subnet.",
-      "nist_control": "3.1.1"
+      "nist_control": "3.1.1",
+      "mitre_ttp": "T1584"
     },
     {
       "id": "SUSPICIOUS_002",
@@ -34,7 +37,8 @@
       "severity": "WARNING",
       "classification": "suspicious",
       "description": "MAC address changed for a known IP — possible ARP spoofing or NIC swap.",
-      "nist_control": "3.13.1"
+      "nist_control": "3.13.1",
+      "mitre_ttp": "T1557.002"
     },
     {
       "id": "CRITICAL_001",
@@ -43,7 +47,8 @@
       "severity": "CRITICAL",
       "classification": "malicious",
       "description": "Modbus write command (FC 5/6/15/16) detected from a non-whitelisted source.",
-      "nist_control": "3.14.6"
+      "nist_control": "3.14.6",
+      "mitre_ttp": "T0836"
     },
     {
       "id": "CRITICAL_002",
@@ -52,7 +57,8 @@
       "severity": "CRITICAL",
       "classification": "malicious",
       "description": "PROFINET DCP Set command detected from unknown MAC — possible PLC reconfiguration attempt.",
-      "nist_control": "3.14.6"
+      "nist_control": "3.14.6",
+      "mitre_ttp": "T0831"
     },
     {
       "id": "CRITICAL_003",
@@ -61,7 +67,8 @@
       "severity": "CRITICAL",
       "classification": "malicious",
       "description": "EtherNet/IP RegisterSession from non-whitelisted source — possible unauthorized CIP access.",
-      "nist_control": "3.1.1"
+      "nist_control": "3.1.1",
+      "mitre_ttp": "T0883"
     }
   ],
   "whitelisted_sources": [],

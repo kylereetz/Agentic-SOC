@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Hunting Schema",
+  "type": "object",
+  "properties": {
+    "timestamp": { "type": "string", "format": "date-time" },
+    "hypothesis_id": { "type": "string" },
+    "intel_source": { "type": "string" },
+    "target_pattern": { "type": "string" },
+    "time_range_days": { "type": "integer", "default": 30 },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "match_timestamp": { "type": "string" },
+          "asset_id": { "type": "string" },
+          "relevance_score": { "type": "number" },
+          "context": { "type": "string" }
+        }
+      }
+    }
+  },
+  "required": ["timestamp", "hypothesis_id", "target_pattern"]
+}

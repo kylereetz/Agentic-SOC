@@ -1,0 +1,12 @@
+{
+  "timestamp": "2026-03-16T21:34:28.668850+00:00",
+  "event_type": "login_success",
+  "user_id": "kyle.reetz@sentinel.io",
+  "source_ip": "1.1.1.1",
+  "location": {
+    "city": "New York",
+    "country": "US",
+    "lat": 40.71,
+    "lon": -74.0
+  }
+}

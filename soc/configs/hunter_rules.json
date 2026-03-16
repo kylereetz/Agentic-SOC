@@ -1,0 +1,25 @@
+{
+  "hunting_playbooks": [
+    {
+      "id": "HUNT_APT_001",
+      "name": "Supply Chain Backdoor (SolarWinds style)",
+      "hypothesis": "Unusual egress traffic from build server to unknown domains following an update.",
+      "keywords": ["msiexec.exe", "solarwinds.businesslayerhost.exe", "avsvmcloud.com"],
+      "lookback_days": 60
+    },
+    {
+      "id": "HUNT_APT_002",
+      "name": "Living off the Land (Double Extension)",
+      "hypothesis": "Office documents launching powershell or certutil from temp directories.",
+      "keywords": ["powershell -enc", "certutil -urlcache", ".doc.exe", ".pdf.vbs"],
+      "lookback_days": 30
+    }
+  ],
+  "intel_mappings": {
+    "cisa-kev": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+    "apt_groups": {
+      "APT28": ["fancy bear", "sednit"],
+      "APT29": ["cozy bear", "nobelium"]
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-03-16T21:50:40.018059+00:00",
+  "rule_id": "VG_BEC_001",
+  "rule_name": "Vendor Impersonation/BEC Pattern",
+  "severity": "CRITICAL",
+  "source_ip": "External",
+  "description": "External communication matches common BEC or impersonation patterns. Sender: vendor-finance@partner.com. BEC Keywords detected: wire transfer",
+  "nist_control": "3.14.3",
+  "mitre_ttp": "T1566",
+  "raw_event": {
+    "timestamp": "2026-03-16T21:50:40.007725+00:00",
+    "event_type": "external_comm",
+    "sender": "vendor-finance@partner.com",
+    "subject": "Change in Payment Details",
+    "content": "Please update our bank account details for the next wire transfer."
+  }
+}

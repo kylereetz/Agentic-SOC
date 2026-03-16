@@ -1,0 +1,10 @@
+{
+  "event_type": "port_scan",
+  "ip": "192.168.10.10",
+  "protocol": "TCP",
+  "status": "blocked",
+  "rule_id": "SCAN_RULE",
+  "rule_name": "Generic Scan",
+  "severity": "WARNING",
+  "description": "Just a warning."
+}

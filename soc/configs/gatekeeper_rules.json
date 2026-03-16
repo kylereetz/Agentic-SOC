@@ -1,0 +1,26 @@
+{
+  "rules": [
+    {
+      "id": "GK_MFA_001",
+      "name": "MFA Fatigue Attack",
+      "threshold": 5,
+      "window_seconds": 60,
+      "severity": "CRITICAL",
+      "description": "Multiple failed MFA attempts from a single user in a short window."
+    },
+    {
+      "id": "GK_TRAV_001",
+      "name": "Impossible Travel",
+      "min_speed_kmh": 1000,
+      "severity": "CRITICAL",
+      "description": "Login attempts from geographically distant locations in an impossible timeframe."
+    },
+    {
+      "id": "GK_NHI_001",
+      "name": "Agent Identity Staleness",
+      "rotation_days": 30,
+      "severity": "WARNING",
+      "description": "Agent API key has exceeded the recommended rotation window."
+    }
+  ]
+}

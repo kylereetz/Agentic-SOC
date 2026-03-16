@@ -1,0 +1,22 @@
+{
+  "timestamp": "2026-03-16T21:43:00.114350+00:00",
+  "rule_id": "GK_TRAV_001",
+  "rule_name": "Impossible Travel",
+  "severity": "CRITICAL",
+  "source_ip": "2.2.2.2",
+  "description": "Login attempts from geographically distant locations in an impossible timeframe. (User: kyle.reetz@sentinel.io) Speed: 334211.93 km/h over 5570.79 km",
+  "nist_control": "3.5.1",
+  "mitre_ttp": "T1621",
+  "raw_event": {
+    "timestamp": "2026-03-16T21:34:00.106549+00:00",
+    "event_type": "login_success",
+    "user_id": "kyle.reetz@sentinel.io",
+    "source_ip": "2.2.2.2",
+    "location": {
+      "city": "London",
+      "country": "UK",
+      "lat": 51.5,
+      "lon": -0.12
+    }
+  }
+}

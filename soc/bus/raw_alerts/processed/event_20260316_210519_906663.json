@@ -1,0 +1,6 @@
+{
+  "rule_id": "LATERAL",
+  "rule_name": "SMB Exec",
+  "severity": "CRITICAL",
+  "source_ip": "192.168.10.10"
+}

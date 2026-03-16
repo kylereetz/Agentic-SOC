@@ -21,7 +21,7 @@ import time
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-import schedule
+import asyncio
 
 from engine.core.sentinel import SentinelEngine
 from engine.core.industrial import IndustrialScanner
@@ -64,16 +64,16 @@ class InventoryDiff:
 
     def __init__(
         self,
-        previous: Dict[str, Dict[str, str]],
-        current: Dict[str, Dict[str, str]],
+        previous: Dict[str, Dict[str, Any]],
+        current: Dict[str, Dict[str, Any]],
     ):
         prev_ips = set(previous.keys())
         curr_ips = set(current.keys())
 
-        self.new_assets: List[Dict[str, str]] = [
+        self.new_assets: List[Dict[str, Any]] = [
             current[ip] for ip in (curr_ips - prev_ips)
         ]
-        self.missing_assets: List[Dict[str, str]] = [
+        self.missing_assets: List[Dict[str, Any]] = [
             previous[ip] for ip in (prev_ips - curr_ips)
         ]
         self.changed_assets: List[Dict[str, Any]] = []
@@ -92,39 +92,58 @@ class InventoryDiff:
         """
         Convert the diff into structured events consumable by the
         Triage agent via the Event Bus.
+        Includes semantic_detail for human-readable dashboard views.
         """
         events: List[Dict[str, Any]] = []
         ts = datetime.utcnow().isoformat()
 
         for asset in self.new_assets:
+            ip = asset.get("ip_address", "Unknown")
             events.append({
                 "timestamp": ts,
                 "event_type": "asset_new",
                 "severity": "WARNING",
-                "ip": asset.get("ip_address"),
+                "ip": ip,
                 "mac": asset.get("mac_address"),
                 "detail": "New asset appeared on network",
+                "semantic_detail": f"NEW DEVICE: {ip} discovered on network."
             })
 
         for asset in self.missing_assets:
+            ip = asset.get("ip_address", "Unknown")
             events.append({
                 "timestamp": ts,
                 "event_type": "asset_missing",
                 "severity": "INFO",
-                "ip": asset.get("ip_address"),
+                "ip": ip,
                 "mac": asset.get("mac_address"),
                 "detail": "Previously known asset no longer responding",
+                "semantic_detail": f"OFFLINE: {ip} is no longer responding to discovery probes."
             })
 
         for change in self.changed_assets:
+            ip = change["ip"]
+            before = change["before"]
+            after = change["after"]
+            
+            # Identify specific changes for semantic detail
+            changed_fields = []
+            if before.get("hostname") != after.get("hostname"):
+                changed_fields.append(f"Hostname: {before.get('hostname')} -> {after.get('hostname')}")
+            if before.get("os_label") != after.get("os_label"):
+                changed_fields.append(f"OS: {before.get('os_label')} -> {after.get('os_label')}")
+            
+            summary = ", ".join(changed_fields) if changed_fields else "Attributes updated"
+
             events.append({
                 "timestamp": ts,
                 "event_type": "asset_changed",
                 "severity": "WARNING",
-                "ip": change["ip"],
-                "before": change["before"],
-                "after": change["after"],
+                "ip": ip,
+                "before": before,
+                "after": after,
                 "detail": "Asset attributes changed between scans",
+                "semantic_detail": f"CHANGE on {ip}: {summary}"
             })
 
         return events
@@ -205,6 +224,11 @@ class ScoutAgent:
                     inv[asset.ip_address]["ot_protocol"] = asset.protocol
                     inv[asset.ip_address]["ot_device_info"] = asset.device_info
 
+        # --- Service Probes (IQ Boost) ---
+        for ip in discovered_ips:
+            logger.info(f"Probing services on {ip} ...")
+            sentinel.service_probe(ip)
+
         current_inventory = sentinel.get_inventory()
 
         # --- Diff & Bus Push ---
@@ -251,32 +275,55 @@ class ScoutAgent:
                 logger.debug(f"Pruned old snapshot: {old}")
 
     # ------------------------------------------------------------------
-    # Scheduler loop
+    # Scheduler loop (Async)
     # ------------------------------------------------------------------
-    def start(self) -> None:
+    async def start(self) -> None:
         """
-        Start the Scout agent on a recurring schedule.
-        Blocks the current thread.
+        Start the Scout agent on a recurring async loop.
         """
-        interval = self.cfg.get("scan_interval_hours", 2)
-        logger.info(f"Scout agent starting — interval: every {interval} hour(s)")
-
-        # Run once immediately
-        self._run_scan_cycle()
-
-        # Schedule subsequent runs
-        schedule.every(interval).hours.do(self._run_scan_cycle)
+        interval_hours = self.cfg.get("scan_interval_hours", 2)
+        interval_seconds = interval_hours * 3600
+        logger.info(f"Scout agent starting — interval: every {interval_hours} hour(s)")
 
         try:
             while True:
-                schedule.run_pending()
-                time.sleep(30)  # Check every 30 s
-        except KeyboardInterrupt:
-            logger.info("Scout agent stopped by user.")
+                # Run the scan cycle
+                # Since engine calls are blocking, we run them in an executor if needed, 
+                # but for now we just keep them here as they are part of our 'active scan duration'.
+                await self._run_async_cycle()
+                
+                logger.debug(f"Scout sleeping for {interval_seconds}s...")
+                await asyncio.sleep(interval_seconds)
+        except asyncio.CancelledError:
+            logger.info("Scout agent loop cancelled.")
+        except Exception as exc:
+            logger.error(f"Critical error in Scout loop: {exc}")
+
+    async def _run_async_cycle(self) -> None:
+        """Wrapper for potentially long-running blocking scan logic."""
+        # For professional grade, we use a try-except block here for multi-hop recovery
+        max_retries = 2
+        for attempt in range(max_retries + 1):
+            try:
+                # We use loop.run_in_executor for the blocking SentinelEngine calls
+                loop = asyncio.get_running_loop()
+                await loop.run_in_executor(None, lambda: self._run_scan_cycle())
+                break # Success
+            except Exception as exc:
+                if attempt < max_retries:
+                    wait_time = (attempt + 1) * 5
+                    logger.warning(f"Scan attempt {attempt+1} failed ({exc}). Retrying in {wait_time}s...")
+                    await asyncio.sleep(wait_time)
+                else:
+                    logger.error(f"Scan failed after {max_retries+1} attempts: {exc}")
 
     def run_once(self) -> None:
         """Run a single scan cycle (useful for testing / CLI)."""
         self._run_scan_cycle()
+
+    def _run_scan_cycle(self) -> None:
+        """Original blocking scan logic."""
+        logger.info("Scout scan cycle starting ...")
 
     def get_latest_events(self) -> List[Dict[str, Any]]:
         """

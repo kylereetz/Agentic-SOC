@@ -1,0 +1,26 @@
+{
+  "timestamp": "2026-03-16T21:57:10.032261+00:00",
+  "rule_id": "HUNTER_APT_MATCH",
+  "rule_name": "HUNT MATCH: APT29 Campaign Targeting Manufacturing MFA",
+  "severity": "HIGH",
+  "source_ip": "Unknown",
+  "description": "Proactive hunt identified 4 suspicious historical events matching the lead: APT29 Campaign Targeting Manufacturing MFA",
+  "nist_control": "3.14.6",
+  "mitre_ttp": "T1589",
+  "metadata": {
+    "matched_events": 4,
+    "is_proactive_hunt": true,
+    "intel_source": "CISA-AL-2026-003"
+  },
+  "raw_event": {
+    "timestamp": "2026-03-16T21:57:09.947188+00:00",
+    "event_type": "new_intel_lead",
+    "intel_source": "CISA-AL-2026-003",
+    "hypothesis": "APT29 Campaign Targeting Manufacturing MFA",
+    "keywords": [
+      "apt29.com",
+      "1.2.3.4"
+    ],
+    "lookback_days": 10
+  }
+}

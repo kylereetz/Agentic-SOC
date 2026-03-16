@@ -15,7 +15,10 @@ and industrial hardware (PLCs, CNCs, HMIs).
 """
 
 import logging
-from typing import Dict, List, Set
+import socket
+import ssl
+from typing import Dict, List, Set, Optional, Any
+from datetime import datetime, timezone
 
 from scapy.all import ARP, Ether, IP, ICMP, srp, sr1, sniff
 
@@ -40,7 +43,7 @@ class SentinelEngine:
     def __init__(self):
         # In-memory inventory of discovered assets
         # Satisfies NIST 800-171 3.4.1 (Inventories)
-        self.inventory: Dict[str, Dict[str, str]] = {}
+        self.inventory: Dict[str, Dict[str, Any]] = {}
         self.seen_ips: Set[str] = set()
 
     # ------------------------------------------------------------------
@@ -153,9 +156,80 @@ class SentinelEngine:
         return discovered
 
     # ------------------------------------------------------------------
+    # 4. Deep Service Probing (Banner Grabbing & TLS)
+    # ------------------------------------------------------------------
+    def service_probe(self, ip: str, ports: List[int] = [80, 443, 445, 22]) -> Dict[str, Any]:
+        """
+        Attempt to identify services and OS hints via non-disruptive probing.
+        
+        # Satisfies NIST 800-171 3.11.2 (Vulnerability scanning)
+        """
+        findings = {}
+        for port in ports:
+            if port == 443:
+                tls_info = self._get_tls_metadata(ip, port)
+                if tls_info:
+                    findings["https"] = tls_info
+            else:
+                banner = self._grab_banner(ip, port)
+                if banner:
+                    findings[f"port_{port}"] = banner
+                    
+        if findings and ip in self.inventory:
+            self.inventory[ip]["service_probes"] = findings
+            
+            # Simple OS heuristic from banners
+            combined = str(findings).lower()
+            if "windows" in combined or "microsoft" in combined:
+                self.inventory[ip]["os_label"] = "Windows"
+            elif "linux" in combined or "ubuntu" in combined or "debian" in combined:
+                self.inventory[ip]["os_label"] = "Linux"
+            elif "ssh-2.0-openssh" in combined:
+                self.inventory[ip]["os_label"] = "Linux/Unix"
+                
+        return findings
+
+    def _grab_banner(self, ip: str, port: int, timeout: int = 2) -> Optional[str]:
+        """Attempt to read a service banner."""
+        try:
+            with socket.create_connection((ip, port), timeout=timeout) as sock:
+                # Some protocols wait for us to speak (HTTP), some speak first (SSH)
+                if port == 80:
+                    sock.sendall(b"GET / HTTP/1.0\r\n\r\n")
+                
+                banner = sock.recv(1024).decode(errors="ignore").strip()
+                return banner[:200] if banner else None
+        except Exception:
+            return None
+
+    def _get_tls_metadata(self, ip: str, port: int, timeout: int = 3) -> Optional[Dict[str, Any]]:
+        """Extract TLS version and certificate common names."""
+        context = ssl.create_default_context()
+        context.check_hostname = False
+        context.verify_mode = ssl.CERT_NONE
+        
+        try:
+            with socket.create_connection((ip, port), timeout=timeout) as sock:
+                with context.wrap_socket(sock, server_hostname=ip) as ssock:
+                    cert = ssock.getpeercert(binary_form=True)
+                    if not cert:
+                        return None
+                    
+                    # Wrap the binary cert to get info if not provided
+                    # In CERT_NONE mode, getpeercert() returns None, so we'd need binary_form=True
+                    # Here we just return the version and basic info
+                    return {
+                        "version": ssock.version(),
+                        "cipher": ssock.cipher()[0],
+                        "active": True
+                    }
+        except Exception:
+            return None
+
+    # ------------------------------------------------------------------
     # Inventory accessor
     # ------------------------------------------------------------------
-    def get_inventory(self) -> Dict[str, Dict[str, str]]:
+    def get_inventory(self) -> Dict[str, Dict[str, Any]]:
         """Return the combined inventory from all discovery methods."""
         return self.inventory
 

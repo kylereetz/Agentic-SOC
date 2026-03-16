@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-03-16T21:04:25.720806+00:00",
+  "rule_id": "CORR_CAMPAIGN_DETECTED",
+  "rule_name": "Multi-Stage Campaign: LATERAL",
+  "severity": "CRITICAL",
+  "source_ip": "192.168.10.10",
+  "description": "Temporal correlation detected a LATERAL progression across 4 events. High confidence linkage.",
+  "correlation_strength": 0.9,
+  "event_chain": [
+    "Scan Step 0",
+    "Scan Step 3",
+    "Scan Step 4",
+    "SMB Exec"
+  ]
+}

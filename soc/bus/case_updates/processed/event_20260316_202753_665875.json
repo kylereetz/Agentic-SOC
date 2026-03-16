@@ -1,0 +1,33 @@
+{
+  "case_id": "INC-20260316-CBC7A449",
+  "created_at": "2026-03-16T20:27:53.661252+00:00",
+  "updated_at": "2026-03-16T20:27:53.664363+00:00",
+  "severity": "CRITICAL",
+  "status": "TRIAGE",
+  "summary": "Temporal correlation detected a EXFIL progression across 3 events. High confidence linkage.",
+  "source_ip": "10.hive.audit.1",
+  "mitre_ttp": "None",
+  "nist_control": "",
+  "alert_details": {
+    "timestamp": "2026-03-16T20:27:53.610352+00:00",
+    "rule_id": "CORR_CAMPAIGN_DETECTED",
+    "rule_name": "Multi-Stage Campaign: EXFIL",
+    "severity": "CRITICAL",
+    "source_ip": "10.hive.audit.1",
+    "description": "Temporal correlation detected a EXFIL progression across 3 events. High confidence linkage.",
+    "correlation_strength": 0.7,
+    "event_chain": [
+      "Recon Scan",
+      "SMB Lateral",
+      "DNS Exfil"
+    ]
+  },
+  "assigned_agent": "SENTINEL-NET",
+  "evidence_ids": [],
+  "reasoning_steps": [],
+  "actions_taken": [],
+  "hypothesis": "Awaiting initial investigation",
+  "confidence": 50,
+  "autonomy_drift": 0.0,
+  "confidence_points": 100
+}

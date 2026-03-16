@@ -1,0 +1,25 @@
+{
+  "case_id": "INC-20260316-B479165D",
+  "created_at": "2026-03-16T20:27:52.651589+00:00",
+  "updated_at": "2026-03-16T20:27:52.653760+00:00",
+  "severity": "WARNING",
+  "status": "TRIAGE",
+  "summary": "",
+  "source_ip": "10.hive.audit.1",
+  "mitre_ttp": "None",
+  "nist_control": "",
+  "alert_details": {
+    "rule_id": "EXFIL_001",
+    "rule_name": "DNS Exfil",
+    "severity": "WARNING",
+    "source_ip": "10.hive.audit.1"
+  },
+  "assigned_agent": "SENTINEL-NET",
+  "evidence_ids": [],
+  "reasoning_steps": [],
+  "actions_taken": [],
+  "hypothesis": "Awaiting initial investigation",
+  "confidence": 50,
+  "autonomy_drift": 0.0,
+  "confidence_points": 100
+}

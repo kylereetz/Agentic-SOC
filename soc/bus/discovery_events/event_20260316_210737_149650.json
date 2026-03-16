@@ -1,0 +1,9 @@
+{
+  "event_type": "asset_new",
+  "ip": "192.168.10.10",
+  "protocol": "TCP",
+  "status": "allowed",
+  "rule_id": "SUSPICIOUS_001",
+  "rule_name": "Unknown Asset on OT VLAN",
+  "severity": "WARNING"
+}

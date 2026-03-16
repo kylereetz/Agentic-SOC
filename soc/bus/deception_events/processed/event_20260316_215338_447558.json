@@ -1,0 +1,8 @@
+{
+  "timestamp": "2026-03-16T21:53:38.447558+00:00",
+  "decoy_id": "DEC_PLC_01",
+  "decoy_type": "industrial_plc",
+  "source_ip": "10.0.0.99",
+  "action": "s7comm_read",
+  "detail": "Attempted to read memory block DB1 from simulated PLC."
+}

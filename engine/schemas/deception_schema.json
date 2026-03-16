@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Deception Schema",
+  "type": "object",
+  "properties": {
+    "timestamp": { "type": "string", "format": "date-time" },
+    "decoy_id": { "type": "string" },
+    "decoy_type": { "type": "string", "enum": ["industrial_plc", "cad_file_share", "decoy_credential"] },
+    "source_ip": { "type": "string" },
+    "action": { "type": "string" },
+    "detail": { "type": "string" }
+  },
+  "required": ["timestamp", "decoy_id", "decoy_type", "source_ip", "action"]
+}

@@ -1,0 +1,26 @@
+{
+  "case_id": "INC-20260316-0BFA8293",
+  "created_at": "2026-03-16T20:20:52.515219+00:00",
+  "updated_at": "2026-03-16T20:20:53.687832+00:00",
+  "severity": "LOW",
+  "status": "TRIAGE",
+  "summary": "Port scan detected targeting internal subnet.",
+  "source_ip": "192.168.5.50",
+  "mitre_ttp": "None",
+  "nist_control": "",
+  "alert_details": {
+    "severity": "LOW",
+    "source_ip": "192.168.5.50",
+    "rule_name": "Network Recon Scan",
+    "rule_id": "RECON_001",
+    "description": "Port scan detected targeting internal subnet."
+  },
+  "assigned_agent": "SENTINEL-NET",
+  "evidence_ids": [],
+  "reasoning_steps": [],
+  "actions_taken": [],
+  "hypothesis": "Awaiting initial investigation",
+  "confidence": 50,
+  "autonomy_drift": 0.0,
+  "confidence_points": 100
+}

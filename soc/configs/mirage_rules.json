@@ -1,0 +1,29 @@
+{
+  "decoys": [
+    {
+      "id": "DEC_PLC_01",
+      "type": "industrial_plc",
+      "name": "Siemens S7-1500 (Decoy)",
+      "description": "Simulation of a production-floor PLC controlling the main assembly line.",
+      "escalation_level": "CRITICAL"
+    },
+    {
+      "id": "DEC_SHARE_01",
+      "type": "cad_file_share",
+      "name": "R&D CAD Repository",
+      "description": "Honey-share containing 'sensitive' engineering blueprints (non-encrypted bait).",
+      "escalation_level": "CRITICAL"
+    },
+    {
+      "id": "DEC_CRED_01",
+      "type": "decoy_credential",
+      "name": "svc_mfg_root",
+      "description": "High-privilege service account credential left in predictable location.",
+      "escalation_level": "CRITICAL"
+    }
+  ],
+  "escalation_logic": {
+    "bypass_standard_queue": true,
+    "immediate_triage_boost": true
+  }
+}

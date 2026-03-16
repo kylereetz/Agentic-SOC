@@ -1,0 +1,26 @@
+{
+  "case_id": "INC-20260316-6AB1644F",
+  "created_at": "2026-03-16T20:11:06.682720+00:00",
+  "updated_at": "2026-03-16T20:11:06.686277+00:00",
+  "severity": "CRITICAL",
+  "status": "TRIAGE",
+  "summary": "Evidence of Pass-the-Ticket to srv-dc01",
+  "source_ip": "10.0.0.50",
+  "mitre_ttp": "None",
+  "nist_control": "",
+  "alert_details": {
+    "severity": "CRITICAL",
+    "source_ip": "10.0.0.50",
+    "rule_name": "SMB Lateral Movement",
+    "rule_id": "LATERAL_001",
+    "description": "Evidence of Pass-the-Ticket to srv-dc01"
+  },
+  "assigned_agent": "SENTINEL-NET",
+  "evidence_ids": [],
+  "reasoning_steps": [],
+  "actions_taken": [],
+  "hypothesis": "Awaiting initial investigation",
+  "confidence": 50,
+  "autonomy_drift": 0.0,
+  "confidence_points": 100
+}

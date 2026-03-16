@@ -1,0 +1,39 @@
+{
+  "evidence_id": "EVD_20260316_195529_862",
+  "case_id": "INC-HARDEN-TEST-001",
+  "target_ip": "192.168.1.105",
+  "artifact_type": "MEMORY",
+  "collected_at": "2026-03-16T19:55:29.792804+00:00",
+  "findings_summary": "Suspicious process LSASS detected.",
+  "artifact_path": "C:\\Users\\kyler\\Documents\\GitHub\\Agentic SOC\\soc\\reports\\forensics\\INC-HARDEN-TEST-001\\MEMORY_20260316_195529.json",
+  "integrity": {
+    "algorithm": "SHA-256",
+    "hash": "5303301c66bcf5f2341cd354de17eb637eb3ada1efbb7be91f3fa0af718957e2",
+    "compliance": "NIST 3.14.3"
+  },
+  "storage": {
+    "raw_size_bytes": 241,
+    "compressed_size_bytes": 40,
+    "compression_ratio": "83.4%",
+    "format": "RCA-SECURE-JSON"
+  },
+  "data": {
+    "pid": 9912,
+    "process": "svchost.exe",
+    "indicators": [
+      {
+        "type": "reflective_load",
+        "address": "0x00401000",
+        "size": "1.2MB"
+      },
+      {
+        "type": "suspicious_string",
+        "value": "sekurlsa::logonpasswords"
+      },
+      {
+        "type": "beacon_pattern",
+        "interval": "60s"
+      }
+    ]
+  }
+}

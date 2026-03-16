@@ -1,0 +1,11 @@
+{
+  "timestamp": "2026-03-16T21:57:09.947188+00:00",
+  "event_type": "new_intel_lead",
+  "intel_source": "CISA-AL-2026-003",
+  "hypothesis": "APT29 Campaign Targeting Manufacturing MFA",
+  "keywords": [
+    "apt29.com",
+    "1.2.3.4"
+  ],
+  "lookback_days": 10
+}

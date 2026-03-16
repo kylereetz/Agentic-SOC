@@ -15,11 +15,12 @@ Uses reportlab for PDF generation — no LaTeX dependency.
 # 3.3.1  - Create and retain system audit logs and records.
 """
 
-import json
 import logging
 import os
+import sqlite3
+import json
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import pandas as pd
 from reportlab.lib import colors
@@ -127,6 +128,72 @@ class AuditorAgent:
         self.client_name = client_name
         self.auditor_name = auditor_name
         os.makedirs(_REPORT_DIR, exist_ok=True)
+        # Mapping cache (SQLite)
+        self.db_path = os.path.join(_REPORT_DIR, "auditor_cache.db")
+        self._init_db()
+
+    def _init_db(self):
+        """Initialise the cache database."""
+        with sqlite3.connect(self.db_path) as conn:
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS mapping_cache (
+                    event_key TEXT PRIMARY KEY,
+                    nist_control TEXT
+                )
+            """)
+
+    def _get_cached_mapping(self, key: str) -> Optional[str]:
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                res = conn.execute("SELECT nist_control FROM mapping_cache WHERE event_key = ?", (key,)).fetchone()
+                return res[0] if res else None
+        except Exception:
+            return None
+
+    def _save_mapping(self, key: str, control: str):
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                conn.execute("INSERT OR REPLACE INTO mapping_cache VALUES (?, ?)", (key, control))
+        except Exception:
+            pass
+
+    def _validate_discovery_data(self, df: pd.DataFrame) -> Tuple[bool, str]:
+        """
+        [EQ] Ensure the input data is safe for report generation.
+        """
+        if df.empty:
+            return False, "Inventory is empty. No assets to audit."
+        
+        required_cols = ["ip_address"]
+        missing = [c for c in required_cols if c not in df.columns]
+        if missing:
+            return False, f"Critical metadata missing: {missing}"
+            
+        return True, "OK"
+
+    def map_events_to_nist(self, event_type: str, detail: str) -> str:
+        """
+        [IQ] Translate dynamic findings into NIST controls.
+        Uses SQLite cache for SQ and logic for IQ.
+        """
+        cache_key = f"{event_type}:{str(detail)[:50]}"
+        cached = self._get_cached_mapping(cache_key)
+        if cached:
+            return cached
+
+        # Heuristic / Fallback
+        control = "3.12.1 (General Assessment)"
+        if event_type == "asset_new": control = "3.4.1 (Inventory)"
+        elif event_type == "asset_changed": control = "3.4.1 (Baseline Configuration)"
+        
+        detail_lower = detail.lower()
+        if "password" in detail_lower or "auth" in detail_lower:
+            control = "3.5.3 (Password Complexity)"
+        elif "firewall" in detail_lower or "block" in detail_lower:
+            control = "3.13.1 (Boundary Protection)"
+            
+        self._save_mapping(cache_key, control)
+        return control
 
     def generate_report(
         self,
@@ -145,6 +212,12 @@ class AuditorAgent:
         """
         logger.info(f"Loading compliance data from {compliance_csv} …")
         df = pd.read_csv(compliance_csv)
+
+        # [EQ] Validation Layer
+        is_valid, err = self._validate_discovery_data(df)
+        if not is_valid:
+            logger.error(f"Audit failed validation: {err}")
+            raise ValueError(err)
 
         if output_path is None:
             ts = datetime.utcnow().strftime("%Y%m%d")
@@ -223,12 +296,12 @@ class AuditorAgent:
             cols = [c for c in df.columns if c.startswith(prefix)]
             if not cols:
                 continue
-            vals = df[cols].values.flatten()
+            vals = df[cols].values.flatten().tolist()
             stats = {
-                "Compliant": int((vals == "Compliant").sum()),
-                "Non-Compliant": int((vals == "Non-Compliant").sum()),
-                "Untested": int((vals == "Untested").sum()),
-                "Not-Applicable": int((vals == "Not-Applicable").sum()),
+                "Compliant": vals.count("Compliant"),
+                "Non-Compliant": vals.count("Non-Compliant"),
+                "Untested": vals.count("Untested"),
+                "Not-Applicable": vals.count("Not-Applicable"),
             }
             score = _compute_risk_score(stats)
             rlabel = _risk_label(score)
@@ -332,7 +405,7 @@ class AuditorAgent:
 
         all_fstats.sort(key=lambda x: x["score"])
         priority_data = [["Priority", "Revision", "Family", "Score %", "Non-Compliant"]]
-        for i, fs in enumerate(all_fstats[:15], start=1):
+        for i, fs in enumerate(list(all_fstats)[:15], start=1):
             priority_data.append(
                 [
                     str(i),
@@ -365,7 +438,43 @@ class AuditorAgent:
         # Build PDF
         doc.build(elements)
         logger.info(f"Gap analysis report generated → {output_path}")
+
+        # [VQ] Export Metadata JSON for Dashboard
+        self._export_metadata_json(df, output_path)
+        
         return output_path
+
+    def _export_metadata_json(self, df: pd.DataFrame, pdf_path: str):
+        """
+        [VQ] Generate a machine-readable audit summary for the Dashboard.
+        """
+        meta_path = pdf_path.replace(".pdf", ".json")
+        
+        # Calculate summary stats
+        cols_r2 = [c for c in df.columns if c.startswith("R2")]
+        vals = df[cols_r2].values.flatten().tolist()
+        stats = {
+            "compliant": vals.count("Compliant"),
+            "non_compliant": vals.count("Non-Compliant"),
+            "untested": vals.count("Untested"),
+            "risk_score": _compute_risk_score({
+                "Compliant": vals.count("Compliant"),
+                "Non-Compliant": vals.count("Non-Compliant")
+            })
+        }
+        
+        meta = {
+            "audit_id": os.path.basename(pdf_path).replace(".pdf", ""),
+            "timestamp": datetime.utcnow().isoformat(),
+            "client": self.client_name,
+            "overall_stats": stats,
+            "pdf_link": pdf_path,
+            "families": _family_stats(df, "R2")
+        }
+        
+        with open(meta_path, "w") as f:
+            json.dump(meta, f, indent=2)
+        logger.info(f"Audit metadata exported → {meta_path}")
 
 
 if __name__ == "__main__":

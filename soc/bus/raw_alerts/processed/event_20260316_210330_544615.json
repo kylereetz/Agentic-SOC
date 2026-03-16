@@ -1,0 +1,6 @@
+{
+  "rule_id": "RECON",
+  "rule_name": "Scan Step 0",
+  "severity": "WARNING",
+  "source_ip": "192.168.10.10"
+}

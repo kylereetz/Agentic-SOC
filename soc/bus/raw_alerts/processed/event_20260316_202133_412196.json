@@ -1,0 +1,7 @@
+{
+  "severity": "WARNING",
+  "source_ip": "192.168.5.50",
+  "rule_name": "Data Exfiltration via DNS",
+  "rule_id": "EXFIL_001",
+  "description": "Anomalous DNS traffic volume to external.com."
+}

@@ -1,0 +1,28 @@
+{
+  "case_id": "INC-20260316-0CBB7AB3",
+  "created_at": "2026-03-16T17:06:35.811831+00:00",
+  "updated_at": "2026-03-16T17:06:35.819497+00:00",
+  "severity": "CRITICAL",
+  "status": "SCOPING",
+  "summary": "Integration Test Description",
+  "source_ip": "10.0.0.5",
+  "mitre_ttp": "T1614",
+  "nist_control": "3.1.1",
+  "alert_details": {
+    "timestamp": "2026-03-16T17:06:35.804183+00:00",
+    "rule_id": "RULE_INTEGRATION_TEST",
+    "rule_name": "Integration Test Alert",
+    "severity": "CRITICAL",
+    "source_ip": "10.0.0.5",
+    "description": "Integration Test Description",
+    "mitre_ttp": "T1614",
+    "nist_control": "3.1.1"
+  },
+  "evidence_ids": [],
+  "reasoning_steps": [
+    "[THOUGHT] Running integration test thought step."
+  ],
+  "actions_taken": [],
+  "hypothesis": "Awaiting initial investigation",
+  "confidence": 50
+}

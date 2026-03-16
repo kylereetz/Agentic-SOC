@@ -1,0 +1,7 @@
+{
+  "severity": "LOW",
+  "source_ip": "192.168.5.50",
+  "rule_name": "Network Recon Scan",
+  "rule_id": "RECON_001",
+  "description": "Port scan detected targeting internal subnet."
+}

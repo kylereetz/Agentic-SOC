@@ -1,0 +1,23 @@
+{
+  "timestamp": "2026-03-16T21:53:54.531034+00:00",
+  "rule_id": "MIRAGE_DEC_PLC_01",
+  "rule_name": "DECEPTION: Siemens S7-1500 (Decoy)",
+  "severity": "CRITICAL",
+  "source_ip": "10.0.0.99",
+  "description": "High-fidelity decoy interaction detected. Simulation of a production-floor PLC controlling the main assembly line. Action: s7comm_read",
+  "nist_control": "3.14.6",
+  "mitre_ttp": "T1021",
+  "metadata": {
+    "BYPASS_STANDARD_QUEUE": true,
+    "IMMEDIATE_TRIAGE_BOOST": true,
+    "decoy_type": "industrial_plc"
+  },
+  "raw_event": {
+    "timestamp": "2026-03-16T21:53:54.523126+00:00",
+    "decoy_id": "DEC_PLC_01",
+    "decoy_type": "industrial_plc",
+    "source_ip": "10.0.0.99",
+    "action": "s7comm_read",
+    "detail": "Attempted to read memory block DB1 from simulated PLC."
+  }
+}

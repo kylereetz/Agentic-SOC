@@ -1,0 +1,10 @@
+{
+  "case_id": "INC-20260316-17EB7868",
+  "severity": "CRITICAL",
+  "summary": "Mass file encryption detected on FileServer-01",
+  "hypothesis": "Awaiting initial investigation",
+  "destinations": [
+    "slack",
+    "pagerduty"
+  ]
+}

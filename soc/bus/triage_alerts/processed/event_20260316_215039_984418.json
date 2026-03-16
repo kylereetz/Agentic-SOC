@@ -1,0 +1,27 @@
+{
+  "timestamp": "2026-03-16T21:50:39.984418+00:00",
+  "rule_id": "VG_CVE_001",
+  "rule_name": "Vulnerable Library Detected",
+  "severity": "CRITICAL",
+  "source_ip": "External",
+  "description": "A highly vulnerable library version was detected in the SBOM. Found log4j@2.14.1 (CVE: CVE-2021-44228: Log4Shell) on MFG-WS-01",
+  "nist_control": "3.14.6",
+  "mitre_ttp": "T1195",
+  "raw_event": {
+    "timestamp": "2026-03-16T21:50:39.977757+00:00",
+    "event_type": "sbom_ingestion",
+    "asset_id": "MFG-WS-01",
+    "components": [
+      {
+        "name": "log4j",
+        "version": "2.14.1",
+        "type": "library"
+      },
+      {
+        "name": "guava",
+        "version": "30.1-jre",
+        "type": "library"
+      }
+    ]
+  }
+}

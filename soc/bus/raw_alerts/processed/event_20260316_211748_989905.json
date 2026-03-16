@@ -1,0 +1,7 @@
+{
+  "timestamp": "2026-03-16T21:17:48.989905+00:00",
+  "rule_id": "RECON",
+  "rule_name": "Scan Step 2",
+  "severity": "WARNING",
+  "source_ip": "10.0.0.66"
+}

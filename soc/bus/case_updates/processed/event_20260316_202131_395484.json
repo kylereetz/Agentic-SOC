@@ -1,0 +1,26 @@
+{
+  "case_id": "INC-20260316-4EEA2F89",
+  "created_at": "2026-03-16T20:20:54.715425+00:00",
+  "updated_at": "2026-03-16T20:21:31.393935+00:00",
+  "severity": "WARNING",
+  "status": "TRIAGE",
+  "summary": "Multiple failed SMB logins followed by success on srv-01.\n[ALERT RECURRENCE] 20:21 - Multiple failed SMB logins followed by success on srv-01.",
+  "source_ip": "192.168.5.50",
+  "mitre_ttp": "None",
+  "nist_control": "",
+  "alert_details": {
+    "severity": "WARNING",
+    "source_ip": "192.168.5.50",
+    "rule_name": "SMB Lateral Pivot",
+    "rule_id": "LATERAL_001",
+    "description": "Multiple failed SMB logins followed by success on srv-01."
+  },
+  "assigned_agent": "SENTINEL-NET",
+  "evidence_ids": [],
+  "reasoning_steps": [],
+  "actions_taken": [],
+  "hypothesis": "Awaiting initial investigation",
+  "confidence": 50,
+  "autonomy_drift": 0.0,
+  "confidence_points": 100
+}
