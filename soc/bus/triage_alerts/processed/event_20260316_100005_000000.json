@@ -1,0 +1,20 @@
+{
+  "timestamp": "2026-03-16T10:00:00Z",
+  "rule_id": "TEST_RULE_006",
+  "rule_name": "Final Test Alert for Gemini-Flash",
+  "severity": "HIGH",
+  "classification": "phishing",
+  "source_ip": "192.168.1.105",
+  "description": "A user clicked on a suspicious link from an unknown sender, testing gemini-flash model.",
+  "nist_control": "NIST-800-53 CM-7",
+  "raw_event": {
+    "event_type": "email_click",
+    "user": "jane.doe",
+    "link": "http://bad.link/phish_new",
+    "destination_ip": "5.6.7.8"
+  },
+  "confidence": 0.92,
+  "id": "ALT-TEST-006",
+  "asset": "Workstation-JD-02",
+  "mitre": "T1566"
+}

@@ -1,0 +1,20 @@
+{
+  "timestamp": "2026-03-16T10:00:00Z",
+  "rule_id": "TEST_RULE_007",
+  "rule_name": "LLM Response Debugging Test",
+  "severity": "LOW",
+  "classification": "reconnaissance",
+  "source_ip": "192.168.1.106",
+  "description": "Port scan activity detected from an external IP, testing LLM raw output.",
+  "nist_control": "NIST-800-53 RA-5",
+  "raw_event": {
+    "event_type": "port_scan",
+    "scanner_ip": "10.0.0.1",
+    "target_ip": "192.168.1.106",
+    "ports": ["22", "23", "80", "443"]
+  },
+  "confidence": 0.70,
+  "id": "ALT-TEST-007",
+  "asset": "DMZ-Server-01",
+  "mitre": "T1595"
+}

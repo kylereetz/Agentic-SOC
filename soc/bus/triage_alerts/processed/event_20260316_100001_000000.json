@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-03-16T10:00:00Z",
+  "rule_id": "TEST_RULE_002",
+  "rule_name": "Another Critical Alert",
+  "severity": "CRITICAL",
+  "classification": "malicious",
+  "source_ip": "192.168.1.101",
+  "description": "Second test alert for InvestigatorAgent functionality.",
+  "nist_control": "NIST-800-171 3.14.6",
+  "raw_event": {
+    "event_type": "test_event_2",
+    "ip": "192.168.1.101",
+    "mac": "aa:bb:cc:dd:ee:f0"
+  },
+  "confidence": 0.95,
+  "id": "ALT-TEST-002",
+  "asset": "Host-Test-02",
+  "mitre": "T1001"
+}

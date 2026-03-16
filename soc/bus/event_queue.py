@@ -5,7 +5,8 @@ without direct dependencies on each other's file paths.
 
 Channels:
   discovery_events — Scout (push) -> Triage (pop)
-  triage_alerts    — Triage (push) -> Responder (pop)
+  triage_alerts    — Triage (push) -> Responder (pop) -> Investigator (pop)
+  investigation_reasoning — Investigator (push) -> UI (pop) / Audit (pop)
   patch_manifests — Patch Pilot (push) -> Responder (pop)
 
 Usage:

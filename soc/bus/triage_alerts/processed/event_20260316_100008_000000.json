@@ -1,0 +1,21 @@
+{
+  "timestamp": "2026-03-16T10:00:00Z",
+  "rule_id": "TEST_RULE_009",
+  "rule_name": "Final Test for JSON Extraction",
+  "severity": "HIGH",
+  "classification": "data_exfiltration",
+  "source_ip": "192.168.1.108",
+  "description": "Large data transfer detected to an untrusted external IP.",
+  "nist_control": "NIST-800-53 SC-8",
+  "raw_event": {
+    "event_type": "network_flow",
+    "bytes_transferred": 104857600,
+    "destination_ip": "203.0.113.45",
+    "protocol": "TCP",
+    "port": 443
+  },
+  "confidence": 0.95,
+  "id": "ALT-TEST-009",
+  "asset": "Database-Server-03",
+  "mitre": "T1020"
+}

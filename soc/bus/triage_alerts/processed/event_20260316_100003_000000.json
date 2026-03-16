@@ -1,0 +1,20 @@
+{
+  "timestamp": "2026-03-16T10:00:00Z",
+  "rule_id": "TEST_RULE_004",
+  "rule_name": "Final Test Alert for Reasoning",
+  "severity": "HIGH",
+  "classification": "phishing",
+  "source_ip": "192.168.1.103",
+  "description": "A user clicked on a suspicious link from an unknown sender.",
+  "nist_control": "NIST-800-53 CM-7",
+  "raw_event": {
+    "event_type": "email_click",
+    "user": "john.doe",
+    "link": "http://bad.link/phish",
+    "destination_ip": "1.2.3.4"
+  },
+  "confidence": 0.85,
+  "id": "ALT-TEST-004",
+  "asset": "Workstation-JD-01",
+  "mitre": "T1566"
+}

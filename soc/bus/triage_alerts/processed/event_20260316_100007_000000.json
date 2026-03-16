@@ -1,0 +1,20 @@
+{
+  "timestamp": "2026-03-16T10:00:00Z",
+  "rule_id": "TEST_RULE_008",
+  "rule_name": "Strip Test for LLM Response",
+  "severity": "MEDIUM",
+  "classification": "phishing",
+  "source_ip": "192.168.1.107",
+  "description": "Test alert to verify JSON parsing after stripping whitespace.",
+  "nist_control": "NIST-800-53 CM-7",
+  "raw_event": {
+    "event_type": "email_click",
+    "user": "bob.smith",
+    "link": "http://another-bad.link/malware",
+    "destination_ip": "9.8.7.6"
+  },
+  "confidence": 0.88,
+  "id": "ALT-TEST-008",
+  "asset": "Laptop-BS-01",
+  "mitre": "T1566"
+}

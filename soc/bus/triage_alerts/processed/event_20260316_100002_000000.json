@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-03-16T10:00:00Z",
+  "rule_id": "TEST_RULE_003",
+  "rule_name": "Another Critical Alert for Processing",
+  "severity": "CRITICAL",
+  "classification": "malicious",
+  "source_ip": "192.168.1.102",
+  "description": "Third test alert for InvestigatorAgent functionality to ensure processing.",
+  "nist_control": "NIST-800-171 3.14.7",
+  "raw_event": {
+    "event_type": "test_event_3",
+    "ip": "192.168.1.102",
+    "mac": "aa:bb:cc:dd:ee:f1"
+  },
+  "confidence": 0.98,
+  "id": "ALT-TEST-003",
+  "asset": "Host-Test-03",
+  "mitre": "T1002"
+}
