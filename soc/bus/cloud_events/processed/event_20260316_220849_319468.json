@@ -1,0 +1,10 @@
+{
+  "timestamp": "2026-03-16T22:08:49.319468+00:00",
+  "cloud_provider": "aws",
+  "service": "IAM",
+  "event_name": "AttachedUserPolicy",
+  "identity": "admin-temp",
+  "raw_payload": {
+    "policy": "AdministratorAccess"
+  }
+}

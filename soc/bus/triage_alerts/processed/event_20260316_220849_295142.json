@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-03-16T22:08:49.295142+00:00",
+  "rule_id": "NET_EXFIL_001",
+  "rule_name": "Potential Data Exfiltration",
+  "severity": "HIGH",
+  "source_ip": "10.0.0.5",
+  "description": "Anomalous outbound traffic volume (2000000 bytes) to 45.33.22.11",
+  "mitre_ttp": "T1041",
+  "raw_event": {
+    "timestamp": "2026-03-16T22:08:49.288536+00:00",
+    "src_ip": "10.0.0.5",
+    "dst_ip": "45.33.22.11",
+    "dst_port": 443,
+    "protocol": "TCP",
+    "bytes": 2000000
+  }
+}

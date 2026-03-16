@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-03-16T22:08:49.279108+00:00",
+  "rule_id": "LOG_NORMALIZED",
+  "rule_name": "Normalized Log from Legacy-Firewall-01",
+  "severity": "INFO",
+  "source_ip": "10.0.0.1",
+  "description": "Normalized entry: User login attempt noted.",
+  "raw_event": {
+    "timestamp": "2026-03-16T22:08:49.271958+00:00",
+    "source": "Legacy-Firewall-01",
+    "raw_data": "USER login successful from 10.0.0.1"
+  },
+  "metadata": {
+    "normalization_format": "access_log",
+    "original_source": "Legacy-Firewall-01"
+  }
+}

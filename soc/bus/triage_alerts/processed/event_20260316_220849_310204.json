@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-03-16T22:08:49.310204+00:00",
+  "rule_id": "AGENT_HEALTH_ISSUE",
+  "rule_name": "Agent Health: SENTINEL-TRIAGE",
+  "severity": "MEDIUM",
+  "source_ip": "Management",
+  "description": "Agent SENTINEL-TRIAGE status: lagging. Metrics: {'latency_ms': 1500}",
+  "raw_event": {
+    "timestamp": "2026-03-16T22:08:49.303631+00:00",
+    "agent_name": "SENTINEL-TRIAGE",
+    "status": "lagging",
+    "metrics": {
+      "latency_ms": 1500
+    }
+  }
+}

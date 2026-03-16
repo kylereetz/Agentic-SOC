@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Agent Health Schema",
+  "type": "object",
+  "properties": {
+    "timestamp": { "type": "string", "format": "date-time" },
+    "agent_name": { "type": "string" },
+    "status": { "type": "string", "enum": ["healthy", "lagging", "hallucinating", "error"] },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "memory_mb": { "type": "number" },
+        "latency_ms": { "type": "number" },
+        "token_usage": { "type": "integer" }
+      }
+    }
+  },
+  "required": ["timestamp", "agent_name", "status"]
+}

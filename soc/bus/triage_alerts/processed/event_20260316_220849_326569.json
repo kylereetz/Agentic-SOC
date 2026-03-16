@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-03-16T22:08:49.326054+00:00",
+  "rule_id": "CLOUD_IAM_ESCALATION",
+  "rule_name": "Cloud IAM Privilege Escalation",
+  "severity": "CRITICAL",
+  "source_ip": "CloudAPI",
+  "description": "Potential privilege escalation in aws: AttachedUserPolicy by admin-temp",
+  "mitre_ttp": "T1548.005",
+  "raw_event": {
+    "timestamp": "2026-03-16T22:08:49.319468+00:00",
+    "cloud_provider": "aws",
+    "service": "IAM",
+    "event_name": "AttachedUserPolicy",
+    "identity": "admin-temp",
+    "raw_payload": {
+      "policy": "AdministratorAccess"
+    }
+  }
+}

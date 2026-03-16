@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Network Telemetry Schema",
+  "type": "object",
+  "properties": {
+    "timestamp": { "type": "string", "format": "date-time" },
+    "src_ip": { "type": "string" },
+    "dst_ip": { "type": "string" },
+    "src_port": { "type": "integer" },
+    "dst_port": { "type": "integer" },
+    "protocol": { "type": "string" },
+    "bytes": { "type": "integer" },
+    "flags": { "type": "string" }
+  },
+  "required": ["timestamp", "src_ip", "dst_ip", "dst_port", "protocol"]
+}

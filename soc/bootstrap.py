@@ -48,6 +48,11 @@ BUS_CHANNELS = [
     "vanguard_events",
     "deception_events",
     "hunting_events",
+    "raw_logs",
+    "network_telemetry",
+    "cloud_events",
+    "agent_metrics",
+    "business_intel",
 ]
 
 

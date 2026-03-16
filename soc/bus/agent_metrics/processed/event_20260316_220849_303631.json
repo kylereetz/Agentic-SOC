@@ -1,0 +1,8 @@
+{
+  "timestamp": "2026-03-16T22:08:49.303631+00:00",
+  "agent_name": "SENTINEL-TRIAGE",
+  "status": "lagging",
+  "metrics": {
+    "latency_ms": 1500
+  }
+}

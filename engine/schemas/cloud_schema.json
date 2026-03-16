@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Cloud Event Schema",
+  "type": "object",
+  "properties": {
+    "timestamp": { "type": "string", "format": "date-time" },
+    "cloud_provider": { "type": "string", "enum": ["aws", "azure", "gcp"] },
+    "region": { "type": "string" },
+    "service": { "type": "string" },
+    "event_name": { "type": "string" },
+    "identity": { "type": "string" },
+    "raw_payload": { "type": "object" }
+  },
+  "required": ["timestamp", "cloud_provider", "service", "event_name", "identity"]
+}
