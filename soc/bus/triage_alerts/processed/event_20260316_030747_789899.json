@@ -1,0 +1,11 @@
+{
+  "timestamp": "2026-03-15T22:00:00Z",
+  "rule_id": "SUSPICIOUS_001",
+  "rule_name": "Unknown Asset on OT VLAN",
+  "severity": "WARNING",
+  "classification": "suspicious",
+  "source_ip": "10.0.0.99",
+  "description": "New unrecognised device appeared on an OT-designated subnet.",
+  "nist_control": "3.1.1",
+  "confidence": 1.0
+}

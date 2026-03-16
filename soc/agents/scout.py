@@ -25,6 +25,8 @@ import schedule
 
 from engine.core.sentinel import SentinelEngine
 from engine.core.industrial import IndustrialScanner
+from soc.bootstrap import get_soc_path
+from soc.bus.event_queue import EventBus
 
 logging.basicConfig(
     level=logging.INFO,
@@ -35,8 +37,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Configuration loader
 # ---------------------------------------------------------------------------
-_CONFIG_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "configs")
-DEFAULT_CONFIG_PATH = os.path.join(_CONFIG_DIR, "scout_config.json")
+DEFAULT_CONFIG_PATH = get_soc_path("configs", "scout_config.json")
 
 
 def _load_config(path: str = DEFAULT_CONFIG_PATH) -> Dict[str, Any]:
@@ -90,7 +91,7 @@ class InventoryDiff:
     def to_events(self) -> List[Dict[str, Any]]:
         """
         Convert the diff into structured events consumable by the
-        Triage agent.
+        Triage agent via the Event Bus.
         """
         events: List[Dict[str, Any]] = []
         ts = datetime.utcnow().isoformat()
@@ -148,10 +149,13 @@ class ScoutAgent:
 
     def __init__(self, config_path: str = DEFAULT_CONFIG_PATH):
         self.cfg = _load_config(config_path)
-        self.snapshot_dir = self.cfg.get("snapshot_dir", "reports/inventory")
-        os.makedirs(self.snapshot_dir, exist_ok=True)
+        # Standard reports path via bootstrap
+        self.snapshot_dir = get_soc_path("reports", "inventory")
+        
+        # Inter-agent communication via Event Bus
+        self.bus = EventBus("discovery_events")
+        
         self.previous_inventory: Dict[str, Dict[str, str]] = {}
-        self.latest_events: List[Dict[str, Any]] = []
 
     # ------------------------------------------------------------------
     # Single scan cycle
@@ -203,20 +207,16 @@ class ScoutAgent:
 
         current_inventory = sentinel.get_inventory()
 
-        # --- Diff ---
+        # --- Diff & Bus Push ---
         diff = InventoryDiff(self.previous_inventory, current_inventory)
         if diff.has_changes:
             logger.info(f"Inventory changes detected — {diff.summary()}")
-            self.latest_events = diff.to_events()
-            # Write events to a file for Triage consumption
-            events_path = os.path.join(
-                self.snapshot_dir, "latest_events.json"
-            )
-            with open(events_path, "w") as fh:
-                json.dump(self.latest_events, fh, indent=2)
+            events = diff.to_events()
+            for event in events:
+                self.bus.push(event)
+            logger.info(f"Pushed {len(events)} events to discovery_events bus.")
         else:
             logger.info("No inventory changes since last cycle.")
-            self.latest_events = []
 
         # --- Persist snapshot ---
         ts = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
@@ -244,7 +244,9 @@ class ScoutAgent:
             ]
         )
         if len(files) > max_keep:
-            for old in files[: len(files) - max_keep]:
+            num_to_delete = len(files) - max_keep
+            for i in range(num_to_delete):
+                old = files[i]
                 os.remove(os.path.join(self.snapshot_dir, old))
                 logger.debug(f"Pruned old snapshot: {old}")
 
@@ -277,8 +279,12 @@ class ScoutAgent:
         self._run_scan_cycle()
 
     def get_latest_events(self) -> List[Dict[str, Any]]:
-        """Return the most recent diff events for Triage consumption."""
-        return self.latest_events
+        """
+        [DEPRECATED] Use the Event Bus instead.
+        Returns empty list as events are now streamed to the bus.
+        """
+        logger.warning("get_latest_events() is deprecated. Use EventBus('discovery_events') instead.")
+        return []
 
 
 if __name__ == "__main__":

@@ -1,0 +1,106 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "rca:engine:asset",
+  "title": "RCA Asset Record",
+  "description": "Canonical schema for a single discovered network asset. Used by Scout (write) and Mapper (read) to ensure a stable data contract across agents.",
+  "type": "object",
+  "required": ["ip_address", "mac_address", "discovery_method"],
+  "additionalProperties": true,
+  "properties": {
+    "ip_address": {
+      "type": "string",
+      "description": "IPv4 or IPv6 address of the discovered asset.",
+      "examples": ["192.168.1.100", "10.0.0.55"]
+    },
+    "mac_address": {
+      "type": "string",
+      "description": "MAC address in colon-separated or dash-separated format. 'Unknown' is acceptable for L3-only discoveries.",
+      "examples": ["aa:bb:cc:dd:ee:ff", "Unknown"]
+    },
+    "discovery_method": {
+      "type": "string",
+      "description": "Which RCA discovery technique found this asset.",
+      "enum": [
+        "passive_sniff",
+        "active_arp",
+        "icmp_sweep",
+        "industrial_probe",
+        "port_scan",
+        "manual"
+      ]
+    },
+    "hostname": {
+      "type": "string",
+      "description": "Resolved hostname, if available.",
+      "examples": ["plc-line-3.local", "workstation-07"]
+    },
+    "open_ports": {
+      "type": "array",
+      "description": "List of open ports discovered by the PortScanner.",
+      "items": {
+        "type": "object",
+        "required": ["port", "protocol", "state"],
+        "properties": {
+          "port": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 65535
+          },
+          "protocol": {
+            "type": "string",
+            "enum": ["tcp", "udp"]
+          },
+          "state": {
+            "type": "string",
+            "examples": ["open", "open|filtered"]
+          },
+          "service": {
+            "type": "string",
+            "examples": ["ssh", "modbus", "http"]
+          },
+          "product": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "is_high_risk": {
+            "type": "boolean",
+            "description": "True if this port is flagged as high-risk by the PortScanner."
+          },
+          "risk_reason": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "ot_protocol": {
+      "type": "string",
+      "description": "Industrial protocol detected by the IndustrialScanner.",
+      "examples": ["modbus", "ethernetip", "profinet"]
+    },
+    "ot_device_info": {
+      "type": "string",
+      "description": "Device identification string returned by the industrial protocol probe.",
+      "examples": ["Allen-Bradley MicroLogix 1400"]
+    },
+    "nist_status": {
+      "type": "object",
+      "description": "Optional per-control compliance status for this asset. Keys are control IDs (e.g. '3.4.1'), values are status strings.",
+      "additionalProperties": {
+        "type": "string",
+        "enum": ["Compliant", "Non-Compliant", "Not-Applicable", "Untested"]
+      }
+    },
+    "first_seen": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC timestamp of first discovery."
+    },
+    "last_seen": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC timestamp of most recent confirmation."
+    }
+  }
+}

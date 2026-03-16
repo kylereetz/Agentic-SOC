@@ -1,0 +1,8 @@
+{
+  "timestamp": "2026-03-15T22:00:00Z",
+  "event_type": "asset_new",
+  "severity": "WARNING",
+  "ip": "10.0.0.99",
+  "mac": "de:ad:be:ef:01:02",
+  "detail": "New OT Device - Modbus detected"
+}

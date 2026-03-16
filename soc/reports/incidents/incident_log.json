@@ -1,0 +1,24 @@
+[
+  {
+    "id": "ACT_20260316_031855_399304",
+    "created_at": "2026-03-16T03:18:55.399304",
+    "target_ip": "10.0.0.150",
+    "trigger_alert": {
+      "timestamp": "2026-03-15T22:00:00Z",
+      "rule_id": "CRITICAL_001",
+      "rule_name": "Modbus Write from Unknown Source",
+      "severity": "CRITICAL",
+      "classification": "malicious",
+      "source_ip": "10.0.0.150",
+      "description": "Modbus write command (FC 5/6/15/16) detected from a non-whitelisted source.",
+      "nist_control": "3.14.6",
+      "confidence": 1.0
+    },
+    "status": "APPROVED",
+    "strategy": "INVESTIGATIVE_LOGGING",
+    "commands": [
+      "# No auto-remediation for rule CRITICAL_001. Increase logging for 10.0.0.150."
+    ],
+    "executed_at": "2026-03-16T03:19:17.995533"
+  }
+]

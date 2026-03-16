@@ -25,16 +25,16 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+from soc.bootstrap import get_soc_path
+from soc.bus.event_queue import EventBus
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - RCA Triage - %(message)s",
 )
 logger = logging.getLogger(__name__)
 
-_CONFIG_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "configs")
-DEFAULT_RULES_PATH = os.path.join(_CONFIG_DIR, "triage_rules.json")
-
-_REPORT_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "reports")
+DEFAULT_RULES_PATH = get_soc_path("configs", "triage_rules.json")
 
 
 # ---------------------------------------------------------------------------
@@ -202,83 +202,89 @@ class TriageEngine:
 
         return best_match
 
-    def classify_events(
-        self, events: List[Dict[str, Any]]
-    ) -> List[TriageAlert]:
-        """
-        Classify a batch of events.
-
-        # Satisfies NIST 800-171 3.3.5 (Correlate and analyse)
-        """
-        alerts: List[TriageAlert] = []
-        for ev in events:
-            alert = self.classify_event(ev)
-            if alert:
-                alerts.append(alert)
-                logger.info(
-                    f"[{alert.severity}] {alert.rule_name} — "
-                    f"{alert.source_ip}: {alert.description}"
-                )
-            else:
-                logger.debug(f"Event unmatched: {ev}")
-        return alerts
-
 
 # ---------------------------------------------------------------------------
-# Triage Agent (file-based I/O for inter-agent communication)
+# Triage Agent (Bus-based I/O)
 # ---------------------------------------------------------------------------
 class TriageAgent:
     """
-    Wraps the TriageEngine with file I/O for consuming Scout events
-    and writing alert logs.
+    Consumes events from the 'discovery_events' Bus channel and
+    pushes classified alerts to the 'triage_alerts' Bus channel.
 
     # Satisfies NIST 800-171 3.6.1 (Incident handling)
     """
 
     def __init__(self, rules_path: str = DEFAULT_RULES_PATH):
         self.engine = TriageEngine(rules_path)
-        os.makedirs(_REPORT_DIR, exist_ok=True)
+        self.in_bus = EventBus("discovery_events")
+        self.out_bus = EventBus("triage_alerts")
+        self.report_path = get_soc_path("reports", "triage", "triage_alerts.json")
 
-    def process_event_file(
-        self, events_path: str
-    ) -> List[TriageAlert]:
-        """Read events JSON from Scout and classify them."""
-        try:
-            with open(events_path, "r") as fh:
-                events = json.load(fh)
-        except FileNotFoundError:
-            logger.warning(f"No events file at {events_path}")
-            return []
-        except Exception as exc:
-            logger.error(f"Failed to read events: {exc}")
-            return []
+    def run_cycle(self) -> int:
+        """
+        Process all pending events on the bus.
+        Returns the number of alerts generated.
+        """
+        processed_count = 0
+        all_alerts: List[TriageAlert] = []
 
-        alerts = self.engine.classify_events(events)
-        self._write_alerts(alerts)
-        return alerts
+        while True:
+            event = self.in_bus.pop()
+            if not event:
+                break
+            
+            alert = self.engine.classify_event(event)
+            if alert:
+                all_alerts.append(alert)
+                # Push to outbound bus for Responder consumption
+                self.out_bus.push(self._serialise_alert(alert))
+                logger.info(
+                    f"[{alert.severity}] {alert.rule_name} — "
+                    f"{alert.source_ip}: {alert.description}"
+                )
+            
+            processed_count += 1
 
-    def _write_alerts(self, alerts: List[TriageAlert]) -> None:
-        """Persist alerts to JSON for Patch Pilot consumption."""
-        if not alerts:
-            return
-        output = os.path.join(_REPORT_DIR, "triage_alerts.json")
-        serialisable = [
-            {
-                "timestamp": a.timestamp,
-                "rule_id": a.rule_id,
-                "rule_name": a.rule_name,
-                "severity": a.severity,
-                "classification": a.classification,
-                "source_ip": a.source_ip,
-                "description": a.description,
-                "nist_control": a.nist_control,
-                "confidence": a.confidence,
-            }
-            for a in alerts
-        ]
-        with open(output, "w") as fh:
-            json.dump(serialisable, fh, indent=2)
-        logger.info(f"Triage alerts written → {output}")
+        if all_alerts:
+            self._update_persistent_log(all_alerts)
+        
+        return len(all_alerts)
+
+    def _serialise_alert(self, a: TriageAlert) -> Dict[str, Any]:
+        return {
+            "timestamp": a.timestamp,
+            "rule_id": a.rule_id,
+            "rule_name": a.rule_name,
+            "severity": a.severity,
+            "classification": a.classification,
+            "source_ip": a.source_ip,
+            "description": a.description,
+            "nist_control": a.nist_control,
+            "confidence": a.confidence,
+        }
+
+    def _update_persistent_log(self, new_alerts: List[TriageAlert]) -> None:
+        """Maintain a cumulative JSON log of alerts in soc/reports/triage/."""
+        existing = []
+        if os.path.exists(self.report_path):
+            try:
+                with open(self.report_path, "r") as fh:
+                    existing = json.load(fh)
+            except Exception:
+                existing = []
+
+        serialised_new = [self._serialise_alert(a) for a in new_alerts]
+        existing.extend(serialised_new)
+        
+        # Keep only last 1000 alerts
+        if len(existing) > 1000:
+            # Rebuild list from tail to avoid slice type errors
+            keep_start = len(existing) - 1000
+            existing = [existing[i] for i in range(keep_start, len(existing))]
+
+        with open(self.report_path, "w") as fh:
+            json.dump(existing, fh, indent=2)
+        logger.debug(f"Updated triage log at {self.report_path}")
 
     def summary(self, alerts: List[TriageAlert]) -> Dict[str, int]:
         """Quick count by severity."""

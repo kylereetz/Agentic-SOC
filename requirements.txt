@@ -4,3 +4,4 @@ paramiko
 python-nmap
 schedule
 reportlab
+jsonschema
