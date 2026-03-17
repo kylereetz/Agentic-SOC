@@ -1,7 +1,5 @@
 # Master Service Agreement (MSA) — Reetz Cyber Automation (RCA)
 
-**DRAFT FOR REVIEW — NOT A LEGAL DOCUMENT UNTIL SIGNED**
-
 This Master Service Agreement ("Agreement") is between **Reetz Cyber Automation LLC** ("Company") and the **Client** identified in the applicable Statement of Work (SOW).
 
 ## 1. Services

@@ -43,6 +43,8 @@ import google.generativeai as genai
 
 from soc.bootstrap import get_soc_path
 from soc.bus.event_queue import EventBus
+from soc.agents.librarian import LibrarianAgent
+from soc.utils.telemetry import track_token_usage
 
 @dataclass
 class CaseMemory:
@@ -523,6 +525,17 @@ class InvestigatorAgent:
             try:
                 response = chat.send_message(current_message)
                 raw = response.text.strip()
+                
+                # [IQ] Billing & Telemetry
+                usage = getattr(response, "usage_metadata", None)
+                if usage:
+                    track_token_usage(
+                        self.agent_name,
+                        self.cfg["gemini_model"],
+                        usage.prompt_token_count,
+                        usage.candidates_token_count,
+                        case_id=investigation_id
+                    )
             except Exception as exc:
                 logger.error(f"LLM call failed on step {step_num}: {exc}")
                 error_step = self._make_step(

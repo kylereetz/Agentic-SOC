@@ -1,33 +1,161 @@
 """
 RCA SOC API: FastAPI Interface for SOC Monitoring & Control.
 Exposes status, inventory, alerts, and the human approval gate.
+Now secured with JWT Authentication & RBAC.
 """
 
 import json
+import logging
 import os
+from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from jose import JWTError, jwt
+from passlib.context import CryptContext
 from pydantic import BaseModel
 
 from soc.bootstrap import get_soc_path
 from soc.bus.event_queue import EventBus
 from soc.agents.responder import ResponderAgent
+from soc.agents.topology_mapper import TopologyMapper
 
-app = FastAPI(title="RCA SOC API", version="0.1.0")
+# ── CONFIG ──────────────────────────────────────────────────────────────────
+SECRET_KEY = "SOC_REALLY_SECRET_KEY_MVP" # In production, use environment variable
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 480 # 8 hours
 
-# Paths
-INVENTORY_DIR = get_soc_path("reports", "inventory")
-TRIAGE_LOG = get_soc_path("reports", "triage", "triage_alerts.json")
-PENDING_ACTIONS = get_soc_path("reports", "incidents", "pending_actions.json")
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-# Data Models
+app = FastAPI(title="RCA SOC API", version="0.1.2")
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - RCA SOC API - %(message)s",
+)
+logger = logging.getLogger(__name__)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173", 
+        "http://127.0.0.1:5173",
+        "http://[::1]:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
+        "http://[::1]:5174"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Global agent instances for API access
+topology_mapper = TopologyMapper()
+
+# ── MOCK USER DATABASE (MVP Start) ──────────────────────────────────────────
+USERS_DB = {
+    "admin": {
+        "username": "admin",
+        "hashed_password": pwd_context.hash("admin123"),
+        "role": "admin",
+    },
+    "analyst": {
+        "username": "analyst",
+        "hashed_password": pwd_context.hash("analyst123"),
+        "role": "analyst",
+    },
+    "auditor": {
+        "username": "auditor",
+        "hashed_password": pwd_context.hash("auditor123"),
+        "role": "auditor",
+    },
+}
+
+# ── DATA MODELS ──────────────────────────────────────────────────────────────
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+    username: str
+    role: str
+
+class User(BaseModel):
+    username: str
+    role: str
+
 class StatusResponse(BaseModel):
     scout_status: str
     bus_sizes: Dict[str, int]
 
+# ── AUTH UTILS ──────────────────────────────────────────────────────────────
+def create_access_token(data: dict):
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+    
+    user_dict = USERS_DB.get(username)
+    if user_dict is None:
+        raise credentials_exception
+    return User(username=user_dict["username"], role=user_dict["role"])
+
+def check_role(allowed_roles: List[str]):
+    async def role_checker(user: User = Depends(get_current_user)):
+        if user.role not in allowed_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Insufficient permissions"
+            )
+        return user
+    return role_checker
+
+# ── PATHS ───────────────────────────────────────────────────────────────────
+INVENTORY_DIR = get_soc_path("reports", "inventory")
+TRIAGE_LOG = get_soc_path("reports", "triage", "triage_alerts.json")
+PENDING_ACTIONS = get_soc_path("reports", "incidents", "pending_actions.json")
+
+# ── ENDPOINTS ───────────────────────────────────────────────────────────────
+
+@app.post("/token", response_model=Token)
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+    logger.info(f"Login attempt for user: {form_data.username}")
+    user_dict = USERS_DB.get(form_data.username)
+    if not user_dict or not pwd_context.verify(form_data.password, user_dict["hashed_password"]):
+        logger.warning(f"Failed login attempt for user: {form_data.username}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    logger.info(f"Successful login for user: {form_data.username}")
+    access_token = create_access_token(data={"sub": user_dict["username"], "role": user_dict["role"]})
+    return {
+        "access_token": access_token, 
+        "token_type": "bearer",
+        "username": user_dict["username"],
+        "role": user_dict["role"]
+    }
+
 @app.get("/status", response_model=StatusResponse)
-async def get_status():
+async def get_status(user: User = Depends(get_current_user)):
     """Return health and queue sizes of the SOC components."""
     bus_channels = ["discovery_events", "triage_alerts", "patch_manifests"]
     sizes = {}
@@ -36,13 +164,17 @@ async def get_status():
         sizes[channel] = bus.size()
     
     return {
-        "scout_status": "operational", # Placeholder for real heartbeat check
+        "scout_status": "operational",
         "bus_sizes": sizes
     }
 
 @app.get("/inventory")
-async def get_inventory():
+async def get_inventory(user: User = Depends(get_current_user)):
     """Retrieve the latest asset inventory snapshot."""
+    if not os.path.exists(INVENTORY_DIR):
+        os.makedirs(INVENTORY_DIR, exist_ok=True)
+        return {}
+        
     files = sorted([
         f for f in os.listdir(INVENTORY_DIR)
         if f.startswith("inventory_") and f.endswith(".json")
@@ -59,7 +191,7 @@ async def get_inventory():
         raise HTTPException(status_code=500, detail=f"Error reading inventory: {exc}")
 
 @app.get("/alerts")
-async def get_alerts():
+async def get_alerts(user: User = Depends(get_current_user)):
     """Retrieve the cumulative triage alerts log."""
     if not os.path.exists(TRIAGE_LOG):
         return []
@@ -70,7 +202,7 @@ async def get_alerts():
         raise HTTPException(status_code=500, detail=f"Error reading alerts: {exc}")
 
 @app.get("/pending")
-async def get_pending_actions():
+async def get_pending_actions(user: User = Depends(check_role(["admin", "analyst"]))):
     """Retrieve drafted containment actions awaiting approval."""
     if not os.path.exists(PENDING_ACTIONS):
         return []
@@ -81,7 +213,7 @@ async def get_pending_actions():
         raise HTTPException(status_code=500, detail=f"Error reading pending actions: {exc}")
 
 @app.get("/cases")
-async def get_cases():
+async def get_cases(user: User = Depends(get_current_user)):
     """Retrieve all active investigation cases."""
     cases_dir = get_soc_path("reports", "incidents", "cases")
     if not os.path.exists(cases_dir):
@@ -97,26 +229,9 @@ async def get_cases():
                 continue
     return sorted(cases, key=lambda x: x.get("created_at", ""), reverse=True)
 
-@app.get("/forensics/{case_id}")
-async def get_forensics(case_id: str):
-    """Retrieve forensic artifacts for a specific case."""
-    forensics_dir = get_soc_path("reports", "forensics", case_id)
-    if not os.path.exists(forensics_dir):
-        return []
-    
-    artifacts = []
-    for filename in os.listdir(forensics_dir):
-        if filename.endswith(".json"):
-            try:
-                with open(os.path.join(forensics_dir, filename), "r") as fh:
-                    artifacts.append(json.load(fh))
-            except Exception:
-                continue
-    return artifacts
-
 @app.post("/approve/{action_id}")
-async def approve_action(action_id: str):
-    """Approve and execute a containment action (Human Approval Gate)."""
+async def approve_action(action_id: str, user: User = Depends(check_role(["admin"]))):
+    """Approve and execute a containment action (Human Approval Gate). Admin only."""
     responder = ResponderAgent()
     success = responder.approve_action(action_id)
     if not success:
@@ -124,6 +239,15 @@ async def approve_action(action_id: str):
     
     return {"status": "success", "message": f"Action {action_id} approved."}
 
+@app.get("/api/v1/topology", response_model=Dict[str, Any])
+async def get_topology(current_user: User = Depends(get_current_user)):
+    """[IQ] Retrieve the latest asset relationship graph."""
+    return topology_mapper.get_topology()
+
+@app.get("/api/v1/health")
+async def health_check():
+    return {"status": "healthy", "version": "0.1.2"}
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)

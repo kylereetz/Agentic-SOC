@@ -1,0 +1,6 @@
+{
+  "case_id": "INC-TEST-002",
+  "status": "CLOSED",
+  "summary": "External C2 connection blocked by TRAFFIC-SIEVE.",
+  "severity": "WARNING"
+}

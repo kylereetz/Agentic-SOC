@@ -6,6 +6,7 @@ import {
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid
 } from 'recharts';
+import { useAuth } from '../store/AuthContext';
 import { useSOC } from '../store/SOCContext';
 
 // ── Mock Data ─────────────────────────────────────────────────────────────────
@@ -200,6 +201,7 @@ function WSConsole({ lines }) {
 
 // ── Main Component ─────────────────────────────────────────────────────────────
 export default function HiveHealth() {
+  const { user } = useAuth();
   const { autonomy, setAutonomy } = useSOC();
   const [agents, setAgents] = useState(AGENT_ROSTER);
   const [telemetry, setTelemetry] = useState(makeTelemetryPoints());
@@ -207,6 +209,8 @@ export default function HiveHealth() {
   const [killed, setKilled] = useState(false);
   const [filter, setFilter] = useState('All');
   const msgIdx = useRef(8);
+
+  const isAdmin = user?.role === 'admin';
 
   // Tick: update latencies + append WS messages
   useEffect(() => {
@@ -239,7 +243,10 @@ export default function HiveHealth() {
   const avgLatency   = Math.round(agents.filter(a => a.latency > 0).reduce((s, a) => s + a.latency, 0) / agents.filter(a => a.latency > 0).length);
   const totalTokens  = Math.round(telemetry.reduce((s, p) => s + p.tokens, 0) / telemetry.length);
 
-  const handleKill = useCallback(() => setKilled(v => !v), []);
+  const handleKill = useCallback(() => {
+    if (!isAdmin) return;
+    setKilled(v => !v);
+  }, [isAdmin]);
 
   return (
     <div className="flex flex-col h-full" style={{ background: '#0B1117' }}>
@@ -260,14 +267,17 @@ export default function HiveHealth() {
         {/* Kill Switch */}
         <button
           onClick={handleKill}
-          className={`flex items-center gap-2 text-xs terminal px-4 py-2 rounded-lg font-bold transition-all action-btn ${!killed ? 'kill-switch-pulse' : ''}`}
+          disabled={!isAdmin}
+          className={`flex items-center gap-2 text-xs terminal px-4 py-2 rounded-lg font-bold transition-all ${
+            !isAdmin ? 'opacity-50 cursor-not-allowed' : 'action-btn ' + (!killed ? 'kill-switch-pulse' : '')
+          }`}
           style={{
             background: killed ? '#1F2937' : '#EF444422',
             color: killed ? '#6B7280' : '#EF4444',
             border: `1px solid ${killed ? '#374151' : '#EF444466'}`,
           }}>
-          <Power size={13} />
-          {killed ? 'RESPONDER: PAUSED' : '⚡ GLOBAL KILL SWITCH'}
+          {isAdmin ? <Power size={13} /> : <Shield size={13} style={{ color: '#D84C7F' }} />}
+          {killed ? 'RESPONDER: PAUSED' : isAdmin ? '⚡ GLOBAL KILL SWITCH' : 'KILL SWITCH (LOCKED)'}
         </button>
       </div>
 
@@ -342,12 +352,13 @@ export default function HiveHealth() {
                 <span className="text-xs terminal" style={{ color: '#6B7280' }}>SYSTEM AUTONOMY LEVEL</span>
               </div>
               <span className="text-sm font-bold terminal" style={{ color: '#D84C7F' }}>
-                {autonomy?.level ?? 75}%
+                {autonomy?.level ?? 75}% {!isAdmin && ' (LOCKED)'}
               </span>
             </div>
             <input type="range" min={0} max={100} value={autonomy?.level ?? 75}
-              onChange={e => setAutonomy && setAutonomy(v => ({ ...v, level: +e.target.value }))}
-              className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
+              disabled={!isAdmin}
+              onChange={e => isAdmin && setAutonomy && setAutonomy(v => ({ ...v, level: +e.target.value }))}
+              className={`w-full h-1.5 rounded-full appearance-none ${isAdmin ? 'cursor-pointer' : 'cursor-not-allowed'}`}
               style={{ accentColor: '#D84C7F', background: `linear-gradient(to right, #D84C7F ${autonomy?.level ?? 75}%, #1F2937 ${autonomy?.level ?? 75}%)` }}
             />
             <div className="flex justify-between text-xs terminal mt-1.5" style={{ color: '#374151' }}>

@@ -4,7 +4,9 @@ import ReactFlow, {
   useNodesState, useEdgesState, addEdge, MarkerType,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { ChevronDown, ChevronRight, Clock, Check, X, ShieldAlert, GitBranch, User } from 'lucide-react';
+import { ChevronDown, ChevronRight, Clock, Check, X, ShieldAlert, GitBranch, User, Lock } from 'lucide-react';
+import { useAuth } from '../store/AuthContext';
+import { useSOC } from '../store/SOCContext';
 
 // ── Mock Data ─────────────────────────────────────────────────────────────────
 const INITIAL_NODES = [
@@ -143,7 +145,7 @@ function CoTStep({ step, expanded, onToggle }) {
   );
 }
 
-function HitlCard({ item, onApprove, onReject }) {
+function HitlCard({ item, onApprove, onReject, isAdmin }) {
   const sevColor = item.severity === 'CRITICAL' ? '#EF4444' : item.severity === 'HIGH' ? '#E5A862' : '#3B6FE3';
   return (
     <div className="rounded-lg p-3 animate-slide-in-up"
@@ -162,15 +164,21 @@ function HitlCard({ item, onApprove, onReject }) {
       <p className="text-xs terminal mb-1" style={{ color: '#93C5FD' }}>Asset: {item.asset}</p>
       <p className="text-xs italic mb-3" style={{ color: '#6B7280' }}>⚠ {item.risk}</p>
       <div className="flex gap-2">
-        <button onClick={() => onApprove(item)}
-          className="flex-1 flex items-center justify-center gap-1 text-xs terminal py-1.5 rounded hover:brightness-125 transition-all"
-          style={{ background: '#88C05720', color: '#88C057', border: '1px solid #88C05733' }}>
-          <Check size={11} /> Approve
+        <button 
+          onClick={() => isAdmin && onApprove(item)}
+          disabled={!isAdmin}
+          className={`flex-1 flex items-center justify-center gap-1 text-xs terminal py-1.5 rounded transition-all ${
+            !isAdmin ? 'opacity-50 cursor-not-allowed bg-white/5' : 'hover:brightness-125 bg-[#88C05720] border border-[#88C05733] text-[#88C057]'
+          }`}>
+          {isAdmin ? <Check size={11} /> : <Lock size={11} />} {isAdmin ? 'Approve' : 'Locked'}
         </button>
-        <button onClick={() => onReject(item)}
-          className="flex-1 flex items-center justify-center gap-1 text-xs terminal py-1.5 rounded hover:brightness-125 transition-all"
-          style={{ background: '#EF444420', color: '#EF4444', border: '1px solid #EF444433' }}>
-          <X size={11} /> Reject
+        <button 
+          onClick={() => isAdmin && onReject(item)}
+          disabled={!isAdmin}
+          className={`flex-1 flex items-center justify-center gap-1 text-xs terminal py-1.5 rounded transition-all ${
+            !isAdmin ? 'opacity-50 cursor-not-allowed bg-white/5' : 'hover:brightness-125 bg-[#EF444420] border border-[#EF444433] text-[#EF4444]'
+          }`}>
+          {isAdmin ? <X size={11} /> : null} {isAdmin ? 'Reject' : 'View Only'}
         </button>
       </div>
     </div>
@@ -179,15 +187,23 @@ function HitlCard({ item, onApprove, onReject }) {
 
 // ── Main Component ─────────────────────────────────────────────────────────────
 export default function InvestigationCanvas() {
-  const [nodes, onNodesChange] = useNodesState(INITIAL_NODES);
-  const [edges, onEdgesChange] = useEdgesState(INITIAL_EDGES);
-  const [expandedSteps, setExpandedSteps] = useState({ 'step-5': true });
-  const [hitlItems, setHitlItems] = useState(HITL_QUEUE);
-  const [activeTab, setActiveTab] = useState('graph'); // 'graph' | 'cot' | 'hitl'
+  const { user } = useAuth();
+  const { pendingActions, approveAction, rejectAction } = useSOC();
+  const isAdmin = user?.role === 'admin';
+
+  const [activeTab, setActiveTab] = useState('graph');
+  const [expandedSteps, setExpandedSteps] = useState({});
+  const [nodes, setNodes, onNodesChange] = useNodesState(INITIAL_NODES);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(INITIAL_EDGES);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setMounted(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   const toggleStep = (id) => setExpandedSteps(p => ({ ...p, [id]: !p[id] }));
-  const handleApprove = (item) => setHitlItems(p => p.filter(i => i.id !== item.id));
-  const handleReject = (item) => setHitlItems(p => p.filter(i => i.id !== item.id));
+  const handleApprove = (item) => approveAction(item.id);
+  const handleReject = (item) => rejectAction(item.id);
 
   return (
     <div className="flex flex-col h-full" style={{ background: '#0B1117' }}>
@@ -196,7 +212,7 @@ export default function InvestigationCanvas() {
         {[
           { id: 'graph', label: '⬡ Attack Chain', icon: GitBranch },
           { id: 'cot',   label: '🧠 CoT Explorer', icon: null },
-          { id: 'hitl',  label: `⚠ HITL Queue (${hitlItems.length})`, icon: null },
+          { id: 'hitl',  label: `⚠ HITL Queue (${pendingActions.length})`, icon: null },
         ].map(tab => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id)}
             className="text-xs terminal px-4 py-3 transition-all"
@@ -220,25 +236,19 @@ export default function InvestigationCanvas() {
       <div className="flex-1 min-h-0">
         {activeTab === 'graph' && (
           <div style={{ height: '100%', width: '100%' }}>
-            <ReactFlow
-              nodes={nodes} edges={edges}
-              onNodesChange={onNodesChange} onEdgesChange={onEdgesChange}
-              fitView proOptions={{ hideAttribution: true }}>
-              <Background color="#1F2937" gap={20} />
-              <Controls style={{ background: '#111827', border: '1px solid #1F2937', borderRadius: 8 }} />
-              <MiniMap
-                style={{ background: '#0d1117', border: '1px solid #1F2937' }}
-                nodeColor={n => {
-                  if (n.style?.border?.includes('D84C7F')) return '#D84C7F';
-                  if (n.style?.border?.includes('E5A862')) return '#E5A862';
-                  if (n.style?.border?.includes('EF4444')) return '#EF4444';
-                  if (n.style?.border?.includes('A78BFA')) return '#A78BFA';
-                  if (n.style?.border?.includes('3B6FE3')) return '#3B6FE3';
-                  if (n.style?.border?.includes('88C057')) return '#88C057';
-                  return '#4B5563';
-                }}
-              />
-            </ReactFlow>
+            {mounted ? (
+              <ReactFlow
+                nodes={nodes} edges={edges}
+                onNodesChange={onNodesChange} onEdgesChange={onEdgesChange}
+                proOptions={{ hideAttribution: true }}>
+                <Background color="#1F2937" gap={20} />
+                <Controls style={{ background: '#111827', border: '1px solid #1F2937', borderRadius: 8 }} />
+              </ReactFlow>
+            ) : (
+              <div className="h-full flex items-center justify-center">
+                 <div className="w-8 h-8 border-2 border-[#D84C7F] border-t-transparent rounded-full animate-spin" />
+              </div>
+            )}
           </div>
         )}
 
@@ -263,18 +273,18 @@ export default function InvestigationCanvas() {
             <div className="px-4 pt-3 pb-2 border-b flex-shrink-0" style={{ borderColor: '#1F2937' }}>
               <p className="text-xs terminal" style={{ color: '#6B7280' }}>
                 Actions requiring manual approval before execution.{' '}
-                <span style={{ color: '#E5A862' }}>{hitlItems.length} pending</span>
+                <span style={{ color: '#E5A862' }}>{pendingActions.length} pending</span>
               </p>
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
-              {hitlItems.length === 0 ? (
+              {pendingActions.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full gap-2">
                   <Check size={32} style={{ color: '#88C057' }} />
                   <p className="terminal text-xs" style={{ color: '#4B5563' }}>All actions reviewed</p>
                 </div>
               ) : (
-                hitlItems.map(item => (
-                  <HitlCard key={item.id} item={item} onApprove={handleApprove} onReject={handleReject} />
+                pendingActions.map(item => (
+                  <HitlCard key={item.id} item={item} onApprove={handleApprove} onReject={handleReject} isAdmin={isAdmin} />
                 ))
               )}
             </div>

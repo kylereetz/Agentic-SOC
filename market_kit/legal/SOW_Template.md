@@ -15,8 +15,9 @@ The following services and assets will be deployed:
 
 ### 1.2 SOC Agent Deployment (Optional)
 - **Scout Agent**: Continuous asset inventory monitoring (30-day term).
-- **Triage Agent**: Cloud/Local threat classification and alert generation.
-- **Responder Agent**: Incident response drafting (requires human approval gate).
+- **Librarian Agent**: Institutional memory and cross-case RAG context.
+- **Topology Mapper**: Real-time asset relationship visualization.
+- **Narrator Agent**: Automated executive and compliance reporting.
 
 ## 2. Technical Prerequisites
 Client agrees to provide the following within five (5) business days of Start Date:

@@ -1,0 +1,9 @@
+{
+  "timestamp": "2026-03-17T04:52:12.459417+00:00",
+  "agent": "Investigator",
+  "model": "gemini-1.5-pro",
+  "prompt_tokens": 100,
+  "completion_tokens": 50,
+  "total_tokens": 150,
+  "case_id": "INC-TEST-001"
+}

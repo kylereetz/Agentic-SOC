@@ -1,0 +1,6 @@
+{
+  "case_id": "INC-TEST-001",
+  "status": "CLOSED",
+  "summary": "Verified lateral movement via SMB. Isolated host 192.168.1.50.",
+  "severity": "CRITICAL"
+}

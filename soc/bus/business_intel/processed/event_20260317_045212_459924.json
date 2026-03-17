@@ -1,0 +1,8 @@
+{
+  "timestamp": "2026-03-17T04:52:12.459924+00:00",
+  "incident_id": "INC-TEST-002",
+  "loss_estimate": 1500.0,
+  "criticality": "WARNING",
+  "summary": "Potential data exfiltration stopped.",
+  "type": "fiscal_impact"
+}

@@ -1,32 +1,67 @@
-import React, { useState } from 'react';
-import ReactFlow, { Background, Controls, MiniMap } from 'reactflow';
+import React, { useState, useEffect, useCallback } from 'react';
+import ReactFlow, { Background, Controls, MiniMap, useNodesState, useEdgesState, addEdge } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { Filter, Maximize2, Layers } from 'lucide-react';
-
-const MOCK_NODES = [
-  { id: '1', position: { x: 180, y: 120 }, data: { label: '192.168.1.105' }, type: 'default',
-    style: { background: 'rgba(59,111,227,0.15)', border: '1px solid #3B6FE3', color: '#93C5FD', fontSize: 11, borderRadius: 6, padding: '4px 8px' } },
-  { id: '2', position: { x: 380, y: 60 }, data: { label: 'svchost.exe' },
-    style: { background: 'rgba(216,76,127,0.15)', border: '1px solid #D84C7F', color: '#F9A8D4', fontSize: 11, borderRadius: 6, padding: '4px 8px' } },
-  { id: '3', position: { x: 380, y: 200 }, data: { label: 'Host-DX9' },
-    style: { background: 'rgba(239,68,68,0.15)', border: '1px solid #EF4444', color: '#FCA5A5', fontSize: 11, borderRadius: 6, padding: '4px 8px' } },
-  { id: '4', position: { x: 120, y: 260 }, data: { label: 'KR\\admin' },
-    style: { background: 'rgba(229,168,98,0.15)', border: '1px solid #E5A862', color: '#FCD34D', fontSize: 11, borderRadius: 6, padding: '4px 8px' } },
-  { id: '5', position: { x: 550, y: 140 }, data: { label: 'Domain Controller' },
-    style: { background: 'rgba(239,68,68,0.2)', border: '1px solid #EF4444', color: '#FCA5A5', fontSize: 11, borderRadius: 6, padding: '4px 8px', boxShadow: '0 0 10px rgba(239,68,68,0.4)' } },
-];
-
-const MOCK_EDGES = [
-  { id: 'e1-2', source: '1', target: '2', animated: true, style: { stroke: '#3B6FE3', strokeWidth: 1.5 } },
-  { id: 'e1-3', source: '1', target: '3', style: { stroke: '#EF4444', strokeWidth: 1.5 } },
-  { id: 'e4-1', source: '4', target: '1', style: { stroke: '#E5A862', strokeWidth: 1 } },
-  { id: 'e3-5', source: '3', target: '5', animated: true, style: { stroke: '#EF4444', strokeWidth: 2 } },
-];
+import { Filter, Maximize2, Layers, RefreshCw } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const FILTERS = ['Host', 'Process', 'User', 'Service'];
 
 export default function EntityGraph() {
-  const [activeFilters, setActiveFilters] = useState(['Host', 'Process', 'User']);
+  const { authenticatedFetch } = useAuth();
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeFilters, setActiveFilters] = useState(['Host', 'Process', 'User', 'Service']);
+
+  const fetchTopology = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const resp = await authenticatedFetch('/api/v1/topology');
+      if (resp.ok) {
+        const data = await resp.json();
+        
+        // Map backend nodes to ReactFlow format
+        const rfNodes = data.nodes.map((n, idx) => ({
+          id: n.id,
+          data: { label: n.label },
+          position: { x: 100 + (idx * 200) % 600, y: 100 + Math.floor(idx / 3) * 150 },
+          style: {
+            background: n.type === 'Host' ? 'rgba(59,111,227,0.15)' : 
+                       n.type === 'User' ? 'rgba(229,168,98,0.15)' : 
+                       'rgba(216,76,127,0.15)',
+            border: `1px solid ${n.type === 'Host' ? '#3B6FE3' : n.type === 'User' ? '#E5A862' : '#D84C7F'}`,
+            color: n.type === 'Host' ? '#93C5FD' : n.type === 'User' ? '#FCD34D' : '#F9A8D4',
+            fontSize: 11,
+            borderRadius: 6,
+            padding: '4px 8px'
+          }
+        }));
+
+        const rfEdges = data.edges.map(e => ({
+          id: e.id,
+          source: e.source,
+          target: e.target,
+          label: e.type,
+          animated: e.type.includes('COMMUNICATED'),
+          style: { stroke: '#4B5563', strokeWidth: 1.5 },
+          labelStyle: { fill: '#6B7280', fontSize: 10, fontWeight: 700 }
+        }));
+
+        setNodes(rfNodes);
+        setEdges(rfEdges);
+      }
+    } catch (err) {
+      console.error("Topology fetch failed:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [authenticatedFetch, setNodes, setEdges]);
+
+  useEffect(() => {
+    fetchTopology();
+    const interval = setInterval(fetchTopology, 30000); // Poll every 30s
+    return () => clearInterval(interval);
+  }, [fetchTopology]);
 
   const toggleFilter = (f) => setActiveFilters(prev =>
     prev.includes(f) ? prev.filter(x => x !== f) : [...prev, f]
@@ -40,18 +75,21 @@ export default function EntityGraph() {
       <div className="flex items-center justify-between px-3 py-2 border-b flex-shrink-0"
         style={{ borderColor: '#1F2937' }}>
         <div>
-          <p className="text-xs font-bold tracking-widest" style={{ color: '#88C057' }}>INVESTIGATION GRAPH</p>
-          <p className="text-xs terminal" style={{ color: '#4B5563' }}>INC-2023-981</p>
+          <p className="text-xs font-bold tracking-widest text-emerald-500">RELATIONSHIP TOPOLOGY</p>
+          <p className="text-[10px] terminal text-gray-500 uppercase">Live Institutional Memory</p>
         </div>
         <div className="flex items-center gap-2">
+          <button 
+            onClick={fetchTopology}
+            className={`p-1.5 rounded hover:bg-white/5 transition-colors ${isLoading ? 'animate-spin text-emerald-500' : 'text-gray-500'}`}
+          >
+            <RefreshCw size={13} />
+          </button>
           <button className="p-1.5 rounded hover:bg-white/5 transition-colors" title="Filters">
             <Filter size={13} style={{ color: '#6B7280' }} />
           </button>
           <button className="p-1.5 rounded hover:bg-white/5 transition-colors" title="Fullscreen">
             <Maximize2 size={13} style={{ color: '#6B7280' }} />
-          </button>
-          <button className="p-1.5 rounded hover:bg-white/5 transition-colors" title="Layers">
-            <Layers size={13} style={{ color: '#6B7280' }} />
           </button>
         </div>
       </div>
@@ -59,8 +97,10 @@ export default function EntityGraph() {
       {/* React Flow Canvas */}
       <div className="flex-1 relative">
         <ReactFlow
-          nodes={MOCK_NODES}
-          edges={MOCK_EDGES}
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
           fitView
           proOptions={{ hideAttribution: true }}
         >
@@ -70,12 +110,23 @@ export default function EntityGraph() {
           />
           <MiniMap
             style={{ background: '#0d1117', border: '1px solid #1F2937' }}
-            nodeColor={(n) => n.style?.border?.includes('3B6FE3') ? '#3B6FE3'
-              : n.style?.border?.includes('D84C7F') ? '#D84C7F'
-              : n.style?.border?.includes('E5A862') ? '#E5A862' : '#EF4444'}
+            nodeColor={(n) => {
+              if (n.style?.border?.includes('3B6FE3')) return '#3B6FE3';
+              if (n.style?.border?.includes('E5A862')) return '#E5A862';
+              return '#D84C7F';
+            }}
             maskColor="rgba(11,17,23,0.5)"
           />
         </ReactFlow>
+        
+        {isLoading && nodes.length === 0 && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm z-10">
+            <div className="flex flex-col items-center gap-3">
+              <RefreshCw className="animate-spin text-emerald-500" size={24} />
+              <p className="text-xs terminal text-emerald-500">Mapping Neural Links...</p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Filter Bar */}

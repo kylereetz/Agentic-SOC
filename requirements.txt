@@ -6,3 +6,5 @@ schedule
 reportlab
 jsonschema
 google-generativeai
+python-jose[cryptography]
+passlib[bcrypt]

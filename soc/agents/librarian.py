@@ -32,6 +32,8 @@ logger = logging.getLogger(__name__)
 
 LIBRARIAN_INDEX_PATH = get_soc_path("reports", "librarian_index.json")
 
+import google.generativeai as genai
+
 class LibrarianAgent:
     """
     RAG service for the SOC. Maintains a semantic index of all historical cases.
@@ -45,6 +47,14 @@ class LibrarianAgent:
         self.index: Dict[str, Dict[str, Any]] = {} # case_id -> {embedding, summary}
         self.index_lock = asyncio.Lock()
         self.is_running = False
+        
+        # [IQ] Configure Gemini for Embeddings
+        api_key = os.environ.get("GEMINI_API_KEY")
+        if api_key:
+            genai.configure(api_key=api_key)
+        else:
+            logger.warning("[IQ] No GEMINI_API_KEY found. Librarian will fall back to mock embeddings.")
+            
         self._load_index()
 
     def _load_index(self):
@@ -79,15 +89,22 @@ class LibrarianAgent:
             case_data = await asyncio.to_thread(self.case_bus.pop)
             if case_data:
                 case_id = case_data.get("case_id")
-                content = f"{case_data.get('summary')} {case_data.get('hypothesis')}"
+                # Build rich context for indexing
+                content = (
+                    f"Summary: {case_data.get('summary')} "
+                    f"Mitre: {case_data.get('mitre_ttp')} "
+                    f"Hypothesis: {case_data.get('hypothesis')} "
+                    f"Reasoning: {' '.join(case_data.get('reasoning_steps', []))}"
+                )
                 
-                # [IQ] Semantic Embedding (Mocked for speed, ideally calls Vertex/Gemini)
-                embedding = self._generate_mock_embedding(content)
+                # [IQ] Semantic Embedding via Gemini
+                embedding = await self._generate_embedding(content)
                 
                 async with self.index_lock:
                     self.index[case_id] = {
                         "summary": case_data.get("summary"),
                         "hypothesis": case_data.get("hypothesis"),
+                        "mitre": case_data.get("mitre_ttp"),
                         "embedding": embedding,
                         "timestamp": datetime.now(timezone.utc).isoformat()
                     }
@@ -123,7 +140,7 @@ class LibrarianAgent:
             if not self.index:
                 return []
             
-        query_embedding = self._generate_mock_embedding(query)
+        query_embedding = await self._generate_embedding(query)
         scored_results = []
         
         for case_id, data in self.index.items():
@@ -133,6 +150,7 @@ class LibrarianAgent:
                 "case_id": case_id,
                 "summary": data["summary"],
                 "hypothesis": data["hypothesis"],
+                "mitre": data.get("mitre", "None"),
                 "similarity": round(float(score), 3),
                 "relevance": "HIGH" if score > 0.8 else "MEDIUM" if score > 0.5 else "LOW"
             })
@@ -141,16 +159,32 @@ class LibrarianAgent:
         scored_results.sort(key=lambda x: x["similarity"], reverse=True)
         return scored_results[:limit]
 
-    def _generate_mock_embedding(self, text: str) -> List[float]:
-        """Simple deterministic mock embedding for demonstration."""
-        # In production, this calls `genai.embed_content(model='models/embedding-001', content=text)`
+    async def _generate_embedding(self, text: str) -> List[float]:
+        """Generate real Gemini embedding or fallback to mock."""
+        api_key = os.environ.get("GEMINI_API_KEY")
+        if api_key:
+            try:
+                # [IQ] Use Vertex AI / Gemini Text Embedding 004
+                result = await asyncio.to_thread(
+                    genai.embed_content,
+                    model="models/text-embedding-004",
+                    content=text,
+                    task_type="retrieval_document"
+                )
+                return result['embedding']
+            except Exception as e:
+                logger.error(f"Gemini Embedding failed: {e}. Falling back to mock.")
+                
+        # Simple deterministic mock embedding for fallback
         np.random.seed(sum(ord(c) for c in text) % 10000)
-        return np.random.rand(16).tolist() # 16-dim for demonstration
+        return np.random.rand(768).tolist() # Match Gemini-004 dimensions (768)
 
     def _cosine_similarity(self, v1: List[float], v2: List[float]) -> float:
         a = np.array(v1)
         b = np.array(v2)
-        return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+        norm = np.linalg.norm(a) * np.linalg.norm(b)
+        if norm == 0: return 0.0
+        return np.dot(a, b) / norm
 
 if __name__ == "__main__":
     librarian = LibrarianAgent()

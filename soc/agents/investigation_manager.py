@@ -29,6 +29,7 @@ from typing import Any, Dict, List, Optional
 
 from soc.bootstrap import get_soc_path
 from soc.bus.event_queue import EventBus
+from soc.utils.telemetry import track_business_loss
 
 logging.basicConfig(
     level=logging.INFO,
@@ -341,10 +342,22 @@ class InvestigationManager:
         """Manual or automated status update."""
         if case_id in self.active_cases:
             case = self.active_cases[case_id]
+            old_status = case.status
             case.status = new_status
             if summary_update:
                 case.summary += f"\nUpdate [{datetime.now().strftime('%H:%M')}]: {summary_update}"
-            # This is sync, so we use a wrapper or just accept the latency since it's manual
+            
+            # [IQ] Business Telemetry for closed cases
+            if new_status == "CLOSED" and old_status != "CLOSED":
+                track_business_loss(
+                    incident_id=case_id,
+                    loss_estimate=500.0, # Strategy: Standard MVP loss estimate
+                    criticality=case.severity,
+                    summary=case.summary
+                )
+                # Notify Narrator and others
+                self.case_updates_bus.push(asdict(case))
+
             asyncio.run_coroutine_threadsafe(self._save_case(case), asyncio.get_event_loop())
             logger.info(f"UPDATED Case {case_id} status to {new_status}")
             return True
