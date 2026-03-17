@@ -21,6 +21,12 @@ import AgentFleetMonitor from './components/AgentFleetMonitor';
 import AnalyticsDashboard from './components/AnalyticsDashboard';
 import SimulationMode from './components/SimulationMode';
 
+// New expansion views
+import HiveHealth from './components/HiveHealth';
+import InvestigationCanvas from './components/InvestigationCanvas';
+import ThreatTelemetry from './components/ThreatTelemetry';
+import GovernanceDashboard from './components/GovernanceDashboard';
+
 // Sub-panels
 import HypothesisPanel from './components/HypothesisPanel';
 import AIInsightCards from './components/AIInsightCards';
@@ -155,6 +161,7 @@ function InvestigationWorkspace() {
 // ── Investigation view with sub-navigation ────────────────────────────
 const INV_SUBNAV = [
   { id: 'workspace',  label: 'Workspace' },
+  { id: 'canvas',     label: '⬡ Canvas' },
   { id: 'hypothesis', label: 'Hypotheses' },
   { id: 'insights',   label: 'AI Insights' },
   { id: 'console',    label: 'Intervention' },
@@ -191,6 +198,7 @@ function InvestigationsView({ onOpenBlast }) {
       </div>
       <div className="flex-1 min-h-0">
         {sub === 'workspace'  && <InvestigationWorkspace />}
+        {sub === 'canvas'     && <InvestigationCanvas />}
         {sub === 'hypothesis' && <HypothesisPanel />}
         {sub === 'insights'   && <AIInsightCards />}
         {sub === 'console'    && <InterventionConsole />}
@@ -221,7 +229,9 @@ function DashboardInner() {
     switch (activeNav) {
       case 'Investigations': return <InvestigationsView onOpenBlast={() => setBlastOpen(true)} />;
       case 'Alert Queue':    return <AlertQueue />;
-      case 'Agents':         return <AgentFleetMonitor />;
+      case 'Agents':         return <HiveHealth />;
+      case 'Threat Intel':   return <ThreatTelemetry />;
+      case 'Governance':     return <GovernanceDashboard />;
       case 'Analytics':      return <AnalyticsDashboard />;
       case 'Permissions':    return <Permissions />;
       case 'Simulation Mode': return <SimulationMode />;
