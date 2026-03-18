@@ -1,6 +1,6 @@
 # RCA Technology Infrastructure Plan
 **Reetz Cyber Automation — Agentic SOC**
-*Updated: March 15, 2026*
+*Updated: March 18, 2026*
 
 ---
 
@@ -12,7 +12,8 @@ The 4-pillar repo structure is in place. Below is a quick health-check of each p
 |---|---|---|
 | 🔧 The Engine | `engine/` | ✅ Hardening & Core API complete |
 | 🛡️ The SOC | `soc/` | ✅ Agents built, integration gaps exist |
-| 📦 The Market Kit | `market_kit/` | 🟡 Skeleton docs only |
+| 📜 The Ethos | `ethos/` | ✅ Universal Constitution & Agent Profiles established |
+| 📦 The Market Kit | `market_kit/` | ✅ Full Legal & Sales kit complete |
 | 🏢 The Shield | `business/` | 🔴 Empty – not started |
 
 ---
@@ -43,6 +44,12 @@ The 4-pillar repo structure is in place. Below is a quick health-check of each p
 - [Market Kit](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/market_kit/) — Full Legal (MSA/SOW) and Sales (Pitch/Brief/Copy) kit. ✅
 - [scout.py](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/soc/agents/scout.py), [triage.py](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/soc/agents/triage.py), [responder.py](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/soc/agents/responder.py) ✅
 - [bus/event_queue.py](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/soc/bus/event_queue.py), [bootstrap.py](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/soc/bootstrap.py) ✅
+- [docker/](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/docker/) — Containerized infrastructure (Dockerfile, Compose) ✅
+- [tests/](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/tests/) — Verification & integration suite ✅
+
+### The Ethos (`ethos/`)
+- [core_ethos.md](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/ethos/core_ethos.md) — Sentinel-RCA Universal Constitution (NIST/CMMC rules) ✅
+- [Agent Profiles](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/ethos/) — Specific directives for all 24 agents (e.g., `ethos_sentinel_auditor.md`) ✅
 
 ### Next Steps
 
@@ -141,8 +148,8 @@ graph TD
 | Sprint | Focus | Key Deliverables |
 |---|---|---|
 | **Week 1** | Engine hardening | ✅ Complete (Port scanner, asset schema, tests) |
-| **Week 2** | SOC pipeline | Event bus, report dir structure, `bootstrap.py` |
-| **Week 3** | Responder MVP | `responder.py` with approval gate, incident log |
+| **Week 2** | SOC pipeline | ✅ Event bus, report structure, `bootstrap.py` |
+| **Week 3** | Reorganization | ✅ Ethos, Docker, and Test directory cleanup |
 | **Week 4** | Market Kit | MSA §6-8, SOW template, pricing model |
 | **Week 4** | Shield bootstrap | Self-assessment doc, lab spec, legal entity folder |
 | **Week 5** | API layer | FastAPI status/inventory/alerts endpoints |

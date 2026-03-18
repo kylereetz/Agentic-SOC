@@ -23,13 +23,27 @@ Both parties agree to protect "Confidential Information" with the same degree of
 > [!IMPORTANT]
 > To the maximum extent permitted by law, Company's total liability for any claims arising out of this Agreement shall not exceed the total fees paid by Client to Company in the six (6) months preceding the incident. Company is not liable for manufacturing downtime caused by OT protocol discovery, legacy hardware failures, or the execution of remediation scripts by Client personnel.
 
-## 6. No Guarantee of Compliance
+## 6. Data Handling & Security
+Company employs industry-standard technical safeguards to protect Client data.
+- **Encryption**: All network scan data and asset inventories are encrypted at rest using AES-256 (Fernet) and in transit via TLS 1.3 or higher.
+- **Event Bus Strategy**: Inter-agent communication occurs over a secure, file-based event bus. Messages are cryptographically signed (HMAC-SHA256) to ensure integrity and prevent unauthorized tampering.
+- **Minimal Retention**: Raw telemetry is processed in-memory where possible; any temporary files are purged following analysis or as specified in the SOW.
+
+## 7. Statement of Work (SOW) Framework
+Specific projects, engagement tiers, and deliverables shall be governed by a separate Statement of Work (SOW) document, which shall be incorporated into this Agreement as an Exhibit. In the event of a conflict between this MSA and an SOW, the terms of the SOW shall prevail for that specific engagement.
+
+## 8. Incident Notification SLA
+Company acknowledges that "time is of the essence" regarding cybersecurity threats.
+- **Critical Alerts**: Company will notify Client of any "Critical" or "High" severity vulnerabilities or active indicators of compromise (IoC) discovered by the SOC Agents within **four (4) hours** of confirmed detection.
+- **Notification Method**: Alerts will be delivered via the agreed-upon communication channel (e.g., Client Dashboard, Email, or SMS).
+
+## 9. No Guarantee of Compliance
 The Services are intended to assist Client in meeting NIST 800-171 and CMMC requirements. However, Company does not guarantee that Client will pass any official audit or be declared "compliant" by a third-party assessor (C3PAO).
 
-## 7. Data Retention & Privacy
+## 10. Data Retention & Privacy
 Upon termination of this Agreement, Company shall delete all Client-specific raw scan data within ninety (90) days. Summarized compliance reports generated during the term may be retained for legal record-keeping for up to seven (7) years.
 
-## 8. Termination
+## 11. Termination
 Either party may terminate this agreement with thirty (30) days written notice. In the event of material breach, termination may be immediate.
 
 ---
