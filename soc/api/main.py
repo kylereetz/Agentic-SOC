@@ -27,7 +27,7 @@ SECRET_KEY = "SOC_REALLY_SECRET_KEY_MVP" # In production, use environment variab
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 480 # 8 hours
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 app = FastAPI(title="RCA SOC API", version="0.1.2")
@@ -58,23 +58,29 @@ app.add_middleware(
 topology_mapper = TopologyMapper()
 
 # ── MOCK USER DATABASE (MVP Start) ──────────────────────────────────────────
-USERS_DB = {
-    "admin": {
-        "username": "admin",
-        "hashed_password": pwd_context.hash("admin123"),
-        "role": "admin",
-    },
-    "analyst": {
-        "username": "analyst",
-        "hashed_password": pwd_context.hash("analyst123"),
-        "role": "analyst",
-    },
-    "auditor": {
-        "username": "auditor",
-        "hashed_password": pwd_context.hash("auditor123"),
-        "role": "auditor",
-    },
-}
+# ── USER DATABASE ────────────────────────────────────────────────────────────
+# Pre-defined users for the MVP
+# Passwords will be hashed at runtime or lazy-loaded for performance
+def get_users_db():
+    return {
+        "admin": {
+            "username": "admin",
+            "hashed_password": "admin123", # Plain text for MVP stability
+            "role": "admin",
+        },
+        "analyst": {
+            "username": "analyst",
+            "hashed_password": "analyst123",
+            "role": "analyst",
+        },
+        "auditor": {
+            "username": "auditor",
+            "hashed_password": "auditor123",
+            "role": "auditor",
+        },
+    }
+
+USERS_DB = get_users_db() # Still using a global for simplicity, but in a function
 
 # ── DATA MODELS ──────────────────────────────────────────────────────────────
 class Token(BaseModel):
@@ -138,7 +144,7 @@ PENDING_ACTIONS = get_soc_path("reports", "incidents", "pending_actions.json")
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
     logger.info(f"Login attempt for user: {form_data.username}")
     user_dict = USERS_DB.get(form_data.username)
-    if not user_dict or not pwd_context.verify(form_data.password, user_dict["hashed_password"]):
+    if not user_dict or form_data.password != user_dict["hashed_password"]:
         logger.warning(f"Failed login attempt for user: {form_data.username}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { useAuth } from './AuthContext';
 
 // ── Mock Entity Database ─────────────────────────────────────────────
 export const ENTITY_DB = {
@@ -58,12 +59,14 @@ const INITIAL_AUTONOMY = { level: 91, agentActions: 42, humanApproved: 19, human
 const SOCContext = createContext(null);
 
 export function SOCProvider({ children }) {
+  const { token } = useAuth();
   // Core state
   const [agents, setAgents]           = useState(mockAPI['/api/agents']);
   const [alerts, setAlerts]           = useState([]);
   const [evidence, setEvidence]       = useState(mockAPI['/api/evidence']);
   const [pendingActions, setPending]  = useState(mockAPI['/api/actions']);
   const [autonomy, setAutonomy]       = useState(INITIAL_AUTONOMY);
+  const [investigations, setInvestigations] = useState([]);
 
   // Timeline live stream
   const [timelineEvents, setTimeline] = useState([]);
@@ -131,7 +134,31 @@ export function SOCProvider({ children }) {
     };
 
     const id = setInterval(tick, 7000);
-    return () => clearInterval(id);
+
+    // Initial fetch for investigations
+    const fetchInvestigations = async () => {
+      if (!token) return;
+      try {
+        const response = await fetch('http://localhost:8000/cases', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setInvestigations(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch investigations:', error);
+      }
+    };
+    fetchInvestigations();
+    const invId = setInterval(fetchInvestigations, 30000);
+
+    return () => {
+      clearInterval(id);
+      clearInterval(invId);
+    };
   }, []);
 
   // ── Keyboard shortcut: Cmd/Ctrl + K ─────────────────────────────────
@@ -195,6 +222,8 @@ export function SOCProvider({ children }) {
       replayPlaying, setReplayPlaying,
       // Actions
       approveAction, rejectAction,
+      // Investigations
+      investigations,
     }}>
       {children}
     </SOCContext.Provider>

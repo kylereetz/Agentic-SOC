@@ -185,10 +185,60 @@ function HitlCard({ item, onApprove, onReject, isAdmin }) {
   );
 }
 
+function InvestigationsSidebar({ investigations }) {
+  return (
+    <div className="w-80 border-l flex flex-col flex-shrink-0 animate-slide-in-right" 
+         style={{ borderColor: '#1F2937', background: '#0d1117' }}>
+      <div className="p-4 border-b" style={{ borderColor: '#1F2937' }}>
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-[10px] terminal font-bold tracking-widest text-[#4B5563]">MISSION CONTROL</span>
+          <span className="w-1.5 h-1.5 rounded-full bg-[#EF4444] animate-pulse" />
+        </div>
+        
+        <div className="flex items-center gap-2 p-2.5 rounded border mb-2 group transition-all"
+             style={{ background: '#EF444408', border: '1px solid #EF444440' }}>
+          <ShieldAlert size={14} className="text-[#EF4444]" />
+          <div className="flex flex-col">
+            <span className="text-[10px] font-bold terminal text-[#EF4444]">CAMPAIGN ACTIVE</span>
+            <span className="text-xs font-bold terminal text-[#E2E8F0]">ALPHA-7</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-[10px] terminal font-bold text-[#6B7280]">OPEN INVESTIGATIONS</span>
+          <span className="text-[10px] terminal text-[#4B5563]">{investigations.length} ACTIVE</span>
+        </div>
+
+        {investigations.map(inv => (
+          <div key={inv.id} className="group cursor-pointer">
+            <div className="flex items-start gap-3 p-3 rounded-lg border border-transparent hover:border-[#3B6FE340] hover:bg-[#3B6FE305] transition-all">
+              <div className="mt-1 w-1 h-10 rounded-full flex-shrink-0" 
+                   style={{ background: inv.severity === 'CRITICAL' ? '#EF4444' : inv.severity === 'HIGH' ? '#E5A862' : '#3B6FE3' }} />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] terminal font-bold" style={{ color: '#4B5563' }}>{inv.id}</span>
+                  <span className="text-[9px] terminal px-1.5 py-0.5 rounded uppercase" 
+                        style={{ background: '#1F2937', color: '#9CA3AF' }}>{inv.status}</span>
+                </div>
+                <h4 className="text-xs font-bold text-[#E2E8F0] mb-1 truncate">{inv.title}</h4>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] terminal" style={{ color: '#6B7280' }}>Agent: {inv.assigned_agent}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ── Main Component ─────────────────────────────────────────────────────────────
 export default function InvestigationCanvas() {
   const { user } = useAuth();
-  const { pendingActions, approveAction, rejectAction } = useSOC();
+  const { pendingActions, approveAction, rejectAction, investigations } = useSOC();
   const isAdmin = user?.role === 'admin';
 
   const [activeTab, setActiveTab] = useState('graph');
@@ -232,8 +282,9 @@ export default function InvestigationCanvas() {
         </div>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 min-h-0">
+      <div className="flex flex-1 min-h-0 overflow-hidden">
+        {/* Workspace */}
+        <div className="flex-1 flex flex-col min-w-0">
         {activeTab === 'graph' && (
           <div style={{ height: '100%', width: '100%' }}>
             {mounted ? (
@@ -290,6 +341,10 @@ export default function InvestigationCanvas() {
             </div>
           </div>
         )}
+        </div>
+
+        {/* Sidebar */}
+        <InvestigationsSidebar investigations={investigations} />
       </div>
     </div>
   );
