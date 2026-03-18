@@ -24,6 +24,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from soc.bootstrap import get_soc_path
 from soc.bus.event_queue import EventBus
+from soc.security.vault import Vault
 
 logger = logging.getLogger("RCA-Gatekeeper")
 # Ensure it shows up even if basicConfig was called elsewhere
@@ -53,6 +54,7 @@ class GatekeeperAgent:
     def __init__(self, rules_path: str = GATEKEEPER_RULES_PATH):
         self.in_bus = EventBus("identity_events")
         self.triage_bus = EventBus("triage_alerts")
+        self.vault = Vault(SECRETS_PATH)
         self.rules = self._load_rules(rules_path)
         self.user_states: Dict[str, Dict[str, Any]] = {} # user_id -> state
         self.is_running = False
@@ -143,18 +145,19 @@ class GatekeeperAgent:
         """[EQ] Governance: Rotate NHI keys for all agents."""
         logger.info("[EQ] Triggering Non-Human Identity (NHI) rotation...")
         try:
-            with open(SECRETS_PATH, "r") as f:
-                secrets_data = json.load(f)
+            secrets_data = self.vault.load()
             
+            if not secrets_data.get("agents"):
+                logger.warning("No agent identities found in vault to rotate.")
+                return
+
             for agent, data in secrets_data.get("agents", {}).items():
                 new_key = f"sk-{agent.lower()}-{secrets.token_hex(8)}"
                 data["api_key"] = new_key
                 data["last_rotated"] = datetime.now(timezone.utc).isoformat()
             
-            with open(SECRETS_PATH, "w") as f:
-                json.dump(secrets_data, f, indent=2)
-            
-            logger.info("[EQ] All agent identities rotated successfully.")
+            self.vault.save(secrets_data)
+            logger.info("[EQ] All agent identities rotated and secured in Vault.")
         except Exception as e:
             logger.error(f"Identity rotation failed: {e}")
 

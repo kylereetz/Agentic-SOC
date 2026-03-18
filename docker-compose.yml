@@ -1,0 +1,182 @@
+services:
+  # ── API ──────────────────────────────────────────────────────────────────
+  soc-api:
+    build: .
+    command: python main.py start api
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    environment:
+      - SOC_PATH=/app/soc
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ── AGENTS ───────────────────────────────────────────────────────────────
+  soc-scout:
+    build: .
+    user: root # Required for scapy/nmap low-level networking
+    command: python main.py start scout
+    volumes:
+      - .:/app
+    depends_on:
+      - soc-api
+    privileged: true # Required for network sniffing/ARP scans
+
+  soc-triage:
+    build: .
+    command: python main.py start triage
+    volumes:
+      - .:/app
+    depends_on:
+      - soc-api
+
+  soc-responder:
+    build: .
+    command: python main.py start responder
+    volumes:
+      - .:/app
+    depends_on:
+      - soc-api
+
+  soc-orchestrator:
+    build: .
+    command: python main.py start orchestrate
+    volumes:
+      - .:/app
+    depends_on:
+      - soc-api
+
+  soc-correlator:
+    build: .
+    command: python main.py start correlator
+    volumes:
+      - .:/app
+    depends_on:
+      - soc-api
+
+  soc-vanguard:
+    build: .
+    command: python main.py start vanguard
+    volumes:
+      - .:/app
+    depends_on:
+      - soc-api
+
+  soc-watchdog:
+    build: .
+    command: python main.py start watchdog
+    volumes:
+      - .:/app
+    depends_on:
+      - soc-api
+
+  soc-log-guardian:
+    build: .
+    command: python main.py start log-guardian
+    volumes:
+      - .:/app
+    depends_on:
+      - soc-api
+
+  soc-cloud-wraith:
+    build: .
+    command: python main.py start cloud-wraith
+    volumes:
+      - .:/app
+    depends_on:
+      - soc-api
+
+  soc-mirage:
+    build: .
+    command: python main.py start mirage
+    volumes:
+      - .:/app
+    depends_on:
+      - soc-api
+
+  soc-hunter:
+    build: .
+    command: python main.py start hunter
+    volumes:
+      - .:/app
+    depends_on:
+      - soc-api
+
+  soc-traffic-sieve:
+    build: .
+    command: python main.py start traffic-sieve
+    volumes:
+      - .:/app
+    depends_on:
+      - soc-api
+
+  soc-gatekeeper:
+    build: .
+    command: python main.py start gatekeeper
+    volumes:
+      - .:/app
+    depends_on:
+      - soc-api
+
+  soc-dispatch:
+    build: .
+    command: python main.py start dispatch
+    volumes:
+      - .:/app
+    depends_on:
+      - soc-api
+
+  soc-narrator:
+    build: .
+    command: python main.py start narrator
+    volumes:
+      - .:/app
+    depends_on:
+      - soc-api
+
+  soc-risk-quantifier:
+    build: .
+    command: python main.py start risk-quantifier
+    volumes:
+      - .:/app
+    depends_on:
+      - soc-api
+
+  soc-policy-architect:
+    build: .
+    command: python main.py start policy-architect
+    volumes:
+      - .:/app
+    depends_on:
+      - soc-api
+
+  soc-librarian:
+    build: .
+    command: python main.py start librarian
+    volumes:
+      - .:/app
+    depends_on:
+      - soc-api
+
+  soc-malware-pathologist:
+    build: .
+    command: python main.py start malware-pathologist
+    volumes:
+      - .:/app
+    depends_on:
+      - soc-api
+
+  # ── DASHBOARD ────────────────────────────────────────────────────────────
+  soc-dashboard:
+    build: ./dashboard
+    ports:
+      - "5173:80"
+    depends_on:
+      - soc-api
+
+volumes:
+  soc-data:

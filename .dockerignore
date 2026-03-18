@@ -1,0 +1,26 @@
+# Python environment
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local data & reports
+soc/reports/*
+!soc/reports/.gitkeep
+hive_audit_raw.json
+agent_audit_report.md
+rca_first_run_audit.csv
+rca_backup.zip
+
+# IDEs
+.vscode/
+.idea/
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore

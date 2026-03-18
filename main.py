@@ -210,12 +210,87 @@ def start(
     elif agent == "api":
         import uvicorn
         logger.info("Starting SOC API at http://127.0.0.1:8000")
-        uvicorn.run("soc.api.main:app", host="127.0.0.1", port=8000, reload=True)
+        uvicorn.run("soc.api.main:app", host="0.0.0.0", port=8000, reload=True)
         
     elif agent == "orchestrate":
         from soc.agents.orchestrator import OrchestratorAgent
         orchestrator = OrchestratorAgent()
-        orchestrator.start()
+        asyncio.run(orchestrator.start_async())
+
+    elif agent == "correlator":
+        from soc.agents.correlator import CorrelatorAgent
+        agent_obj = CorrelatorAgent()
+        asyncio.run(agent_obj.run())
+
+    elif agent == "vanguard":
+        from soc.agents.vanguard import VanguardAgent
+        agent_obj = VanguardAgent()
+        asyncio.run(agent_obj.run())
+
+    elif agent == "watchdog":
+        from soc.agents.watchdog import WatchdogAgent
+        agent_obj = WatchdogAgent()
+        asyncio.run(agent_obj.run())
+
+    elif agent == "log-guardian":
+        from soc.agents.log_guardian import LogGuardianAgent
+        agent_obj = LogGuardianAgent()
+        asyncio.run(agent_obj.run())
+
+    elif agent == "cloud-wraith":
+        from soc.agents.cloud_wraith import CloudWraithAgent
+        agent_obj = CloudWraithAgent()
+        asyncio.run(agent_obj.run())
+
+    elif agent == "mirage":
+        from soc.agents.mirage import MirageAgent
+        agent_obj = MirageAgent()
+        asyncio.run(agent_obj.run())
+
+    elif agent == "hunter":
+        from soc.agents.hunter import HunterAgent
+        agent_obj = HunterAgent()
+        asyncio.run(agent_obj.run())
+
+    elif agent == "traffic-sieve":
+        from soc.agents.traffic_sieve import TrafficSieveAgent
+        agent_obj = TrafficSieveAgent()
+        asyncio.run(agent_obj.run())
+
+    elif agent == "gatekeeper":
+        from soc.agents.gatekeeper import GatekeeperAgent
+        agent_obj = GatekeeperAgent()
+        asyncio.run(agent_obj.run())
+
+    elif agent == "dispatch":
+        from soc.agents.dispatch import DispatchAgent
+        agent_obj = DispatchAgent()
+        asyncio.run(agent_obj.run())
+
+    elif agent == "narrator":
+        from soc.agents.narrator import NarratorAgent
+        agent_obj = NarratorAgent()
+        asyncio.run(agent_obj.run())
+
+    elif agent == "risk-quantifier":
+        from soc.agents.risk_quantifier import RiskQuantifierAgent
+        agent_obj = RiskQuantifierAgent()
+        asyncio.run(agent_obj.run())
+
+    elif agent == "policy-architect":
+        from soc.agents.policy_architect import PolicyArchitectAgent
+        agent_obj = PolicyArchitectAgent()
+        asyncio.run(agent_obj.run())
+
+    elif agent == "librarian":
+        from soc.agents.librarian import LibrarianAgent
+        agent_obj = LibrarianAgent()
+        asyncio.run(agent_obj.run())
+
+    elif agent == "malware-pathologist":
+        from soc.agents.malware_pathologist import MalwarePathologistAgent
+        agent_obj = MalwarePathologistAgent()
+        asyncio.run(agent_obj.run())
         
     else:
         console.print(f"[bold red]Error:[/bold red] Unknown agent '{agent}'")

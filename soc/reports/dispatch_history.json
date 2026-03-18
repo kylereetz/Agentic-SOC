@@ -1,26 +1,14 @@
 [
   {
-    "case_id": "INC-20260316-B77B5E32",
+    "case_id": "INC-RAG-SYNC-TEST",
     "destination": "slack",
     "status": "SENT",
-    "timestamp": "2026-03-16T20:27:50.596615+00:00"
+    "timestamp": "2026-03-18T03:09:14.668484+00:00"
   },
   {
-    "case_id": "INC-20260316-B77B5E32",
+    "case_id": "INC-RAG-SYNC-TEST",
     "destination": "pagerduty",
     "status": "SENT",
-    "timestamp": "2026-03-16T20:27:50.598216+00:00"
-  },
-  {
-    "case_id": "INC-20260316-CBC7A449",
-    "destination": "slack",
-    "status": "SENT",
-    "timestamp": "2026-03-16T20:27:54.668616+00:00"
-  },
-  {
-    "case_id": "INC-20260316-CBC7A449",
-    "destination": "pagerduty",
-    "status": "SENT",
-    "timestamp": "2026-03-16T20:27:54.668616+00:00"
+    "timestamp": "2026-03-18T03:09:14.669537+00:00"
   }
 ]

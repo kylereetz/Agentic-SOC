@@ -1,0 +1,6 @@
+{
+  "rule_id": "RECON_001",
+  "rule_name": "Recon Scan",
+  "severity": "LOW",
+  "source_ip": "10.hive.audit.1"
+}
