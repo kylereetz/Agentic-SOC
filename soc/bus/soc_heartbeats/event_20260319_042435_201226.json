@@ -1,0 +1,10 @@
+{
+  "version": "1.0",
+  "secure": false,
+  "payload": {
+    "component": "InvestigationManager",
+    "timestamp": "2026-03-19T04:24:35.201226+00:00",
+    "status": "HEALTHY"
+  },
+  "signature": "unsigned"
+}
