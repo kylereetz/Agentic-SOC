@@ -1,0 +1,17 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.0.2, pluggy-1.6.0
+rootdir: C:\Users\kyler\Documents\GitHub\Agentic SOC
+plugins: anyio-4.12.1
+collected 4 items
+
+soc\tests\test_main.py ....                                              [100%]
+
+============================== warnings summary ===============================
+soc/tests/test_main.py::test_approve_action_valid
+soc/tests/test_main.py::test_approve_action_invalid_format
+soc/tests/test_main.py::test_approve_action_not_found
+  C:\Users\kyler\Documents\GitHub\Agentic SOC\soc\api\main.py:104: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 4 passed, 3 warnings in 0.60s ========================

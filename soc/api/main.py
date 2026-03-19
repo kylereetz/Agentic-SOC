@@ -7,6 +7,7 @@ Now secured with JWT Authentication & RBAC.
 import json
 import logging
 import os
+import re
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
@@ -238,11 +239,18 @@ async def get_cases(user: User = Depends(get_current_user)):
 @app.post("/approve/{action_id}")
 async def approve_action(action_id: str, user: User = Depends(check_role(["admin"]))):
     """Approve and execute a containment action (Human Approval Gate). Admin only."""
+    # Input validation: check for alphanumeric or UUID-like pattern (hex and hyphens)
+    if not action_id or not re.match(r"^[a-zA-Z0-9-]+$", action_id):
+        logger.warning(f"Invalid action_id format received: '{action_id}' (User: {user.username})")
+        raise HTTPException(status_code=400, detail="Invalid Action ID format.")
+
     responder = ResponderAgent()
     success = responder.approve_action(action_id)
     if not success:
+        logger.error(f"Action approval failed: ID {action_id} not found or already approved. (User: {user.username})")
         raise HTTPException(status_code=404, detail=f"Action ID {action_id} not found or already approved.")
     
+    logger.info(f"Action {action_id} approved by {user.username}.")
     return {"status": "success", "message": f"Action {action_id} approved."}
 
 @app.get("/api/v1/topology", response_model=Dict[str, Any])
