@@ -373,6 +373,7 @@ def list_resources(
 def usage():
     """Generate a 30-day activity summary for billing and site health."""
     from soc.api.main import get_inventory, get_alerts, get_pending_actions
+    from soc.bus.event_queue import EventBus
     
     async def _gather():
         inv = await get_inventory()
@@ -386,6 +387,37 @@ def usage():
             with open(archive_path, "r") as f:
                 archived_count = len(json.load(f))
 
+        # --- BILLING HOOK: Calculate token telemetry ---
+        total_tokens = 0
+        bus = EventBus("business_intel")
+        
+        def _parse_event(filepath):
+            try:
+                with open(filepath, "r") as fh:
+                    storage_obj = json.load(fh)
+                if storage_obj.get("secure"):
+                    if not bus.cipher:
+                        return None
+                    decrypted_json = bus.cipher.decrypt(storage_obj["payload"].encode())
+                    return json.loads(decrypted_json)
+                else:
+                    return storage_obj["payload"]
+            except Exception:
+                return None
+
+        # Scan active and processed queues for billing telemetry
+        for directory in [bus.channel_dir, bus.processed_dir]:
+            if os.path.exists(directory):
+                for filename in os.listdir(directory):
+                    if filename.startswith("event_") and filename.endswith(".json"):
+                        path = os.path.join(directory, filename)
+                        payload = _parse_event(path)
+                        if payload and "total_tokens" in payload:
+                            total_tokens += payload["total_tokens"]
+
+        # Estimate cost (e.g. blended rate of $0.01 per 1000 tokens)
+        cost_estimate = (total_tokens / 1000.0) * 0.01
+
         table = Table(title="RCA Site Usage Report (Monthly Summary)")
         table.add_column("Metric", style="cyan")
         table.add_column("Value", style="bold")
@@ -394,6 +426,8 @@ def usage():
         table.add_row("Security Alerts Triaged", str(len(alerts)))
         table.add_row("Actions Awaiting Approval", str(len(pending)))
         table.add_row("Total Remediations Executed", str(archived_count))
+        table.add_row("LLM Tokens (Tokens per Client)", f"{total_tokens:,}")
+        table.add_row("Estimated Token Cost", f"${cost_estimate:.2f}")
         
         console.print(table)
         console.print("[dim italic]Report generated for billing period ending today.[/dim italic]")

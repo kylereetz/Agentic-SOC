@@ -9,8 +9,10 @@ Monitors other agents for hallucinations, lag, or downtime.
 import asyncio
 import json
 import logging
+import os
 from datetime import datetime, timezone
 from typing import Any, Dict
+from soc.bootstrap import get_soc_path
 from soc.bus.event_queue import EventBus
 
 logger = logging.getLogger("RCA-Watchdog")
@@ -34,12 +36,41 @@ class WatchdogAgent:
         self.is_running = True
         logger.info("[SQ] Watchdog Health Specialist started.")
         
+        # [IQ] Start Background Chron tasks
+        asyncio.create_task(self._prune_dlq())
+        
         while self.is_running:
             metrics = await asyncio.to_thread(self.health_bus.pop)
             if metrics:
                 await self._check_health(metrics)
             else:
                 await asyncio.sleep(1.0)
+
+    async def _prune_dlq(self):
+        """[IQ] Run a daily cron to prune DLQ JSON logs older than 7 days."""
+        dlq_path = get_soc_path("reports", "triage", "triage_dlq.json")
+        while self.is_running:
+            try:
+                if os.path.exists(dlq_path):
+                    with open(dlq_path, "r") as fh:
+                        data = json.load(fh)
+                    
+                    if isinstance(data, list):
+                        now = datetime.now(timezone.utc)
+                        pruned = [
+                            a for a in data 
+                            if a.get("timestamp") and (now - datetime.fromisoformat(a["timestamp"].replace("Z", "+00:00"))).days <= 7
+                        ]
+                        
+                        if len(pruned) < len(data):
+                            with open(dlq_path, "w") as fh:
+                                json.dump(pruned, fh, indent=2)
+                            logger.info(f"[VQ] Watchdog pruned {len(data) - len(pruned)} expired records from Triage DLQ state.")
+            except Exception as e:
+                logger.error(f"[!] Failed to prune DLQ: {e}")
+            
+            # Sleep 24 hours
+            await asyncio.sleep(86400)
 
     async def _check_health(self, metrics: Dict[str, Any]):
         status = metrics.get("status")

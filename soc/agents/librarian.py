@@ -49,7 +49,9 @@ class LibrarianAgent:
         self.is_running = False
         
         # [IQ] Configure Gemini for Embeddings
-        api_key = os.environ.get("GEMINI_API_KEY")
+        from soc.security.vault import Vault
+        vault = Vault(get_soc_path("configs", "secrets.json"))
+        api_key = vault.load().get("llm_api_keys", {}).get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY")
         if api_key:
             genai.configure(api_key=api_key)
         else:
@@ -161,7 +163,9 @@ class LibrarianAgent:
 
     async def _generate_embedding(self, text: str) -> List[float]:
         """Generate real Gemini embedding or fallback to mock."""
-        api_key = os.environ.get("GEMINI_API_KEY")
+        from soc.security.vault import Vault
+        vault = Vault(get_soc_path("configs", "secrets.json"))
+        api_key = vault.load().get("llm_api_keys", {}).get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY")
         if api_key:
             try:
                 # [IQ] Use Vertex AI / Gemini Text Embedding 004

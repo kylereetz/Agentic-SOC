@@ -311,6 +311,7 @@ class TriageAgent:
         self.engine = TriageEngine(rules_path)
         self.in_bus = EventBus("discovery_events")
         self.out_bus = EventBus("triage_alerts")
+        self.dlq_bus = EventBus("triage_dlq")
         self.intel_bus = EventBus("intel_feedback")
         self.report_path = get_soc_path("reports", "triage", "triage_alerts.json")
         self.is_running = False
@@ -341,12 +342,20 @@ class TriageAgent:
             if event:
                 alert = self.engine.classify_event(event)
                 if alert:
-                    self.out_bus.push(self._serialise_alert(alert))
-                    self._update_persistent_log([alert])
-                    logger.info(
-                        f"[{alert.severity}] {alert.rule_name} — "
-                        f"{alert.source_ip}: {alert.description}"
-                    )
+                    if alert.severity == "INFO":
+                        logger.info(f"[DLQ] Suppressed benign alert: {alert.rule_name}. Routing to DLQ.")
+                        self.dlq_bus.push(self._serialise_alert(alert))
+                        self._update_persistent_log([alert])
+                    else:
+                        self.out_bus.push(self._serialise_alert(alert))
+                        self._update_persistent_log([alert])
+                        logger.info(
+                            f"[{alert.severity}] {alert.rule_name} — "
+                            f"{alert.source_ip}: {alert.description}"
+                        )
+                else:
+                    logger.warning("[DLQ] Unclassified noise event. Routing to DLQ.")
+                    self.dlq_bus.push(event)
             else:
                 await asyncio.sleep(1)
 

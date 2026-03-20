@@ -24,18 +24,25 @@ Both parties agree to protect "Confidential Information" with the same degree of
 > To the maximum extent permitted by law, Company's total liability for any claims arising out of this Agreement shall not exceed the total fees paid by Client to Company in the six (6) months preceding the incident. Company is not liable for manufacturing downtime caused by OT protocol discovery, legacy hardware failures, or the execution of remediation scripts by Client personnel.
 
 ## 6. Data Handling & Security
-Company employs industry-standard technical safeguards to protect Client data.
-- **Encryption**: All network scan data and asset inventories are encrypted at rest using AES-256 (Fernet) and in transit via TLS 1.3 or higher.
-- **Event Bus Strategy**: Inter-agent communication occurs over a secure, file-based event bus. Messages are cryptographically signed (HMAC-SHA256) to ensure integrity and prevent unauthorized tampering.
-- **Minimal Retention**: Raw telemetry is processed in-memory where possible; any temporary files are purged following analysis or as specified in the SOW.
+Company is committed to maintaining the highest standard of data privacy and security, as continuous monitoring requires access to sensitive network telemetry.
+- **Encryption**: All network scan data, asset inventories, and alert logs are encrypted at rest using AES-256 (via Fernet) and in transit via TLS 1.3 or higher. Cryptographic keys are managed within dedicated secure vaults and are never exposed in application source code.
+- **Event Bus Integrity**: Inter-agent communication occurs over a proprietary secure, file-based event bus. Messages are cryptographically signed (HMAC-SHA256) to ensure integrity, prevent unauthorized tampering, and maintain a robust, court-admissible Chain of Custody.
+- **Data Residency & Minimization**: Client data will remain within authorized geographical boundaries as mandated by the SOW. Raw telemetry is processed in-memory where possible. Persistent logs are strictly minimized, and temporary files are systematically purged following analysis in accordance with minimum necessity principles.
+- **Compliance Alignment**: Data handling practices strictly follow the guidelines prescribed by NIST 800-171 and CMMC 2.0 level requirements, ensuring robust access control, continuous auditing, and logical separation of client environments.
 
 ## 7. Statement of Work (SOW) Framework
-Specific projects, engagement tiers, and deliverables shall be governed by a separate Statement of Work (SOW) document, which shall be incorporated into this Agreement as an Exhibit. In the event of a conflict between this MSA and an SOW, the terms of the SOW shall prevail for that specific engagement.
+Specific scopes of work, resource allocations, engagement tiers, and customized deliverables shall be governed by a separate Statement of Work (SOW), which shall be incorporated into this Agreement as an Exhibit.
+- **SLA Variations**: Specific response time exceptions, maintenance window overrides, or priority routing requirements will be explicitly detailed in the SOW.
+- **Resource Limits & LLM Constraints**: The SOW specifies compute resource constraints, including absolute limits on RCA Agent LLM token usage ("Tokens per Client"). Upon reaching 95% of allocated tokens, Company will notify Client. Excess usage required for active incident remediation may result in overage charges or temporary telemetry throttling, subject to Client's predefined approval matrix.
+- **Conflict Resolution**: In the event of a conflict between the terms of this MSA and any corresponding SOW, the terms of the SOW shall prevail exclusively for that specific engagement.
 
 ## 8. Incident Notification SLA
-Company acknowledges that "time is of the essence" regarding cybersecurity threats.
-- **Critical Alerts**: Company will notify Client of any "Critical" or "High" severity vulnerabilities or active indicators of compromise (IoC) discovered by the SOC Agents within **four (4) hours** of confirmed detection.
-- **Notification Method**: Alerts will be delivered via the agreed-upon communication channel (e.g., Client Dashboard, Email, or SMS).
+Company acknowledges that timely response is critical for effective incident containment and commits to the following Service Level Agreements (SLAs) for notification:
+- **Critical Severity**: Active indicators of compromise (IoC), unauthorized lateral movement, or critical network breaches. **SLA: 1 Hour (24/7/365)**.
+- **High Severity**: Identified vulnerabilities with known, active exploits in the wild affecting core production infrastructure. **SLA: 4 Hours**.
+- **Medium/Low Severity**: Configuration anomalies, unauthorized software installations, or non-critical vulnerabilities. Included in weekly aggregated Reports.
+- **RCA Engine Uptime Guarantee**: The underlying RCA orchestrator and agentic infrastructure will maintain a 99.9% uptime SLA. Scheduled maintenance windows will be communicated at least 48 hours in advance.
+- **Notification Method**: Alerts will be delivered via the agreed-upon primary communication channel (e.g., Client Dashboard, secure email, or automated SMS/pager integration) as defined in the SOW.
 
 ## 9. No Guarantee of Compliance
 The Services are intended to assist Client in meeting NIST 800-171 and CMMC requirements. However, Company does not guarantee that Client will pass any official audit or be declared "compliant" by a third-party assessor (C3PAO).

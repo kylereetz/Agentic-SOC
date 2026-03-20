@@ -365,22 +365,10 @@ Available tools:
 - report_false_positive(rule_id, source_ip, reason) — flag a rule as noise/FP for auto-tuning
 - consult_librarian(query) — [IQ] query shared memory for similar past incidents and TTPs
 
-Response format — EXACTLY one of these three forms per reply:
-
-THOUGHT step:
-{"type": "THOUGHT", "content": "Your reasoning here", "mitre": "T1059.001", "confidence": 85, "reasoning": "Extended explanation for the Explain modal"}
-
-ACTION step:
-{"type": "ACTION", "tool": "query_siem", "args": {"source_ip": "192.168.1.105", "time_range": "-1h"}, "content": "Querying SIEM for recent events from the suspected host"}
-
-CONCLUSION step (when investigation is complete):
-{"type": "CONCLUSION", "content": "Summary of findings", "mitre": "T1566.001", "confidence": 92, "reasoning": "Full narrative"}
-
 Rules:
-- Never include anything outside the JSON object
-- Never call a non-existent tool
 - Alternate THOUGHT → ACTION → (system provides OBSERVATION) → THOUGHT → ...
 - Issue CONCLUSION when you have enough evidence or after being asked to conclude
+- DEADLOCK PREVENTION: If you request secondary evidence to corroborate a single source, and find nothing after ONE attempt, immediately issue a CONCLUSION with HIGH severity and add the tag [PENDING_SOURCE_CORROBORATION].
 - Always cite a MITRE ATT&CK TTP in THOUGHT and CONCLUSION steps when applicable
 - Keep content under 150 words — the UI renders it in a compact card
 """
@@ -425,7 +413,11 @@ class InvestigatorAgent:
         os.makedirs(INVESTIGATION_LOG_DIR, exist_ok=True)
 
         # Configure Gemini
-        api_key = os.environ.get("GEMINI_API_KEY") or self.cfg.get("gemini_api_key", "")
+        from soc.security.vault import Vault
+        vault = Vault(get_soc_path("configs", "secrets.json"))
+        secrets_data = vault.load()
+        
+        api_key = secrets_data.get("llm_api_keys", {}).get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY") or self.cfg.get("gemini_api_key", "")
         if not api_key:
             logger.warning(
                 "GEMINI_API_KEY not set. Set the env variable or add "
@@ -436,6 +428,32 @@ class InvestigatorAgent:
 
     def _reinit_model(self, custom_prompt: str = None):
         """Allow re-initializing the model with a specialized prompt."""
+        import typing_extensions as typing
+        
+        class ToolArgs(typing.TypedDict, total=False):
+            source_ip: str
+            time_range: str
+            entity_id: str
+            indicator: str
+            target_ip: str
+            artifact_type: str
+            strategy: str
+            pid: str
+            host: str
+            investigation_id: str
+            rule_id: str
+            reason: str
+            query: str
+            
+        class ReasoningStepSchema(typing.TypedDict, total=False):
+            type: str
+            content: str
+            mitre: str
+            confidence: int
+            reasoning: str
+            tool: str
+            args: ToolArgs
+
         prompt = custom_prompt or _SYSTEM_PROMPT
         self.model = genai.GenerativeModel(
             model_name=self.cfg["gemini_model"],
@@ -443,9 +461,10 @@ class InvestigatorAgent:
             generation_config=genai.GenerationConfig(
                 temperature=self.cfg["temperature"],
                 response_mime_type="application/json",
+                response_schema=ReasoningStepSchema,
             ),
         )
-        logger.info(f"Model re-initialised for {self.agent_name}")
+        logger.info(f"Model re-initialised for {self.agent_name} with TypedDict strict schema enforcement.")
 
         logger.info(
             f"InvestigatorAgent initialised — model: {self.cfg['gemini_model']}, "

@@ -1,9 +1,9 @@
 function antigravity-cli {
-    param([Parameter(ValueFromPipeline=$true)]$InputObject, [string]$instruction)
+    param([Parameter(ValueFromPipeline = $true)]$InputObject, [string]$instruction)
     Write-Host "[Antigravity] Processing instruction: $instruction" -ForegroundColor Blue
 }
 
-$MaxLoops = 10
+$MaxLoops = 100
 $CurrentLoop = 1
 $TargetFiles = @("soc\api\main.py", "soc\tests\test_main.py")
 

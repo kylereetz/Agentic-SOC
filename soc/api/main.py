@@ -8,6 +8,7 @@ import json
 import logging
 import os
 import re
+import secrets
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
@@ -20,11 +21,22 @@ from pydantic import BaseModel
 
 from soc.bootstrap import get_soc_path
 from soc.bus.event_queue import EventBus
+from soc.security.vault import Vault
 from soc.agents.responder import ResponderAgent
 from soc.agents.topology_mapper import TopologyMapper
 
 # ── CONFIG ──────────────────────────────────────────────────────────────────
-SECRET_KEY = "SOC_REALLY_SECRET_KEY_MVP" # In production, use environment variable
+vault_path = get_soc_path("configs", "secrets.json")
+vault = Vault(vault_path)
+vault_data = vault.load()
+
+# Initialize API Secret Key if not present in Vault
+if "api_secret_key" not in vault_data:
+    logging.getLogger(__name__).info("Generating new secure API secret key and storing in Vault.")
+    vault_data["api_secret_key"] = os.environ.get("SOC_API_SECRET_KEY", secrets.token_hex(32))
+    vault.save(vault_data)
+
+SECRET_KEY = vault_data["api_secret_key"]
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 480 # 8 hours
 
