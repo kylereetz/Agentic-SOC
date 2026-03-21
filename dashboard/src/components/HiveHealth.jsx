@@ -8,6 +8,7 @@ import {
 } from 'recharts';
 import { useAuth } from '../store/AuthContext';
 import { useSOC } from '../store/SOCContext';
+import AgentDetailDrawer from './AgentDetailDrawer';
 
 // ── Mock Data ─────────────────────────────────────────────────────────────────
 const AGENT_ROSTER = [
@@ -86,14 +87,15 @@ const WS_MESSAGES = [
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
-function AgentCard({ agent, tokensMap }) {
+function AgentCard({ agent, onSelect }) {
   const st = STATUS_CFG[agent.status] || STATUS_CFG.idle;
   const pc = PILLAR_COLORS[agent.pillar] || '#6B7280';
   const loadColor = agent.load > 85 ? '#EF4444' : agent.load > 60 ? '#E5A862' : '#88C057';
 
   return (
     <div
-      className="rounded-lg p-3 transition-all hover:brightness-110 group cursor-default"
+      onClick={onSelect}
+      className="rounded-lg p-3 transition-all hover:brightness-110 group cursor-pointer relative"
       style={{
         background: '#111827',
         border: `1px solid ${agent.status === 'online' ? pc + '33' : '#1F2937'}`,
@@ -208,6 +210,7 @@ export default function HiveHealth() {
   const [wsLines, setWsLines] = useState(WS_MESSAGES.slice(0, 8));
   const [killed, setKilled] = useState(false);
   const [filter, setFilter] = useState('All');
+  const [selectedAgentId, setSelectedAgentId] = useState(null);
   const msgIdx = useRef(8);
 
   const isAdmin = user?.role === 'admin';
@@ -323,7 +326,7 @@ export default function HiveHealth() {
           {/* Grid */}
           <div className="flex-1 overflow-y-auto p-4 grid gap-2"
             style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', alignContent: 'start' }}>
-            {visible.map(a => <AgentCard key={a.id} agent={a} />)}
+            {visible.map(a => <AgentCard key={a.id} agent={a} onSelect={() => setSelectedAgentId(a.id)} />)}
           </div>
         </div>
 
@@ -378,6 +381,11 @@ export default function HiveHealth() {
           </div>
         </div>
       </div>
+      
+      <AgentDetailDrawer 
+        agentId={selectedAgentId} 
+        onClose={() => setSelectedAgentId(null)} 
+      />
     </div>
   );
 }

@@ -1,3 +1,5 @@
+## Only use Ralph when explicitly asked -OR- it is advantageous to leverage the loop and are rewriting the task file and to accomplish a specific task.
+
 function antigravity-cli {
     param([Parameter(ValueFromPipeline = $true)]$InputObject, [string]$instruction)
     Write-Host "[Antigravity] Processing instruction: $instruction" -ForegroundColor Blue

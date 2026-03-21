@@ -16,38 +16,55 @@ export const ENTITY_DB = {
 // ── Mock API Endpoints ───────────────────────────────────────────────
 export const mockAPI = {
   '/api/investigations': [
-    { id: 'INC-2023-981', severity: 'Critical', stage: 'Investigating', progress: 62, entities: 8,  agent: 'SENTINEL-01', title: 'Credential Theft Campaign',  lastActivity: '2m ago' },
-    { id: 'INC-2023-980', severity: 'High',     stage: 'Containment',   progress: 85, entities: 4,  agent: 'HERALD-03',   title: 'SMB Lateral Movement',       lastActivity: '7m ago' },
-    { id: 'INC-2023-979', severity: 'Critical', stage: 'Eradication',   progress: 92, entities: 12, agent: 'SENTINEL-01', title: 'Ransomware Staging',         lastActivity: '14m ago' },
-    { id: 'INC-2023-978', severity: 'Medium',   stage: 'Triage',        progress: 22, entities: 2,  agent: 'RECON-02',    title: 'DNS Tunneling',              lastActivity: '31m ago' },
+    { id: 'INC-2023-981', severity: 'Critical', stage: 'Investigating', progress: 62, entities: 8,  agent: 'MANAGER-01', title: 'Credential Theft Campaign',  lastActivity: '2m ago' },
+    { id: 'INC-2023-980', severity: 'High',     stage: 'Containment',   progress: 85, entities: 4,  agent: 'TRIAGE-01',   title: 'SMB Lateral Movement',       lastActivity: '7m ago' },
+    { id: 'INC-2023-979', severity: 'Critical', stage: 'Eradication',   progress: 92, entities: 12, agent: 'MANAGER-01', title: 'Ransomware Staging',         lastActivity: '14m ago' },
+    { id: 'INC-2023-978', severity: 'Medium',   stage: 'Triage',        progress: 22, entities: 2,  agent: 'FORENSICS-01',    title: 'DNS Tunneling',              lastActivity: '31m ago' },
   ],
   '/api/agents': [
-    { id: 'SENTINEL-01', role: 'ReconAgent',      color: '#D84C7F', status: 'ACTIVE',   task: 'Pivoting from Host-DX9 to DC-01',           runtime: 0,    success: 97, tools: 42 },
-    { id: 'HERALD-03',   role: 'TriageAgent',      color: '#3B6FE3', status: 'ACTIVE',   task: 'Classifying SMB alerts on subnet /24',       runtime: 0,    success: 92, tools: 18 },
-    { id: 'WARDEN-07',   role: 'ContainmentAgent', color: '#EF4444', status: 'WAITING',  task: 'Waiting for analyst approval — enumerate_subnet', runtime: 0, success: 100, tools: 5 },
-    { id: 'RECON-02',    role: 'ForensicsAgent',   color: '#88C057', status: 'ACTIVE',   task: 'Processing memory dump HOST-DX9',            runtime: 0,    success: 88, tools: 33 },
-    { id: 'ORACLE-01',   role: 'ThreatIntelAgent', color: '#E5A862', status: 'IDLE',     task: 'Idle — awaiting new IOC batch',              runtime: 0,    success: 95, tools: 7 },
+    { id: 'MANAGER-01',       role: 'InvestigationManager',   color: '#3B6FE3', status: 'ACTIVE',  task: 'Orchestrating Case INC-2023-981', runtime: '12:44', success: 99, tools: 142 },
+    { id: 'ORCHESTRATOR-01',  role: 'Orchestrator',           color: '#D84C7F', status: 'ACTIVE',  task: 'Dispatching tasks for INC-2023-981', runtime: '12:44', success: 98, tools: 88 },
+    { id: 'TRIAGE-01',        role: 'TriageAgent',            color: '#3B6FE3', status: 'ACTIVE',  task: 'Classifying incoming EventBus anomalies', runtime: '48:12', success: 92, tools: 1050 },
+    { id: 'CORRELATOR-01',    role: 'CorrelatorAgent',        color: '#E5A862', status: 'IDLE',    task: 'Awaiting new historical linkages', runtime: '00:00', success: 94, tools: 12 },
+    { id: 'LIBRARIAN-01',     role: 'LibrarianAgent',         color: '#88C057', status: 'ACTIVE',  task: 'Indexing resolved case data to Vector DB', runtime: '04:12', success: 100, tools: 45 },
+    { id: 'HUNTER-01',        role: 'HunterAgent',            color: '#D84C7F', status: 'ACTIVE',  task: 'Executing hypothesis-driven threat hunt', runtime: '14:22', success: 87, tools: 67 },
+    { id: 'LOG-GUARDIAN-01',  role: 'LogGuardianAgent',       color: '#3B6FE3', status: 'ACTIVE',  task: 'Normalizing proprietary CEF logs', runtime: '55:10', success: 99, tools: 210 },
+    { id: 'TRAFFIC-SIEVE-01', role: 'TrafficSieveAgent',      color: '#88C057', status: 'ACTIVE',  task: 'Analyzing netflow for data exfiltration', runtime: '22:15', success: 91, tools: 154 },
+    { id: 'ENDPT-ANALYST-01', role: 'EndpointAnalystAgent',   color: '#3B6FE3', status: 'ACTIVE',  task: 'Parsing Sysmon EDR telemetry', runtime: '11:05', success: 96, tools: 88 },
+    { id: 'INVESTIGATOR-01',  role: 'InvestigatorAgent',      color: '#D84C7F', status: 'ACTIVE',  task: 'Performing CoT reasoning on Host-DX9', runtime: '08:44', success: 93, tools: 56 },
+    { id: 'FORENSICS-01',     role: 'ForensicsAgent',         color: '#88C057', status: 'IDLE',    task: 'Awaiting memory dump acquisition orders', runtime: '00:00', success: 88, tools: 0 },
+    { id: 'PATHOLOGIST-01',   role: 'MalwarePathologistAgent',color: '#EF4444', status: 'IDLE',    task: 'Awaiting binary extraction for sandbox analysis', runtime: '00:00', success: 95, tools: 0 },
+    { id: 'CLOUD-WRAITH-01',  role: 'CloudWraithAgent',       color: '#3B6FE3', status: 'ACTIVE',  task: 'Monitoring AWS IAM CloudTrail anomalies', runtime: '19:30', success: 98, tools: 112 },
+    { id: 'RESPONDER-01',     role: 'ResponderAgent',         color: '#EF4444', status: 'WAITING', task: 'Waiting for analyst approval — block_firewall', runtime: '02:11', success: 100, tools: 5 },
+    { id: 'PATCHPILOT-01',    role: 'PatchPilot',             color: '#88C057', status: 'IDLE',    task: 'Awaiting remediation vulnerability assignments', runtime: '00:00', success: 99, tools: 0 },
+    { id: 'GATEKEEPER-01',    role: 'GatekeeperAgent',        color: '#E5A862', status: 'ACTIVE',  task: 'Auditing impossible travel ID anomalies', runtime: '33:10', success: 95, tools: 201 },
+    { id: 'VANGUARD-01',      role: 'VanguardAgent',          color: '#3B6FE3', status: 'IDLE',    task: 'Awaiting SBOM composition updates', runtime: '00:00', success: 100, tools: 0 },
+    { id: 'MIRAGE-01',        role: 'MirageAgent',            color: '#D84C7F', status: 'ACTIVE',  task: 'Monitoring deception honeypot beacons', runtime: '100:10', success: 100, tools: 50 },
+    { id: 'SCOUT-01',         role: 'ScoutAgent',             color: '#88C057', status: 'ACTIVE',  task: 'Passive network discovery on subnet /24', runtime: '41:15', success: 90, tools: 334 },
+    { id: 'GOVERNOR-01',      role: 'GovernorAgent',          color: '#E5A862', status: 'IDLE',    task: 'Awaiting compliance cross-mapping requests', runtime: '00:00', success: 98, tools: 0 },
+    { id: 'COMMUNICATOR-01',  role: 'CommunicatorAgent',      color: '#3B6FE3', status: 'ACTIVE',  task: 'Synthesizing executive report for INC-2023-981', runtime: '01:22', success: 99, tools: 4 },
+    { id: 'WATCHDOG-01',      role: 'WatchdogAgent',          color: '#EF4444', status: 'ACTIVE',  task: 'Monitoring hive telemetry health & latency', runtime: '124:00', success: 100, tools: 888 },
   ],
   '/api/evidence': [
-    { id: 'EVD-001', source: 'EDR',   timestamp: '14:02:11', agent: 'SENTINEL-01', sha256: 'e3b0c44...b855', type: 'Memory Dump',   name: 'HOST-DX9-memdump.dmp', size: '3.2 GB' },
-    { id: 'EVD-002', source: 'EDR',   timestamp: '14:02:12', agent: 'SENTINEL-01', sha256: 'a8f7c12...d3e1', type: 'Payload',       name: 'ps_payload.b64',       size: '4.1 KB' },
-    { id: 'EVD-003', source: 'SIEM',  timestamp: '14:01:55', agent: 'HERALD-03',   sha256: 'f2d89ab...cc42', type: 'Network PCAP',  name: 'network_1014.pcap',    size: '22 MB' },
-    { id: 'EVD-004', source: 'SOAR',  timestamp: '14:02:14', agent: 'WARDEN-07',   sha256: 'b1c23ef...aa99', type: 'Report',        name: 'gap_analysis_INC-981.pdf', size: '1.8 MB' },
+    { id: 'EVD-001', source: 'EDR',   timestamp: '14:02:11', agent: 'MANAGER-01', sha256: 'e3b0c44...b855', type: 'Memory Dump',   name: 'HOST-DX9-memdump.dmp', size: '3.2 GB' },
+    { id: 'EVD-002', source: 'EDR',   timestamp: '14:02:12', agent: 'MANAGER-01', sha256: 'a8f7c12...d3e1', type: 'Payload',       name: 'ps_payload.b64',       size: '4.1 KB' },
+    { id: 'EVD-003', source: 'SIEM',  timestamp: '14:01:55', agent: 'TRIAGE-01',   sha256: 'f2d89ab...cc42', type: 'Network PCAP',  name: 'network_1014.pcap',    size: '22 MB' },
+    { id: 'EVD-004', source: 'SOAR',  timestamp: '14:02:14', agent: 'RESPONDER-01',   sha256: 'b1c23ef...aa99', type: 'Report',        name: 'gap_analysis_INC-981.pdf', size: '1.8 MB' },
   ],
   '/api/actions': [
-    { id: 'ACT-001', type: 'HOST_ISOLATION',  agent: 'WARDEN-07', target: 'Host-DX9',   risk: 92, status: 'PENDING', description: 'Isolate Host-DX9 by blocking all inbound/outbound traffic via host-based firewall.', impacted: ['Host-DX9', '192.168.1.105', 'KR\\admin'] },
-    { id: 'ACT-002', type: 'ACCOUNT_DISABLE', agent: 'SENTINEL-01', target: 'KR\\admin', risk: 74, status: 'PENDING', description: "Disable KR\\admin account in Active Directory to prevent further lateral movement.", impacted: ['KR\\admin', 'srv-dc01'] },
+    { id: 'ACT-001', type: 'HOST_ISOLATION',  agent: 'RESPONDER-01', target: 'Host-DX9',   risk: 92, status: 'PENDING', description: 'Isolate Host-DX9 by blocking all inbound/outbound traffic via host-based firewall.', impacted: ['Host-DX9', '192.168.1.105', 'KR\\admin'] },
+    { id: 'ACT-002', type: 'ACCOUNT_DISABLE', agent: 'MANAGER-01', target: 'KR\\admin', risk: 74, status: 'PENDING', description: "Disable KR\\admin account in Active Directory to prevent further lateral movement.", impacted: ['KR\\admin', 'srv-dc01'] },
   ],
 };
 
 // ── Live Reasoning Event Templates ───────────────────────────────────
 const makeEvent = (i) => {
   const templates = [
-    { type: 'THOUGHT', agent: 'SENTINEL-01', color: '#D84C7F', content: `Detected anomalous beacon from 192.168.1.105 to external C2 server. Interval: 60s. Evaluating pattern similarity to known APT infrastructure.`, entities: ['192.168.1.105'], mitre: 'T1071.001', confidence: 88, tool: 'beacon_analyzer', duration: '2.1s', evidence: ['EVD-003'], reasoning: `Query matched 14 IOCs in internal TI database. Beaconing interval aligns with APT-29 C2 profile. Risk score elevated by 12 points.` },
-    { type: 'ACTION',  agent: 'HERALD-03',   color: '#3B6FE3', content: null, code: `query_siem --timerange "-1h" --filter "source_ip=192.168.1.105"`, entities: ['192.168.1.105'], mitre: 'T1078', confidence: 91, tool: 'siem_query', duration: '0.8s', evidence: ['EVD-001'], reasoning: `SIEM query to correlate lateral movement events in the last hour. 4 matching events found.` },
-    { type: 'OBSERVATION', agent: 'SENTINEL-01', color: '#88C057', content: `SIEM returned 4 correlated events. Host-WS4 communicating with same external IP. Expanding blast radius to include Host-WS4 in isolation scope.`, entities: ['Host-WS4', '192.168.1.105'], mitre: 'T1021', confidence: 85, tool: 'correlation_engine', duration: '1.4s', evidence: ['EVD-003'], reasoning: `Two hosts now confirmed communicating with C2 infrastructure. Probability of coordinated attack increased to 94%.` },
-    { type: 'THOUGHT',  agent: 'RECON-02',   color: '#D84C7F', content: `Memory analysis of HOST-DX9 dump reveals injected shellcode in svchost.exe PID 9912. Shellcode pattern matches Cobalt Strike beacon.`, entities: ['svchost.exe', 'Host-DX9'], mitre: 'T1055', confidence: 96, tool: 'memory_analyzer', duration: '8.2s', evidence: ['EVD-001'], reasoning: `Shellcode signature matches 98.4% of known Cobalt Strike loader. Injected region: .text segment override at 0x7FF8.` },
-    { type: 'ACTION',  agent: 'WARDEN-07',   color: '#E5A862', content: null, code: `block_firewall --rule OUTBOUND --dst 203.0.113.45 --priority HIGH`, entities: ['192.168.1.105', 'Host-DX9'], mitre: 'T1562.004', confidence: 93, tool: 'firewall_api', duration: '0.3s', evidence: [], reasoning: `C2 IP blocked at perimeter to stop beaconing while investigation continues. Non-disruptive — no internal traffic affected.`, isPending: true },
+    { type: 'THOUGHT', agent: 'MANAGER-01', color: '#D84C7F', content: `Detected anomalous beacon from 192.168.1.105 to external C2 server. Interval: 60s. Evaluating pattern similarity to known APT infrastructure.`, entities: ['192.168.1.105'], mitre: 'T1071.001', confidence: 88, tool: 'beacon_analyzer', duration: '2.1s', evidence: ['EVD-003'], reasoning: `Query matched 14 IOCs in internal TI database. Beaconing interval aligns with APT-29 C2 profile. Risk score elevated by 12 points.` },
+    { type: 'ACTION',  agent: 'TRIAGE-01',   color: '#3B6FE3', content: null, code: `query_siem --timerange "-1h" --filter "source_ip=192.168.1.105"`, entities: ['192.168.1.105'], mitre: 'T1078', confidence: 91, tool: 'siem_query', duration: '0.8s', evidence: ['EVD-001'], reasoning: `SIEM query to correlate lateral movement events in the last hour. 4 matching events found.` },
+    { type: 'OBSERVATION', agent: 'MANAGER-01', color: '#88C057', content: `SIEM returned 4 correlated events. Host-WS4 communicating with same external IP. Expanding blast radius to include Host-WS4 in isolation scope.`, entities: ['Host-WS4', '192.168.1.105'], mitre: 'T1021', confidence: 85, tool: 'correlation_engine', duration: '1.4s', evidence: ['EVD-003'], reasoning: `Two hosts now confirmed communicating with C2 infrastructure. Probability of coordinated attack increased to 94%.` },
+    { type: 'THOUGHT',  agent: 'FORENSICS-01',   color: '#D84C7F', content: `Memory analysis of HOST-DX9 dump reveals injected shellcode in svchost.exe PID 9912. Shellcode pattern matches Cobalt Strike beacon.`, entities: ['svchost.exe', 'Host-DX9'], mitre: 'T1055', confidence: 96, tool: 'memory_analyzer', duration: '8.2s', evidence: ['EVD-001'], reasoning: `Shellcode signature matches 98.4% of known Cobalt Strike loader. Injected region: .text segment override at 0x7FF8.` },
+    { type: 'ACTION',  agent: 'RESPONDER-01',   color: '#E5A862', content: null, code: `block_firewall --rule OUTBOUND --dst 203.0.113.45 --priority HIGH`, entities: ['192.168.1.105', 'Host-DX9'], mitre: 'T1562.004', confidence: 93, tool: 'firewall_api', duration: '0.3s', evidence: [], reasoning: `C2 IP blocked at perimeter to stop beaconing while investigation continues. Non-disruptive — no internal traffic affected.`, isPending: true },
   ];
   return { ...templates[i % templates.length], id: `EVT-LIVE-${Date.now()}-${i}`, timestamp: new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 }) };
 };
