@@ -40,6 +40,18 @@ Reetz Cyber Automation (RCA) offers three engagement tiers designed to scale wit
 
 ---
 
+## Tier 4: Air-Gapped Appliance (Fully On-Prem)
+*Best for: Defense contractors and critical manufacturing requiring absolute data sovereignty.*
+
+- **Scope**: The entire Agentic SOC "Hive Mind" is deployed locally on a ruggedized RCA hardware appliance on the client's network. Uses local LLM inference (e.g., Ollama) instead of cloud APIs. Zero outbound internet connection required.
+- **Deliverables**: Hardened physical edge appliance, locally hosted dashboard, bi-annual secure USB updates.
+- **Service Type**: Premium Annual Retainer + Hardware Cost.
+- **Target Price**:
+    - **One-time Hardware/Setup**: $15,000+
+    - **Monthly Retainer**: **$8,000 - $12,000/mo**
+
+---
+
 ## Variable Factors
 Prices may be adjusted based on the following:
 1. **Node Count**: Significant discounts available for sites with >500 IP-connected industrial devices.

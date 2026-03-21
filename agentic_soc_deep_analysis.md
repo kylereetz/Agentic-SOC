@@ -31,6 +31,22 @@ The [EventBus](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/soc/bus/eve
 
 ---
 
+## Production Deployment Strategy
+
+To balance deep OT network visibility with the horizontal scaling needed for 24 agents, Sentinel is deployed via one of two primary topologies:
+
+### 1. Hybrid Edge-to-Cloud (Standard Enterprise)
+This is the default topology for most SMMs and mid-market manufacturing clients.
+- **The Edge Sensor**: A small, ruggedized Docker appliance (e.g., Intel NUC) is installed directly on the client's network. It runs only the "Operations Pillar" ingestion agents (`Scout`, `TrafficSieve`, `LogGuardian`) wielding elevated `CAP_NET_RAW` privileges to perform Modbus probes and ARP sweeps.
+- **The Cloud Brain**: The edge sensor streams sanitized, normalized events over outbound TLS to the centrally hosted AWS/GCP instance. This cloud subscription hosts the heavy "Cognitive" agents (`Orchestrator`, `Investigator`), the SQLite/WAL event bus, the web-accessible Dashboard, and securely handles API requests to Google Ultra using rotated vault keys. API keys never reside on the client premise.
+
+### 2. The Air-Gapped Appliance (Defense/Critical Infrastructure)
+Built for clients with strict data sovereignty or zero-trust mandates where telemetry cannot leave the building.
+- **Full On-Premise Execution**: The entire `docker-compose.yml` stack, including the `InvestigationManager` and Dashboard, is deployed on a heavy local server (e.g., Minisforum with deep GPU/RAM capacity).
+- **Local Inference**: Cloud LLM API calls are swapped for local inference models (e.g., `Ollama`) handling the ReAct reasoning loops entirely offline, identical to the RCA internal Lab environment setup.
+
+---
+
 ## The "Top-Notch" Factor (Competitive Analysis)
 
 ### 1. Multi-Agent Consensus Logic
