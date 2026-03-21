@@ -22,12 +22,13 @@ from pydantic import BaseModel
 from soc.bootstrap import get_soc_path
 from soc.bus.event_queue import EventBus
 from soc.security.vault import Vault
+from soc.security.crypto_cat import sign_action
 from soc.agents.responder import ResponderAgent
 from soc.agents.topology_mapper import TopologyMapper
 
 # ── CONFIG ──────────────────────────────────────────────────────────────────
 vault_path = get_soc_path("configs", "secrets.json")
-vault = Vault(vault_path)
+vault = Vault(vault_path, role="api")
 vault_data = vault.load()
 
 # Initialize API Secret Key if not present in Vault
@@ -252,15 +253,18 @@ async def get_cases(user: User = Depends(get_current_user)):
 async def approve_action(action_id: str, user: User = Depends(check_role(["admin"]))):
     """Approve and execute a containment action (Human Approval Gate). Admin only."""
     # Input validation: check for alphanumeric or UUID-like pattern (hex and hyphens)
-    if not action_id or not re.match(r"^[a-zA-Z0-9-]+$", action_id):
+    if not action_id or not re.match(r"^[a-zA-Z0-9_.-]+$", action_id):
         logger.warning(f"Invalid action_id format received: '{action_id}' (User: {user.username})")
         raise HTTPException(status_code=400, detail="Invalid Action ID format.")
 
+    # Generate the Cryptographic Action Token (IdP signature)
+    cat_signature = sign_action(action_id, SECRET_KEY)
+
     responder = ResponderAgent()
-    success = responder.approve_action(action_id)
+    success = responder.approve_action(action_id, cat_signature)
     if not success:
-        logger.error(f"Action approval failed: ID {action_id} not found or already approved. (User: {user.username})")
-        raise HTTPException(status_code=404, detail=f"Action ID {action_id} not found or already approved.")
+        logger.error(f"Action approval failed: Invalid signature or ID {action_id} not found. (User: {user.username})")
+        raise HTTPException(status_code=403, detail="Approval rejected: Invalid signature or missing action.")
     
     logger.info(f"Action {action_id} approved by {user.username}.")
     return {"status": "success", "message": f"Action {action_id} approved."}

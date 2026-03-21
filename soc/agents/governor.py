@@ -36,7 +36,7 @@ class GovernorAgent:
         self.agent_id = "SENTINEL-GOVERNOR"
         self._processed_cases = set()
         
-        vault = Vault(get_soc_path("configs", "secrets.json"))
+        vault = Vault(get_soc_path("configs", "secrets.json"), role="governor")
         secrets_data = vault.load()
         self.api_key = secrets_data.get("llm_api_keys", {}).get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY")
 

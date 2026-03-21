@@ -249,6 +249,19 @@ class TriageEngine:
                 best_match.description += f" [INTEL BOOST from {old_sev}]"
                 logger.info(f"[IQ] Boosted {best_match.source_ip} to {best_match.severity}")
 
+        # [SECURITY] Structural Is_Stateful Check (Anti-Spoofing DoS Mitigation)
+        if best_match and best_match.severity == "CRITICAL":
+            is_stateful = self._verify_stateful_correlation(event)
+            if not is_stateful:
+                logger.warning(
+                    f"[SECURITY_OVERRIDE] {best_match.source_ip} alert downgraded from CRITICAL to WARNING: "
+                    f"No stateful connection or EDR corroboration (Spoofing Protection)."
+                )
+                best_match.severity = "WARNING"
+                best_match.description += " [SYSTEM OVERRIDE: Downgraded to WARNING due to lack of stateful connection or EDR corroboration (Spoofing Protection)]."
+                if best_match.classification == "malicious":
+                    best_match.classification = "suspicious"
+
         return best_match
 
     def _apply_auto_tuning(self, alert: TriageAlert) -> TriageAlert:
@@ -294,6 +307,27 @@ class TriageEngine:
             
         self.alert_history[ip].append(alert)
         return alert
+
+    def _verify_stateful_correlation(self, event: Dict[str, Any]) -> bool:
+        """
+        [SECURITY] Anti-Spoofing DoS Protection.
+        Verifies if an event has a completed TCP handshake or EDR correlation.
+        Connectionless protocols (UDP/ICMP/Raw) without EDR data are unverified.
+        """
+        # 1. Check for explicit EDR correlation flag
+        if event.get("edr_correlated") is True:
+            return True
+            
+        # 2. Check protocol statefulness
+        protocol = str(event.get("protocol", "")).upper()
+        if protocol == "TCP":
+            flags = str(event.get("flags", "")).upper()
+            # If it's TCP, we need evidence of an established connection
+            if "ACK" in flags or "PSH" in flags or "FIN" in flags or "RST" in flags:
+                return True
+                
+        # 3. Connectionless/uncorroborated
+        return False
 
 
 # ---------------------------------------------------------------------------

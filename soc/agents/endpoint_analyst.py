@@ -31,7 +31,7 @@ class EndpointAnalystAgent:
         self.agent_id = "SENTINEL-ENDPOINT-ANALYST"
         
         # Load Vault securely
-        vault = Vault(get_soc_path("configs", "secrets.json"))
+        vault = Vault(get_soc_path("configs", "secrets.json"), role="endpoint_analyst")
         secrets_data = vault.load()
         self.api_key = secrets_data.get("llm_api_keys", {}).get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY")
 

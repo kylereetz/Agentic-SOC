@@ -164,7 +164,7 @@ class LibrarianAgent:
     async def _generate_embedding(self, text: str) -> List[float]:
         """Generate real Gemini embedding or fallback to mock."""
         from soc.security.vault import Vault
-        vault = Vault(get_soc_path("configs", "secrets.json"))
+        vault = Vault(get_soc_path("configs", "secrets.json"), role="librarian")
         api_key = vault.load().get("llm_api_keys", {}).get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY")
         if api_key:
             try:

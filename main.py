@@ -458,13 +458,22 @@ def backup(output: str = typer.Option("rca_backup.zip", help="Output zip filenam
 # =========================================================================
 @app.command()
 def approve(action_id: str = typer.Argument(..., help="ID of the action to approve")):
-    """Approve a pending containment action by its ID."""
+    """Approve a pending containment action by its ID (requires Vault secret)."""
     from soc.agents.responder import ResponderAgent
+    from soc.security.vault import Vault
+    from soc.bootstrap import get_soc_path
+    from soc.security.crypto_cat import sign_action
+    
+    vault = Vault(get_soc_path("configs", "secrets.json"), role="admin")
+    admin_secret = vault.load().get("api_secret_key", "")
+    
+    cat_signature = sign_action(action_id, admin_secret)
     responder = ResponderAgent()
-    if responder.approve_action(action_id):
-        console.print(f"[bold green]Success:[/bold green] Action {action_id} approved and archived.")
+    
+    if responder.approve_action(action_id, cat_signature):
+        console.print(f"[bold green]Success:[/bold green] Action {action_id} APPROVED via CAT signature and archived.")
     else:
-        console.print(f"[bold red]Error:[/bold red] Action {action_id} not found or already approved.")
+        console.print(f"[bold red]Error:[/bold red] Action approval REJECTED. Invalid CAT or action not found.")
 
 if __name__ == "__main__":
     app()

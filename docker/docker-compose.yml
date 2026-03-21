@@ -28,7 +28,9 @@ services:
       - ..:/app
     depends_on:
       - soc-api
-    privileged: true # Required for network sniffing/ARP scans
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
 
   soc-triage:
     build:
@@ -217,6 +219,12 @@ services:
       - "5173:80"
     depends_on:
       - soc-api
+
+networks:
+  soc-management:
+    driver: bridge
+  soc-agents:
+    driver: bridge
 
 volumes:
   soc-data:

@@ -231,6 +231,17 @@ class ScoutAgent:
 
         current_inventory = sentinel.get_inventory()
 
+        # --- OSINT Schema Whitelisting (Prompt Injection Mitigation) ---
+        if not hasattr(self, 'osint_sandbox'):
+            from soc.security.osint_sandbox import OSINTSandbox
+            self.osint_sandbox = OSINTSandbox()
+            
+        for ip, asset in current_inventory.items():
+            logger.info(f"Sandbox sanitizing OSINT for {ip} ...")
+            # We enforce Pydantic structured whitelisting on external intel
+            safe_osint = self.osint_sandbox.fetch_and_sanitize_osint(ip)
+            asset["osint"] = safe_osint
+
         # --- Diff & Bus Push ---
         diff = InventoryDiff(self.previous_inventory, current_inventory)
         if diff.has_changes:

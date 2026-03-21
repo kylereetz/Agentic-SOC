@@ -31,7 +31,7 @@ class CommunicatorAgent:
         self.is_running = False
         self.agent_id = "SENTINEL-COMMUNICATOR"
         
-        vault = Vault(get_soc_path("configs", "secrets.json"))
+        vault = Vault(get_soc_path("configs", "secrets.json"), role="communicator")
         secrets_data = vault.load()
         self.api_key = secrets_data.get("llm_api_keys", {}).get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY")
 

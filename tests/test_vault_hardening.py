@@ -13,8 +13,9 @@ def test_vault_hardening():
     if os.path.exists(vault_path):
         os.remove(vault_path)
         
-    vault = Vault(vault_path)
+    vault = Vault(vault_path, role="admin")
     secrets_payload = {
+        "api_secret_key": "top-secret-hitl-token",
         "agents": {
             "scout": {"api_key": "old-key", "last_rotated": "never"}
         }
@@ -60,6 +61,25 @@ def test_vault_hardening():
             sys.exit(1)
     except Exception as e:
         print(f"[SUCCESS] Vault raised error without key: {e}")
+
+    # 6. EPHEMERAL NAMESPACING TEST (Confused Deputy Prevention)
+    print("\n--- Testing Ephemeral Namespacing (Confused Deputy) ---")
+    os.environ["SOC_VAULT_KEY"] = test_key
+    vault_admin = Vault(vault_path, role="admin")
+    admin_data = vault_admin.load()
+    if "api_secret_key" in admin_data:
+        print("[SUCCESS] Admin Vault namespace correctly retained api_secret_key.")
+    else:
+        print("[FAILURE] Admin Vault namespace incorrectly stripped api_secret_key!")
+        sys.exit(1)
+
+    vault_scout = Vault(vault_path, role="scout")
+    scout_data = vault_scout.load()
+    if "api_secret_key" not in scout_data:
+        print("[SUCCESS] Scout Vault namespace correctly stripped api_secret_key.")
+    else:
+        print("[FAILURE] Confused Deputy Vulnerability! Scout retained api_secret_key!")
+        sys.exit(1)
 
 if __name__ == "__main__":
     test_vault_hardening()

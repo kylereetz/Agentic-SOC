@@ -1,0 +1,21 @@
+{
+  "version": "1.0",
+  "secure": false,
+  "payload": {
+    "step_id": "b216ba2f",
+    "investigation_id": "INC-20260320_201400-5C27633A",
+    "agent": "SENTINEL-01",
+    "type": "ERROR",
+    "content": "LLM error: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually pass the key with `genai.configure(api_key=my_api_key)`.\n    - Or set up Application Default Credentials, see https://ai.google.dev/gemini-api/docs/oauth for more information.",
+    "tool": null,
+    "tool_args": null,
+    "tool_result": null,
+    "mitre": null,
+    "confidence": 0,
+    "duration": null,
+    "reasoning": "",
+    "timestamp": "2026-03-20T20:14:12.601783+00:00",
+    "hive_contribution": false
+  },
+  "signature": "unsigned"
+}

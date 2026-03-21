@@ -1,6 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, ANY
 from soc.api.main import app, USERS_DB, create_access_token
 
 client = TestClient(app)
@@ -22,7 +22,7 @@ def test_approve_action_valid(mock_responder_class, admin_token):
     
     assert response.status_code == 200
     assert response.json()["status"] == "success"
-    mock_responder.approve_action.assert_called_once_with(action_id)
+    mock_responder.approve_action.assert_called_once_with(action_id, ANY)
 
 @patch("soc.api.main.ResponderAgent")
 def test_approve_action_invalid_format(mock_responder_class, admin_token):
@@ -50,9 +50,9 @@ def test_approve_action_not_found(mock_responder_class, admin_token):
         headers={"Authorization": f"Bearer {admin_token}"}
     )
     
-    assert response.status_code == 404
-    assert "not found or already approved" in response.json()["detail"]
-    mock_responder.approve_action.assert_called_once_with(action_id)
+    assert response.status_code == 403
+    assert "Approval rejected" in response.json()["detail"]
+    mock_responder.approve_action.assert_called_once_with(action_id, ANY)
 
 def test_approve_action_unauthorized():
     action_id = "some-id"

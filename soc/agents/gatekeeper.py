@@ -54,7 +54,7 @@ class GatekeeperAgent:
     def __init__(self, rules_path: str = GATEKEEPER_RULES_PATH):
         self.in_bus = EventBus("identity_events")
         self.triage_bus = EventBus("triage_alerts")
-        self.vault = Vault(SECRETS_PATH)
+        self.vault = Vault(SECRETS_PATH, role="gatekeeper")
         self.rules = self._load_rules(rules_path)
         self.user_states: Dict[str, Dict[str, Any]] = {} # user_id -> state
         self.is_running = False

@@ -10,10 +10,11 @@ class Vault:
     Secure storage for SOC secrets.
     Encrypts data at rest using AES-256 (Fernet).
     """
-    def __init__(self, vault_path: str):
+    def __init__(self, vault_path: str, role: str = "default"):
         self.vault_path = vault_path
         self.vault_key = os.environ.get("SOC_VAULT_KEY")
         self.cipher = None
+        self.role = role
 
         if self.vault_key:
             try:
@@ -39,7 +40,7 @@ class Vault:
                 # Attempt to decrypt
                 try:
                     decrypted_data = self.cipher.decrypt(raw_data)
-                    return json.loads(decrypted_data)
+                    return self._namespace_data(json.loads(decrypted_data))
                 except Exception:
                     # If decryption fails but we have a key, it might be a newly set key on old data 
                     # or the data is plain-text. 
@@ -47,10 +48,20 @@ class Vault:
                     return {}
             else:
                 # Fallback to plain-text JSON if no cipher
-                return json.loads(raw_data)
+                return self._namespace_data(json.loads(raw_data))
         except Exception as e:
             logger.error(f"Failed to load vault: {e}")
             return {}
+
+    def _namespace_data(self, data: dict) -> dict:
+        """[SECURITY] Enforces Ephemeral Namespacing by stripping unauthorized keys."""
+        ADMIN_ROLES = {"admin", "api", "orchestrator", "responder"}
+        
+        if self.role not in ADMIN_ROLES:
+            # Strip highly sensitive tokens from standard worker agents (Confused Deputy Prevention)
+            data.pop("api_secret_key", None)
+            
+        return data
 
     def save(self, data: dict):
         """Encrypt and save data to the vault."""

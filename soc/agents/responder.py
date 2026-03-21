@@ -24,6 +24,9 @@ from typing import Any, Dict, List, Optional
 
 from soc.bootstrap import get_soc_path
 from soc.bus.event_queue import EventBus
+from soc.security.vault import Vault
+from soc.security.crypto_cat import verify_cat
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -214,10 +217,20 @@ class ResponderAgent:
             "autonomy_drift": 0.05 # [VQ] Metadata for Dashboard animation
         }
 
-    def approve_action(self, action_id: str):
+    def approve_action(self, action_id: str, cat_signature: str = None):
         """
-        Move an action from PENDING to EXECUTED.
+        Move an action from PENDING to EXECUTED, requiring a Cryptographic Action Token.
         """
+        # Load the admin secret to verify the CAT
+        vault_path = get_soc_path("configs", "secrets.json")
+        vault = Vault(vault_path, role="responder")
+        vault_data = vault.load()
+        admin_secret = vault_data.get("api_secret_key", "")
+        
+        if not verify_cat(action_id, cat_signature, admin_secret):
+            logger.error(f"[SECURITY] UNAUTHORIZED ACCESS ATTEMPT: Invalid or missing CAT for Action {action_id}")
+            return False
+
         for action in self.pending_actions:
             if action["id"] == action_id:
                 action["status"] = "APPROVED"
