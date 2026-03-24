@@ -17,7 +17,7 @@ class OTSecurityAnalyst(InvestigatorAgent):
     Specializes in Modbus, Profinet, EtherNet/IP, and PLC safety.
     """
     def __init__(self, config_path: str = DEFAULT_CONFIG_PATH):
-        super().__init__(config_path)
+        super().__init__(config_path, routing_topic="topic_ot")
         self.agent_name = "SENTINEL-OT"
         self._set_specialized_prompt()
 
@@ -49,7 +49,7 @@ class NetworkAnalyst(InvestigatorAgent):
     Focuses on beaconing patterns, C2 infrastructure, and pivoting.
     """
     def __init__(self, config_path: str = DEFAULT_CONFIG_PATH):
-        super().__init__(config_path)
+        super().__init__(config_path, routing_topic="topic_network")
         self.agent_name = "SENTINEL-NET"
         self._set_specialized_prompt()
 
@@ -76,7 +76,7 @@ class IdentityAnalyst(InvestigatorAgent):
     Expert in Active Directory, Privilege Escalation, and Credential Theft.
     """
     def __init__(self, config_path: str = DEFAULT_CONFIG_PATH):
-        super().__init__(config_path)
+        super().__init__(config_path, routing_topic="topic_identity")
         self.agent_name = "SENTINEL-ID"
         self._set_specialized_prompt()
 
@@ -105,7 +105,7 @@ class RemediationAnalyst(InvestigatorAgent):
     Translates forensic findings into actionable remediation steps.
     """
     def __init__(self, config_path: str = DEFAULT_CONFIG_PATH):
-        super().__init__(config_path)
+        super().__init__(config_path, routing_topic="topic_remediation")
         self.agent_name = "SENTINEL-FIX"
         self._set_specialized_prompt()
 
@@ -136,7 +136,7 @@ class CloudWraith(InvestigatorAgent):
     Focuses on IAM privilege escalation, bucket exposure, and cloud-native attacks.
     """
     def __init__(self, config_path: str = DEFAULT_CONFIG_PATH):
-        super().__init__(config_path)
+        super().__init__(config_path, routing_topic="topic_cloud")
         self.agent_name = "SENTINEL-CLOUD"
         self._set_specialized_prompt()
 
@@ -160,7 +160,7 @@ class MalwarePathologist(InvestigatorAgent):
     Expert in Static/Dynamic Binary Analysis and Sandbox execution.
     """
     def __init__(self, config_path: str = DEFAULT_CONFIG_PATH):
-        super().__init__(config_path)
+        super().__init__(config_path, routing_topic="topic_malware")
         self.agent_name = "SENTINEL-LAB"
         self._set_specialized_prompt()
 
@@ -183,7 +183,7 @@ class ThreatHunter(InvestigatorAgent):
     Proactive Hunter focusing on Living-off-the-Land (LotL) and Persistence.
     """
     def __init__(self, config_path: str = DEFAULT_CONFIG_PATH):
-        super().__init__(config_path)
+        super().__init__(config_path, routing_topic="topic_network")
         self.agent_name = "SENTINEL-HUNT"
         self._set_specialized_prompt()
 
@@ -222,3 +222,29 @@ def get_specialist_for_alert(alert: Dict[str, Any]) -> InvestigatorAgent:
 
     # Default to Network or Generalist
     return NetworkAnalyst()
+
+def get_topic_for_alert(alert: Dict[str, Any]) -> str:
+    """
+    Determine the appropriate EventBus topic queue for an alert based on metadata.
+    """
+    rule_name = alert.get("rule_name", "").lower()
+    mitre_ttp = alert.get("mitre_ttp", "")
+    
+    # OT Protocols
+    if any(p in rule_name for p in ["modbus", "profinet", "ethernetip", "plc"]) or mitre_ttp.startswith("T08"):
+        return "topic_ot"
+    
+    # Identity / Creds
+    if any(p in rule_name for p in ["credential", "mimikatz", "identity", "active directory", "account"]):
+        return "topic_identity"
+    
+    # Cloud
+    if any(p in rule_name for p in ["aws", "azure", "s3", "cloud", "iam"]):
+        return "topic_cloud"
+
+    # Malware / Lab
+    if any(p in rule_name for p in ["malicious", "beacon", "injected", "malware", "lsass"]):
+        return "topic_malware"
+
+    # Default to Network or Generalist
+    return "topic_network"

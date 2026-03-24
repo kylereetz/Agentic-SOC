@@ -21,8 +21,8 @@ Instead of monolithic scanners, RCA deploys **24 task-specific Agents** organize
 ## 2. Hardened Safety: "The Sentinel Silence" Protocol
 The primary fear in industrial security is "The Ping of Death" or an autonomous agent going rogue. RCA’s architecture is hardened with:
 
-1.  **"Sentinel Silence" Fallback**: If communication with the central bus is interrupted, every agent immediately reverts to a local **Passive Persistence Mode**, maintaining safety and uptime.
-2.  **Rule of Zero (Human Apex)**: All destructive actions or Critical severity containment require a validated `HUMAN_APPROVAL_TOKEN`.
+1.  **"Zero-Phone-Home" Air-Gap**: The entire 24-agent Hive operates on a dedicated hardware appliance. No data ever leaves the client's network, meeting the strictest "Dark Network" requirements for critical infrastructure.
+2.  **Rule of Zero (Human Apex)**: All destructive actions or Critical severity containment require a validated **Human Approval Verdict** via the local console.
 3.  **OT-First Prioritization**: Operational Safety takes precedence over IT data integrity in all emergency automated decisions.
 
 ---

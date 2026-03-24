@@ -33,7 +33,7 @@ Company is committed to maintaining the highest standard of data privacy and sec
 ## 7. Statement of Work (SOW) Framework
 Specific scopes of work, resource allocations, engagement tiers, and customized deliverables shall be governed by a separate Statement of Work (SOW), which shall be incorporated into this Agreement as an Exhibit.
 - **SLA Variations**: Specific response time exceptions, maintenance window overrides, or priority routing requirements will be explicitly detailed in the SOW.
-- **Resource Limits & LLM Constraints**: The SOW specifies compute resource constraints, including absolute limits on RCA Agent LLM token usage ("Tokens per Client"). Upon reaching 95% of allocated tokens, Company will notify Client. Excess usage required for active incident remediation may result in overage charges or temporary telemetry throttling, subject to Client's predefined approval matrix.
+- **On-Premise Compute Limitations**: The SOW specifies local compute resource boundaries relative to the deployed hardware appliance. In the event of extreme network traffic spikes causing local inference limits to be reached, the System will dynamically throttle lower-priority log normalization pipelines to prioritize immediate threat triage and remediation constraints, ensuring zero active monitoring downtime.
 - **Conflict Resolution**: In the event of a conflict between the terms of this MSA and any corresponding SOW, the terms of the SOW shall prevail exclusively for that specific engagement.
 
 ## 8. Incident Notification SLA

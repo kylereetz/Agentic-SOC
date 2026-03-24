@@ -105,7 +105,12 @@ class InvestigationManager:
 
     def _init_db(self):
         """[SQ] Initialize SQLite database for scale."""
-        self.conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+        from soc.network.service_mesh import ServiceMesh
+        self.conn = ServiceMesh.connect_db(
+            client_identity="manager",
+            db_path=DB_PATH,
+            check_same_thread=False
+        )
         self.conn.row_factory = sqlite3.Row
         # [EQ] Enable SQLite WAL mode natively
         self.conn.execute("PRAGMA journal_mode=WAL")

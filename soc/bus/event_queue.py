@@ -25,6 +25,8 @@ import time
 import hmac
 import hashlib
 import base64
+import re
+import base64
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
@@ -84,6 +86,20 @@ class EventBus:
         expected = self._sign(data)
         return hmac.compare_digest(expected, signature)
 
+    def _sanitize_payload(self, data: Any) -> Any:
+        """
+        [SECURITY] Recursively neutralize XML/HTML syntax from string payloads
+        to prevent Context Poisoning (Prompt Injection) against downstream LLMs.
+        """
+        if isinstance(data, str):
+            # Replace XML brackets to neutralize prompt escape sequences
+            return data.replace("<", "[").replace(">", "]")
+        elif isinstance(data, dict):
+            return {k: self._sanitize_payload(v) for k, v in data.items()}
+        elif isinstance(data, list):
+            return [self._sanitize_payload(item) for item in data]
+        return data
+
     def push(self, payload: Dict[str, Any]) -> str:
         """
         Push a secured event onto the channel.
@@ -92,7 +108,9 @@ class EventBus:
         filename = f"event_{ts}.json"
         filepath = os.path.join(self.channel_dir, filename)
 
-        raw_json = json.dumps(payload).encode()
+        # [Hardening] Sanitize Prompt Injection Vectors
+        safe_payload = self._sanitize_payload(payload)
+        raw_json = json.dumps(safe_payload).encode()
         
         # [Hardening] Encrypt and Sign
         if self.cipher and self.bus_key:
@@ -108,7 +126,7 @@ class EventBus:
             storage_obj = {
                 "version": "1.0",
                 "secure": False,
-                "payload": payload, # Plain dict
+                "payload": safe_payload, # Plain dict
                 "signature": "unsigned"
             }
 

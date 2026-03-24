@@ -44,6 +44,7 @@ Below is the exhaustive list of specialized agents categorized by our 4-Pillar s
 | **SENTINEL-GATEKEEPER** | Identity & Access | Detects MFA fatigue, impossible travel, and NHI (Non-Human Identity) risk. |
 | **SENTINEL-VANGUARD** | Supply Chain Risk | Ingests SBOMs to instantly flag zero-day impacts on nested libraries. |
 | **SENTINEL-MIRAGE** | Deception Operations | Deploys and monitors lightweight honeypots (PLCs, CAD shares) and canaries. |
+| **SENTINEL-RED** | Adversary Simulation | Injects synthetic OT/Network threats to continuously audit SOC true-positive detection efficacy. |
 
 ---
 

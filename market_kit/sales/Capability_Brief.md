@@ -4,8 +4,8 @@
 ## The Challenge: CMMC Deadline Urgency
 Defense Industrial Base (DIB) contractors face a critical mandate to enforce NIST 800-171 controls under CMMC 2.0. Traditional security tools fail to address the complexity of **Operational Technology (OT)** environments, leading to compliance gaps, audit friction, and unmitigated risk.
 
-## The Solution: The SENTINEL-RCA "Digital Hive Mind"
-RCA provides a "Living Compliance" ecosystem powered by a **24-agent Digital Hive Mind**. Unlike standard SOAR tools, our SOC employs autonomous LLM-driven specialized agents that collaborate to detect, investigate, and remediate threats in real-time.
+## The Solution: The RCA "SOC-in-a-Box"
+RCA provides a "Zero-Phone-Home" security ecosystem powered by a **24-agent Digital Hive Mind**. Deployed as a self-contained, air-gapped hardware appliance, our SOC employs autonomous LLM-driven specialized agents that operate strictly on-premise for absolute data sovereignty.
 
 ### Core Technology: The Engine
 - **Passive & Active Discovery**: Non-intrusive asset identification via `SENTINEL-SCOUT`.
@@ -27,9 +27,9 @@ Our SOC is a fleet of specialized AI agents working in tandem:
 
 | Tier | Focus | Key Deliverable |
 |---|---|---|
-| **Tier 1: Baseline Audit** | Point-in-time Compliance | NIST 800-171 Gap Analysis & Assessment Report |
-| **Tier 2: Scout-Enabled Visibility** | Continuous Monitoring | Real-time Asset Inventory + Quarterly Compliance Drift Logs |
-| **Tier 3: The Full Hive SOC** | Proactive Autonomous Defense | 24-Agent Hive Deployment + LLM-Driven Incident Response |
+| **Tier 1: Strategic Audit** | Baseline Compliance | Portable Rig Site Survey & NIST 800-171 Gap Analysis |
+| **Tier 2: Hive-Monitor** | Continuous Visibility | Ruggedized "Lite" Appliance + Real-time Asset Inventory |
+| **Tier 3: The Full Hive SOC** | Autonomous Defense | High-Performance "SOC-in-a-Box" + Full 24-Agent Autonomy |
 
 ## Why Sentinel-RCA?
 - **OT-First DNA**: Built specifically for manufacturing and industrial environments where uptime is critical.

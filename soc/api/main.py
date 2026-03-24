@@ -111,6 +111,9 @@ class StatusResponse(BaseModel):
     scout_status: str
     bus_sizes: Dict[str, int]
 
+class ApprovalRequest(BaseModel):
+    approved_indices: Optional[List[int]] = None
+
 # ── AUTH UTILS ──────────────────────────────────────────────────────────────
 def create_access_token(data: dict):
     to_encode = data.copy()
@@ -250,7 +253,7 @@ async def get_cases(user: User = Depends(get_current_user)):
     return sorted(cases, key=lambda x: x.get("created_at", ""), reverse=True)
 
 @app.post("/approve/{action_id}")
-async def approve_action(action_id: str, user: User = Depends(check_role(["admin"]))):
+async def approve_action(action_id: str, req: ApprovalRequest, user: User = Depends(check_role(["admin"]))):
     """Approve and execute a containment action (Human Approval Gate). Admin only."""
     # Input validation: check for alphanumeric or UUID-like pattern (hex and hyphens)
     if not action_id or not re.match(r"^[a-zA-Z0-9_.-]+$", action_id):
@@ -261,7 +264,7 @@ async def approve_action(action_id: str, user: User = Depends(check_role(["admin
     cat_signature = sign_action(action_id, SECRET_KEY)
 
     responder = ResponderAgent()
-    success = responder.approve_action(action_id, cat_signature)
+    success = responder.approve_action(action_id, cat_signature, req.approved_indices)
     if not success:
         logger.error(f"Action approval failed: Invalid signature or ID {action_id} not found. (User: {user.username})")
         raise HTTPException(status_code=403, detail="Approval rejected: Invalid signature or missing action.")
@@ -287,7 +290,7 @@ async def get_agent_telemetry(agent_id: str):
             "uptime_seconds": random.randint(3600, 86400),
             "success_rate": round(random.uniform(88.0, 99.9), 1),
             "tools_executed_today": random.randint(12, 450),
-            "tokens_consumed": random.randint(50000, 1500000)
+            "compute_cycles": random.randint(50000, 1500000)
         },
         "recent_events": [
             {

@@ -19,10 +19,10 @@
 *   **Narrative**: "Your IT guy is great at laptops and email. But does he know what a Modbus packet looks like? Does he know why pinging a 1995 Allen-Bradley PLC might crash your entire assembly line? Most cyber companies treat your shop floor like an office. We treat it like the mission-critical environment it is."
 *   **Message**: OT security requires specialized, 'polite' tools.
 
-## Slide 4: Reetz Cyber Automation: Your Agentic SOC
-*   **Visual**: A sleek, modern dashboard showing agents represented by icons (Scout, Triage, Responder).
-*   **Narrative**: "We don't just send auditors in suits to give you a 200-page list of problems. We deploy **Agentic AI**. These are lightweight, tireless workers that live on your network. They find your assets, map them to NIST controls, and watch for threats—24/7."
-*   **Message**: Automation that speaks "Shop Floor."
+## Slide 4: The RCA "SOC-in-a-Box"
+*   **Visual**: A photo of a ruggedized, industrial-grade small form factor PC with the RCA logo.
+*   **Narrative**: "We don't just send auditors in suits to give you a 200-page list of problems. We deploy a **self-contained, air-gapped brain**. This hardened appliance lives on your network and runs 24 specialized AI agents that find your assets, map them to NIST controls, and watch for threats—without ever needing an internet connection."
+*   **Message**: An autonomous SOC that respects your data sovereignty.
 
 ## Slide 5: The RCA Engine (The Core)
 *   **Visual**: Three interlocking gears: Sentinel (Discovery), Mapper (Compliance), Industrial (Safety).

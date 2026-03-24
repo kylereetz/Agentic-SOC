@@ -15,6 +15,7 @@ Containment Strategy:
 """
 
 import asyncio
+import ipaddress
 import json
 import logging
 import os
@@ -160,6 +161,14 @@ class ResponderAgent:
         
         # [IQ] Detect OS from alert metadata or defaults
         target_os = alert.get("os_type", "windows").lower() 
+        
+        # [SECURITY] Shell Command Injection Remediation
+        try:
+            # Implicitly strips shell metacharacters by enforcing pure IP struct
+            ipaddress.ip_address(target_ip)
+            is_valid_ip = True
+        except ValueError:
+            is_valid_ip = False
 
         action = {
             "id": f"ACT_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S_%f')}",
@@ -174,30 +183,35 @@ class ResponderAgent:
         }
 
         # Strategy 1: OT Quarantine
-        if "ot_device" in rule_id.lower() or "modbus" in rule_id.lower():
+        if not is_valid_ip:
+            action["strategy"] = "VALIDATION_FAILED"
+            action["commands"] = [{"cmd": f"# BLOCKED: Command injection or invalid IP detected in '{target_ip}'", "status": "REJECTED_BY_SYSTEM"}]
+            action["status"] = "REJECTED_BY_SYSTEM"
+            logger.critical(f"[SECURITY] Invalid IP format detected, blocking command generation for: {target_ip}")
+        elif "ot_device" in rule_id.lower() or "modbus" in rule_id.lower():
             action["strategy"] = "QUARANTINE_NEW_OT"
             if target_os == "linux":
                 action["commands"] = [
-                    f"iptables -A INPUT -s {target_ip} -j DROP",
-                    f"iptables -A OUTPUT -d {target_ip} -j DROP"
+                    {"cmd": f"iptables -A INPUT -s {target_ip} -j DROP", "status": "PENDING_APPROVAL"},
+                    {"cmd": f"iptables -A OUTPUT -d {target_ip} -j DROP", "status": "PENDING_APPROVAL"}
                 ]
             else:
                 action["commands"] = [
-                    f"New-NetFirewallRule -DisplayName 'RCA-Q-{target_ip}' -Direction Inbound -RemoteAddress {target_ip} -Action Block",
-                    f"New-NetFirewallRule -DisplayName 'RCA-Q-{target_ip}' -Direction Outbound -RemoteAddress {target_ip} -Action Block"
+                    {"cmd": f"New-NetFirewallRule -DisplayName 'RCA-Q-{target_ip}' -Direction Inbound -RemoteAddress {target_ip} -Action Block", "status": "PENDING_APPROVAL"},
+                    {"cmd": f"New-NetFirewallRule -DisplayName 'RCA-Q-{target_ip}' -Direction Outbound -RemoteAddress {target_ip} -Action Block", "status": "PENDING_APPROVAL"}
                 ]
         
         # Strategy 2: Lateral Movement
         elif "scan" in rule_id.lower() or "lateral" in rule_id.lower():
             action["strategy"] = "SCAN_ISOLATION"
             if target_os == "linux":
-                action["commands"] = [f"ip route add blackhole {target_ip}"]
+                action["commands"] = [{"cmd": f"ip route add blackhole {target_ip}", "status": "PENDING_APPROVAL"}]
             else:
-                action["commands"] = [f"route add {target_ip} mask 255.255.255.255 127.0.0.1"]
+                action["commands"] = [{"cmd": f"route add {target_ip} mask 255.255.255.255 127.0.0.1", "status": "PENDING_APPROVAL"}]
             
         else:
             action["strategy"] = "INVESTIGATIVE_LOGGING"
-            action["commands"] = [f"# Manual review required for {rule_id}"]
+            action["commands"] = [{"cmd": f"# Manual review required for {rule_id}", "status": "PENDING_APPROVAL"}]
 
         return action
 
@@ -217,9 +231,10 @@ class ResponderAgent:
             "autonomy_drift": 0.05 # [VQ] Metadata for Dashboard animation
         }
 
-    def approve_action(self, action_id: str, cat_signature: str = None):
+    def approve_action(self, action_id: str, cat_signature: Optional[str] = None, approved_indices: Optional[List[int]] = None):
         """
-        Move an action from PENDING to EXECUTED, requiring a Cryptographic Action Token.
+        Move an action from PENDING to VERDICT_RENDERED, requiring a Cryptographic Action Token.
+        Granularly approves or rejects individual commands based on approved_indices.
         """
         # Load the admin secret to verify the CAT
         vault_path = get_soc_path("configs", "secrets.json")
@@ -233,8 +248,20 @@ class ResponderAgent:
 
         for action in self.pending_actions:
             if action["id"] == action_id:
-                action["status"] = "APPROVED"
+                # If no specific indices provided, approve all by default (legacy behavior)
+                target_indices = approved_indices if approved_indices is not None else list(range(len(action["commands"])))
+
+                executed_auth_commands = []
+                for idx, cmd_obj in enumerate(action["commands"]):
+                    if idx in target_indices:
+                        cmd_obj["status"] = "APPROVED"
+                        executed_auth_commands.append(cmd_obj["cmd"])
+                    else:
+                        cmd_obj["status"] = "REJECTED"
+
+                action["status"] = "VERDICT_RENDERED"
                 action["executed_at"] = datetime.now(timezone.utc).isoformat()
+                action["executed_commands"] = executed_auth_commands
                 
                 # Log to incident log
                 self._log_incident(action)
@@ -242,7 +269,7 @@ class ResponderAgent:
                 # Remove from pending
                 self.pending_actions.remove(action)
                 self._save_pending()
-                logger.info(f"Action {action_id} APPROVED and archived.")
+                logger.info(f"Action {action_id} processed with {len(executed_auth_commands)} approved commands.")
                 return True
         return False
 

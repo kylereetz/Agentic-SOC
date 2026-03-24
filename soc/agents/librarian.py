@@ -17,6 +17,7 @@ import asyncio
 import json
 import logging
 import os
+import sqlite3
 import numpy as np
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
@@ -30,7 +31,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-LIBRARIAN_INDEX_PATH = get_soc_path("reports", "librarian_index.json")
+LIBRARIAN_DB_PATH = get_soc_path("reports", "soc_rag_index.db")
 
 import google.generativeai as genai
 
@@ -44,9 +45,8 @@ class LibrarianAgent:
         self.query_bus = EventBus("memory_queries") # Investigators poll here
         self.response_bus = EventBus("memory_responses")
         
-        self.index: Dict[str, Dict[str, Any]] = {} # case_id -> {embedding, summary}
-        self.index_lock = asyncio.Lock()
         self.is_running = False
+        self.conn = None
         
         # [IQ] Configure Gemini for Embeddings
         from soc.security.vault import Vault
@@ -57,22 +57,39 @@ class LibrarianAgent:
         else:
             logger.warning("[IQ] No GEMINI_API_KEY found. Librarian will fall back to mock embeddings.")
             
-        self._load_index()
+        self._init_db()
 
-    def _load_index(self):
-        """[EQ] Load existing vector index from disk."""
-        if os.path.exists(LIBRARIAN_INDEX_PATH):
+    def _init_db(self):
+        """[SQ] Initialize SQLite database for horizontally scaled vector search."""
+        from soc.network.service_mesh import ServiceMesh
+        self.conn = ServiceMesh.connect_db(client_identity="librarian", db_path=LIBRARIAN_DB_PATH)
+        self.conn.row_factory = sqlite3.Row
+        self.conn.execute("PRAGMA journal_mode=WAL")
+        self.conn.execute("""
+            CREATE TABLE IF NOT EXISTS vector_memory (
+                case_id TEXT PRIMARY KEY,
+                summary TEXT,
+                hypothesis TEXT,
+                mitre TEXT,
+                embedding_json TEXT,
+                timestamp TEXT
+            )
+        """)
+        
+        # [IQ] Option B: Register native SQLite scalar function for Cosine Similarity
+        def cosine_sim_sql(emb1_str, emb2_str):
+            if not emb1_str or not emb2_str: return 0.0
             try:
-                with open(LIBRARIAN_INDEX_PATH, "r") as f:
-                    self.index = json.load(f)
-                logger.info(f"[EQ] Loaded {len(self.index)} cases into semantic memory.")
-            except Exception as e:
-                logger.error(f"Failed to load librarian index: {e}")
+                a = np.array(json.loads(emb1_str))
+                b = np.array(json.loads(emb2_str))
+                norm = np.linalg.norm(a) * np.linalg.norm(b)
+                if norm == 0: return 0.0
+                return float(np.dot(a, b) / norm)
+            except Exception:
+                return 0.0
 
-    def _save_index(self):
-        """Persist index to disk."""
-        with open(LIBRARIAN_INDEX_PATH, "w") as f:
-            json.dump(self.index, f, indent=2)
+        self.conn.create_function("cosine_sim", 2, cosine_sim_sql)
+        self.conn.commit()
 
     async def run(self):
         """Main async engine for the Librarian."""
@@ -86,12 +103,11 @@ class LibrarianAgent:
         await asyncio.gather(*tasks)
 
     async def _monitor_case_updates(self):
-        """[IQ] Ingest new cases and generate embeddings."""
+        """[IQ] Ingest new cases and generate embeddings securely directly into WAL DB."""
         while self.is_running:
             case_data = await asyncio.to_thread(self.case_bus.pop)
             if case_data:
                 case_id = case_data.get("case_id")
-                # Build rich context for indexing
                 content = (
                     f"Summary: {case_data.get('summary')} "
                     f"Mitre: {case_data.get('mitre_ttp')} "
@@ -99,19 +115,24 @@ class LibrarianAgent:
                     f"Reasoning: {' '.join(case_data.get('reasoning_steps', []))}"
                 )
                 
-                # [IQ] Semantic Embedding via Gemini
                 embedding = await self._generate_embedding(content)
                 
-                async with self.index_lock:
-                    self.index[case_id] = {
-                        "summary": case_data.get("summary"),
-                        "hypothesis": case_data.get("hypothesis"),
-                        "mitre": case_data.get("mitre_ttp"),
-                        "embedding": embedding,
-                        "timestamp": datetime.now(timezone.utc).isoformat()
-                    }
-                self._save_index()
-                logger.info(f"[IQ] Indexed Case {case_id} into semantic memory.")
+                sql = """
+                    INSERT OR REPLACE INTO vector_memory 
+                    (case_id, summary, hypothesis, mitre, embedding_json, timestamp) 
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """
+                if self.conn:
+                    self.conn.execute(sql, (
+                        case_id,
+                        case_data.get("summary"),
+                        case_data.get("hypothesis"),
+                        case_data.get("mitre_ttp"),
+                        json.dumps(embedding),
+                        datetime.now(timezone.utc).isoformat()
+                    ))
+                    self.conn.commit()
+                logger.info(f"[IQ] Indexed Case {case_id} into SQLite semantic memory.")
             else:
                 await asyncio.sleep(0.1)
 
@@ -137,29 +158,31 @@ class LibrarianAgent:
                 await asyncio.sleep(0.1)
 
     async def search(self, query: str, limit: int = 3) -> List[Dict[str, Any]]:
-        """[IQ] Perform semantic search over the index."""
-        async with self.index_lock:
-            if not self.index:
-                return []
-            
+        """[IQ] Perform highly-scaled semantic search via custom SQLite scalar function."""
         query_embedding = await self._generate_embedding(query)
-        scored_results = []
+        query_emb_str = json.dumps(query_embedding)
         
-        for case_id, data in self.index.items():
-            # [IQ] Cosine Similarity
-            score = self._cosine_similarity(query_embedding, data["embedding"])
-            scored_results.append({
-                "case_id": case_id,
-                "summary": data["summary"],
-                "hypothesis": data["hypothesis"],
-                "mitre": data.get("mitre", "None"),
-                "similarity": round(float(score), 3),
-                "relevance": "HIGH" if score > 0.8 else "MEDIUM" if score > 0.5 else "LOW"
-            })
-            
-        # Sort by score desc
-        scored_results.sort(key=lambda x: x["similarity"], reverse=True)
-        return scored_results[:limit]
+        scored_results = []
+        if self.conn:
+            sql = """
+                SELECT case_id, summary, hypothesis, mitre, 
+                       cosine_sim(embedding_json, ?) as similarity 
+                FROM vector_memory 
+                ORDER BY similarity DESC 
+                LIMIT ?
+            """
+            cursor = self.conn.execute(sql, (query_emb_str, limit))
+            for row in cursor:
+                score = row["similarity"]
+                scored_results.append({
+                    "case_id": row["case_id"],
+                    "summary": row["summary"],
+                    "hypothesis": row["hypothesis"],
+                    "mitre": row["mitre"],
+                    "similarity": round(float(score), 3),
+                    "relevance": "HIGH" if score > 0.8 else "MEDIUM" if score > 0.5 else "LOW"
+                })
+        return scored_results
 
     async def _generate_embedding(self, text: str) -> List[float]:
         """Generate real Gemini embedding or fallback to mock."""

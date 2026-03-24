@@ -15,21 +15,26 @@ Deploy RCA on a hardened **NUC** or **Industrial Gateway**.
 
 ## 3. Deployment Sequence
 
-### 3.1 Bootstraping
-Initialize the local environment:
+## 3. Deployment Sequence
+
+### 3.1 Bootstraping & Offline Model Sync
+Load the pre-trained local LLM models and RAG data from the encrypted USB drive:
 ```powershell
+python main.py sync-models D:\RCA_Models
 python main.py bootstrap
 ```
 
-### 3.2 Configuration
-Update `soc/configs/scout_config.json` with the client's subnet ranges obtained during onboarding.
+### 3.2 Network Siting & Air-Gap Verification
+1. Physically connect the appliance's `eth1` interface to the OT switch's SPAN (Mirror) port.
+2. Ensure the appliance has **NO outbound gateway route** to the internet.
+3. Update `soc/configs/scout_config.json` with the local IP subnets to monitor passively.
 
 ### 3.3 Connectivity Check
-Verify the API is reachable locally for the human approval gate:
+Verify the API is reachable securely over the Local LAN for the human approval gate:
 ```powershell
 python main.py start api
 ```
-Then navigate to `http://localhost:8000/status` to confirm agent health.
+Then navigate to `https://<appliance-local-ip>:8443/status` from an administrative jump-box to confirm Agent health.
 
 ### 3.4 First-Run Audit
 Kick off the initial discovery:

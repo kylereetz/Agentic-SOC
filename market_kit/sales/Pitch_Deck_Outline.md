@@ -1,4 +1,4 @@
-# "Local Hero" Pitch Deck — Strategic Outline
+6# "Local Hero" Pitch Deck — Strategic Outline
 **Target Audience**: Wisconsin-based Small/Medium Manufacturers (SMMs)
 
 ## Slide 1: Protection for Wisconsin’s Industrial Hub

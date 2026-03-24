@@ -144,10 +144,10 @@ export default function AgentDetailDrawer({ agentId, onClose }) {
                     <div className="p-3 rounded-lg border" style={{ background: '#111827', borderColor: '#1F2937' }}>
                       <div className="flex items-center gap-2 mb-2 text-[#9CA3AF]">
                         <Zap size={12} />
-                        <span className="text-xs terminal">Tokens Burned</span>
+                        <span className="text-xs terminal">Compute Cycles</span>
                       </div>
                       <p className="text-xl font-bold" style={{ color: '#D84C7F' }}>
-                        {(data.stats.tokens_consumed / 1000).toFixed(1)}k
+                        {(data.stats.compute_cycles / 1000).toFixed(1)}k
                       </p>
                     </div>
 

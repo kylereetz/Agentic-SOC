@@ -1,24 +1,24 @@
 # reetzcyber.com — Landing Page Strategy
 
-**Goal**: Convert Wisconsin manufacturing executives from "Skeptical" to "Interested in a First-Run Audit."
+**Goal**: Convert Critical Infrastructure, Defense, and High-Privacy executives from "Skeptical" to "Interested in an On-Premise Pilot."
 
 ## 1. Hero Section (The "Hook")
-- **Headline**: "Don't Lose Your DoD Contracts to CMMC 2.0."
-- **Sub-headline**: "Reetz Cyber Automation (RCA) provides automated NIST 800-171 monitoring specifically built for the Wisconsin shop floor."
-- **CTA**: "Schedule Your Free Gap Discovery Scan."
+- **Headline**: "The Only Agentic SOC Built for Dark Networks."
+- **Sub-headline**: "Reetz Cyber Automation (RCA) provides automated, military-grade AI threat hunting specifically engineered for air-gapped factories and classified defense labs."
+- **CTA**: "Schedule Your Zero-Cloud Demo."
 
-## 2. The "Shop Floor First" Philosophy
-- **Message**: "We know that in manufacturing, uptime is everything. Our 'Polite Discovery' technology is tested in air-gapped labs to ensure it never disrupts your production line."
+## 2. The "Air-Gapped Advantage" Philosophy
+- **Message**: "We know your data is your most critical asset. Don't upload your factory's IP to a public cloud SaaS just to get security. Our 'SOC-in-a-Box' runs 100% locally. No internet connection required. No SaaS data breaches. Complete data sovereignty."
 
 ## 3. Four-Pillar Service Model
-- **The Engine**: Proprietary logic that understands PLCs and legacy Windows.
+- **The Engine**: Proprietary logic that understands fragile legacy PLCs without active scanning.
+- **The Local AI**: Bleeding-edge LLM reasoning running entirely on the physical appliance via local RAG databases.
 - **The SOC**: 24/7 automated monitoring without the cost of a full-time hire.
-- **Market Ready**: We provide the reports your auditors *actually* want to see.
-- **Business Secure**: Fully insured and LLC-backed for your peace of mind.
+- **Market Ready**: We provide the reports your auditors *actually* want to see for CMMC 2.0 and NIST 800-171 compliance.
 
 ## 4. Trust Signals
 - **Logos**: (Placeholders for local MSP partners or manufacturing associations).
-- **Testimonial**: "RCA simplified the CMMC jargon into a plan my plant manager actually understood."
+- **Testimonial**: "RCA brought advanced AI threat hunting to our factory floor without violating our strict no-cloud OT policies."
 
 ## 5. Footer / Legal
 - **Limitation of Liability Statement**.

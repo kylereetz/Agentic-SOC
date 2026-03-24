@@ -416,14 +416,15 @@ class InvestigatorAgent:
 
     SEVERITY_RANK = {"INFO": 0, "WARNING": 1, "CRITICAL": 2}
 
-    def __init__(self, config_path: str = DEFAULT_CONFIG_PATH):
+    def __init__(self, config_path: str = DEFAULT_CONFIG_PATH, routing_topic: str = "triage_alerts"):
         self.cfg = _load_config(config_path)
         self.agent_name: str = self.cfg["agent_name"]
         self.max_steps: int = self.cfg["max_steps_per_investigation"]
         self.min_severity: str = self.cfg["min_severity"]
+        self.routing_topic = routing_topic
 
         # Buses
-        self.in_bus  = EventBus("triage_alerts")
+        self.in_bus  = EventBus(self.routing_topic)
         self.out_bus = EventBus("investigation_reasoning")
         self.memory_query_bus = EventBus("memory_queries")
         self.memory_response_bus = EventBus("memory_responses")
@@ -477,25 +478,29 @@ class InvestigatorAgent:
     # ------------------------------------------------------------------
     def run_cycle(self) -> int:
         """
-        Pop all pending alerts from the triage bus and investigate each one.
+        Pop all pending alerts from the topic bus and investigate each one.
         Returns the number of investigations completed.
         """
         investigations_run = 0
 
         while True:
-            alert = self.in_bus.pop()
-            if not alert:
+            message = self.in_bus.pop()
+            if not message:
                 break
+
+            # Handle either raw alert payload or wrapped Orchestrator payload
+            alert = message.get("alert") if "alert" in message else message
+            investigation_id = message.get("case_id") if "case_id" in message else self._generate_investigation_id()
 
             severity = alert.get("severity", "INFO")
             if self.SEVERITY_RANK.get(severity, 0) < self.SEVERITY_RANK.get(self.min_severity, 1):
                 logger.info(f"Skipping {severity} alert (below threshold {self.min_severity})")
                 continue
 
-            investigation_id = self._generate_investigation_id()
             logger.info(
                 f"Starting investigation {investigation_id} "
-                f"[{severity}] {alert.get('rule_name', 'Unknown')} — {alert.get('source_ip', '?')}"
+                f"[{severity}] {alert.get('rule_name', 'Unknown')} — {alert.get('source_ip', '?')} "
+                f"from topic: {self.routing_topic}"
             )
 
             steps = self._investigate(alert, investigation_id)
@@ -542,6 +547,11 @@ class InvestigatorAgent:
         initial_prompt = self._build_initial_prompt(alert, investigation_id, delimiter) + hive_context
         messages = [initial_prompt]
         current_message = initial_prompt
+        
+        # [RESOURCE LIMITS]
+        total_case_tokens = 0
+        MAX_CASE_TOKENS = self.cfg.get("max_case_tokens", 100000)
+        consecutive_errors = 0
 
         for step_num in range(1, self.max_steps + 1):
             t_start = time.monotonic()
@@ -553,6 +563,9 @@ class InvestigatorAgent:
                 # [IQ] Billing & Telemetry
                 usage = getattr(response, "usage_metadata", None)
                 if usage:
+                    step_tokens = usage.prompt_token_count + usage.candidates_token_count
+                    total_case_tokens += step_tokens
+                    
                     track_token_usage(
                         self.agent_name,
                         self.cfg["gemini_model"],
@@ -560,6 +573,18 @@ class InvestigatorAgent:
                         usage.candidates_token_count,
                         case_id=investigation_id
                     )
+                    
+                    if total_case_tokens > MAX_CASE_TOKENS:
+                        logger.error(f"[{investigation_id}] Hard token quota exceeded ({total_case_tokens} > {MAX_CASE_TOKENS}). Aborting ReAct.")
+                        EventBus("orchestrator_callbacks").push({
+                            "case_id": investigation_id,
+                            "agent": self.agent_name,
+                            "status": "HUMAN_ESCALATION",
+                            "reason": f"Hard token quota exceeded ({total_case_tokens} tokens). DoW mitigation.",
+                            "findings": self.memory.findings if self.memory else [],
+                            "alert": alert
+                        })
+                        break
             except Exception as exc:
                 logger.error(f"LLM call failed on step {step_num}: {exc}")
                 error_step = self._make_step(
@@ -570,7 +595,20 @@ class InvestigatorAgent:
                 )
                 self._publish_step(error_step)
                 steps.append(error_step)
-                break
+                
+                consecutive_errors += 1
+                if consecutive_errors >= 3:
+                     logger.warning(f"[{investigation_id}] ReAct circuit breaker triggered! 3 consecutive LLM errors.")
+                     EventBus("orchestrator_callbacks").push({
+                         "case_id": investigation_id,
+                         "agent": self.agent_name,
+                         "status": "HUMAN_ESCALATION",
+                         "reason": "Max consecutive LLM failures reached (hallucination circuit breaker).",
+                         "findings": self.memory.findings if self.memory else [],
+                         "alert": alert
+                     })
+                     break
+                continue
 
             duration_s = time.monotonic() - t_start
 
@@ -596,6 +634,7 @@ class InvestigatorAgent:
             # If CONCLUSION reached, we're done
             if step_type == "CONCLUSION":
                 logger.info(f"Investigation {investigation_id} concluded by {self.agent_name}.")
+                findings_data = []
                 if self.memory:
                     self.memory.add_finding(
                         self.agent_name, 
@@ -603,6 +642,16 @@ class InvestigatorAgent:
                         mitre=step.mitre
                     )
                     self.memory.conclusion_consensus.append(self.agent_name)
+                    findings_data = self.memory.findings
+                
+                # [IQ] Hive Coordination: Notify orchestrator of conclusion
+                EventBus("orchestrator_callbacks").push({
+                    "case_id": investigation_id,
+                    "agent": self.agent_name,
+                    "status": "CONCLUDED",
+                    "findings": findings_data,
+                    "alert": alert
+                })
                 break
 
             # If ACTION, dispatch the tool and inject the OBSERVATION
@@ -622,6 +671,26 @@ class InvestigatorAgent:
                     duration="—",
                 )
                 steps.append(obs_step)
+                self._publish_step(obs_step)
+                
+                # Check for tool errors indicating hallucinations
+                if "error:" in obs_text.lower() or "exception:" in obs_text.lower() or "not found" in obs_text.lower():
+                    consecutive_errors += 1
+                    if consecutive_errors >= 3:
+                         logger.warning(f"[{investigation_id}] ReAct circuit breaker triggered! 3 consecutive tool errors.")
+                         EventBus("orchestrator_callbacks").push({
+                             "case_id": investigation_id,
+                             "agent": self.agent_name,
+                             "status": "HUMAN_ESCALATION",
+                             "reason": "Max consecutive tool errors reached (hallucination circuit breaker).",
+                             "findings": self.memory.findings if self.memory else [],
+                             "alert": alert
+                         })
+                         break
+                else:
+                    consecutive_errors = 0
+                    
+                current_message = f"OBSERVATION: {obs_text}"
                 self._publish_step(obs_step)
                 logger.info(f"[{investigation_id}] OBSERVATION from {tool_name}")
 
@@ -652,6 +721,15 @@ class InvestigatorAgent:
                 )
                 steps.append(conclusion)
                 self._publish_step(conclusion)
+                
+                # [IQ] Hive Coordination: Notify orchestrator of forced conclusion
+                EventBus("orchestrator_callbacks").push({
+                    "case_id": investigation_id,
+                    "agent": self.agent_name,
+                    "status": "CONCLUDED",
+                    "findings": self.memory.findings if self.memory else [],
+                    "alert": alert
+                })
             except Exception as exc:
                 logger.error(f"Forced conclusion failed: {exc}")
 

@@ -178,7 +178,7 @@ def patch(
 # =========================================================================
 @app.command()
 def start(
-    agent: str = typer.Argument(..., help="Agent to start: scout, triage, responder, or api")
+    agent: str = typer.Argument(..., help="Agent to start: scout, triage, responder, red-team, or api")
 ):
     """Start a specific SOC agent or the API layer."""
     if agent == "scout":
@@ -252,6 +252,11 @@ def start(
         agent_obj = HunterAgent()
         asyncio.run(agent_obj.run())
 
+    elif agent == "red-team":
+        from soc.agents.red_team import RedTeamAgent
+        agent_obj = RedTeamAgent()
+        asyncio.run(agent_obj.run())
+
     elif agent == "traffic-sieve":
         from soc.agents.traffic_sieve import TrafficSieveAgent
         agent_obj = TrafficSieveAgent()
@@ -291,6 +296,42 @@ def start(
         from soc.agents.malware_pathologist import MalwarePathologistAgent
         agent_obj = MalwarePathologistAgent()
         asyncio.run(agent_obj.run())
+        
+    # --- Distributed Workflow Entrypoints ---
+    elif agent == "specialist-ot":
+        from soc.agents.specialists import OTSecurityAnalyst
+        worker = OTSecurityAnalyst()
+        worker.start()
+        
+    elif agent == "specialist-net":
+        from soc.agents.specialists import NetworkBehaviorAnalyst
+        worker = NetworkBehaviorAnalyst()
+        worker.start()
+        
+    elif agent == "specialist-id":
+        from soc.agents.specialists import IdentityAccessAnalyst
+        worker = IdentityAccessAnalyst()
+        worker.start()
+        
+    elif agent == "specialist-fix":
+        from soc.agents.specialists import RemediationAnalyst
+        worker = RemediationAnalyst()
+        worker.start()
+        
+    elif agent == "specialist-cloud":
+        from soc.agents.specialists import CloudWraith
+        worker = CloudWraith()
+        worker.start()
+
+    elif agent == "specialist-lab":
+        from soc.agents.specialists import MalwarePathologist
+        worker = MalwarePathologist()
+        worker.start()
+
+    elif agent == "specialist-hunt":
+        from soc.agents.specialists import ThreatHunter
+        worker = ThreatHunter()
+        worker.start()
         
     else:
         console.print(f"[bold red]Error:[/bold red] Unknown agent '{agent}'")

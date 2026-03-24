@@ -63,7 +63,7 @@ function makeTelemetryPoints(n = 20) {
   return Array.from({ length: n }, (_, i) => ({
     t: i,
     tokens: 5000 + Math.random() * 12000,
-    cost: 0.02 + Math.random() * 0.18,
+    memory: 12 + Math.random() * 45,
   }));
 }
 
@@ -155,10 +155,10 @@ function TelemetryChart({ data }) {
         <Tooltip
           contentStyle={{ background: '#111827', border: '1px solid #1F2937', borderRadius: 6, fontSize: 11 }}
           labelStyle={{ color: '#6B7280' }}
-          formatter={(v, n) => [n === 'tokens' ? `${Math.round(v).toLocaleString()} tok` : `$${v.toFixed(3)}`, n]}
+          formatter={(v, n) => [n === 'tokens' ? `${Math.round(v).toLocaleString()} tok` : `${v.toFixed(1)} GB`, n]}
         />
         <Area type="monotone" dataKey="tokens" stroke="#3B6FE3" strokeWidth={1.5} fill="url(#tokGrad)" dot={false} />
-        <Area type="monotone" dataKey="cost"   stroke="#D84C7F" strokeWidth={1.5} fill="url(#costGrad)" dot={false} />
+        <Area type="monotone" dataKey="memory" stroke="#D84C7F" strokeWidth={1.5} fill="url(#costGrad)" dot={false} />
       </AreaChart>
     </ResponsiveContainer>
   );
@@ -225,7 +225,7 @@ export default function HiveHealth() {
       })));
 
       setTelemetry(prev => {
-        const next = [...prev.slice(1), { t: prev[prev.length - 1].t + 1, tokens: 5000 + Math.random() * 12000, cost: 0.02 + Math.random() * 0.18 }];
+        const next = [...prev.slice(1), { t: prev[prev.length - 1].t + 1, tokens: 5000 + Math.random() * 12000, memory: 12 + Math.random() * 45 }];
         return next;
       });
 
@@ -290,7 +290,7 @@ export default function HiveHealth() {
           { icon: Activity,   val: `${onlineCount}/24`, label: 'Agents Online',   color: '#88C057' },
           { icon: Clock,      val: `${avgLatency}ms`,    label: 'Avg Latency',     color: '#3B6FE3' },
           { icon: AlertTriangle,val:`${pendingCount}`,   label: 'HITL Pending',    color: '#E5A862' },
-          { icon: DollarSign, val: `$${(telemetry[telemetry.length-1]?.cost || 0.07).toFixed(3)}/s`, label: 'API Cost Rate', color: '#D84C7F' },
+          { icon: Layers, val: `${(telemetry[telemetry.length-1]?.memory || 14.2).toFixed(1)} GB`, label: 'Memory Pressure', color: '#D84C7F' },
         ].map(({ icon: Icon, val, label, color }) => (
           <div key={label} className="flex items-center gap-3 rounded-lg px-4 py-3"
             style={{ background: '#111827', border: '1px solid #1F2937' }}>
@@ -337,11 +337,11 @@ export default function HiveHealth() {
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <TrendingUp size={12} style={{ color: '#3B6FE3' }} />
-                <span className="text-xs terminal" style={{ color: '#6B7280' }}>LLM TOKEN BURN / API COST</span>
+                <span className="text-xs terminal" style={{ color: '#6B7280' }}>INFERENCE LOAD / MEMORY PRESSURE</span>
               </div>
               <div className="flex items-center gap-3 text-xs terminal">
                 <span style={{ color: '#3B6FE3' }}>● Tokens</span>
-                <span style={{ color: '#D84C7F' }}>● Cost ($)</span>
+                <span style={{ color: '#D84C7F' }}>● Memory (GB)</span>
               </div>
             </div>
             <TelemetryChart data={telemetry} />

@@ -9,9 +9,9 @@
 - **Client Primary Site**: [Site Address]
 - **Target Subnets**: [e.g., 10.0.10.0/24, 192.168.1.0/24] 
 - **Engagement Tier**: 
-    - [ ] **Tier 1: Audit-Only** (Single Baseline + PDF Report)
-    - [ ] **Tier 2: Scout + Audit** (Continuous monitoring + Quarterly reports)
-    - [ ] **Tier 3: Full Agentic SOC** (All agents + Incident Response + 4hr SLA)
+    - [ ] **Tier 1: Strategic Audit** (One-Time Baseline + Portable Rig Site Survey)
+    - [ ] **Tier 2: Hive-Monitor** (Rugged "Lite" Appliance + Continuous Asset Visibility)
+    - [ ] **Tier 3: Full Hive SOC** (High-Perf "Pro" Appliance + 24-Agent Autonomous Defense)
 
 ## 2. Project Scope & SOC Agents
 The following services and assets will be deployed based on the selected Tier:
@@ -37,9 +37,9 @@ Client agrees to provide the following within five (5) business days of Start Da
 - Administrative credentials for representative host hardening checks.
 - A designated technical point-of-contact for remediation approval.
 
-## 4. Pricing & Retainer
-- **One-Time Implementation/Audit Fee**: $[Amount]
-- **Monthly SOC Retainer**: $[Amount]/month
+## 4. Hardware & License Licensing
+- **One-Time Hardware/Implemenation Fee**: $[Amount]
+- **Annual Hive License**: $[Amount]/year
 - **Term**: [Duration, e.g., 12 Months]
 - **Payment Terms**: Net 30 days from invoice.
 

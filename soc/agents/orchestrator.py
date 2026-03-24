@@ -31,10 +31,12 @@ class OrchestratorAgent:
     """
     def __init__(self):
         self.in_bus = EventBus("triage_alerts")
+        self.callback_bus = EventBus("orchestrator_callbacks")
         self.manager = InvestigationManager()
         self.queue = asyncio.PriorityQueue()
         self.active_tasks: Dict[str, asyncio.Task] = {}  # case_id -> task
         self.active_hosts: Set[str] = set()               # IPs currently under investigation
+        self.pending_cases: Dict[str, Dict[str, Any]] = {} # Tracks distributed consensus
         self.is_running = False
 
     async def enqueue_alerts(self):
@@ -69,80 +71,100 @@ class OrchestratorAgent:
             try:
                 # Step 0: Initialise CaseMemory for the hive
                 case = self.manager._open_case(alert)
-                from soc.agents.investigator import CaseMemory
-                memory = CaseMemory(case_id=case.case_id)
 
-                # Step 1: Specialist Selection
-                specialist_a = get_specialist_for_alert(alert)
+                # Step 1: Topic Routing Selection
+                from soc.agents.specialists import get_topic_for_alert
+                topic_a = get_topic_for_alert(alert)
                 
-                # [IQ] Consensus Logic: For CRITICAL, add a second specialist (Malware or Hunter)
-                specialists_to_run = [specialist_a]
+                # [IQ] Consensus Logic: For CRITICAL, add a second specialist topic queue
+                topics_to_run = [topic_a]
                 if alert.get("severity") == "CRITICAL":
-                    from soc.agents.specialists import MalwarePathologist, ThreatHunter
-                    # Pick a different secondary based on type
-                    secondary = MalwarePathologist() if "modbus" not in str(alert).lower() else ThreatHunter()
-                    specialists_to_run.append(secondary)
+                    secondary = "topic_malware" if "modbus" not in str(alert).lower() else "topic_network"
+                    if secondary not in topics_to_run:
+                        topics_to_run.append(secondary)
                 
-                # Step 2: Multi-Agent Dispatch
+                # Step 2: Distributed Topic Dispatch
                 self.active_hosts.add(ip)
+                self.pending_cases[case.case_id] = {
+                    "expected": len(topics_to_run),
+                    "alert": alert,
+                    "findings": [],
+                    "conclusions": set()
+                }
                 
-                logger.info(f"[SYNC] Hive Dispatch for {case.case_id} ({len(specialists_to_run)} agents)")
+                logger.info(f"[SYNC] Hive Dispatch for {case.case_id} targeting queues: {topics_to_run}")
                 
-                # Run specialists in parallel
-                tasks = []
-                for s in specialists_to_run:
-                    task = asyncio.create_task(
-                        self._run_specialist_async(s, alert, case.case_id, ip, memory)
-                    )
-                    tasks.append(task)
+                # Publish to topic queues instead of running locally
+                for t in topics_to_run:
+                    bus = EventBus(t)
+                    bus.push({
+                        "case_id": case.case_id,
+                        "alert": alert
+                    })
                 
-                # Wait for all specialists to conclude
-                await asyncio.gather(*tasks)
-
-                # Step 3: Consensus Check & Remediation Hand-off
-                if len(memory.conclusion_consensus) >= len(specialists_to_run):
-                    await self._hand_off_to_remediation(case.case_id, alert, memory)
+                self.queue.task_done()
                 
             except Exception as e:
                 logger.error(f"Failed to dispatch alert: {e}")
-            try:
-                # Cleanup
+                # Cleanup if dispatch completely failed
                 if ip in self.active_hosts:
                     self.active_hosts.remove(ip)
                 self.queue.task_done()
-            except: pass
 
-    async def _run_specialist_async(self, specialist, alert, case_id, host_ip, memory):
-        """[VQ] Async wrapper for specialist analysis with hive memory support."""
-        logger.info(f"[{case_id}] [SYNC] Pulse: Starting {specialist.agent_name}")
-        try:
-            loop = asyncio.get_running_loop()
-            await loop.run_in_executor(None, specialist._investigate, alert, case_id, memory)
-        except Exception as e:
-            logger.error(f"[{case_id}] {specialist.agent_name} failed: {e}")
-        finally:
-            # Note: active_hosts cleanup is now handled in process_queue's finally block if desired,
-            # or here if it's the last task.
-            pass
+    async def _monitor_callbacks(self):
+        """[EQ] Monitor callbacks from independent distributed worker agents."""
+        while self.is_running:
+            cb = await asyncio.to_thread(self.callback_bus.pop)
+            if cb:
+                case_id = cb.get("case_id")
+                agent = cb.get("agent")
+                findings = cb.get("findings", [])
+                
+                if case_id in self.pending_cases:
+                    p = self.pending_cases[case_id]
+                    p["conclusions"].add(agent)
+                    p["findings"].extend(findings)
+                    
+                    logger.info(f"[{case_id}] [SYNC] Received callback from {agent}. ({len(p['conclusions'])}/{p['expected']})")
+                    
+                    if len(p["conclusions"]) >= p["expected"]:
+                        logger.info(f"[{case_id}] [SYNC] Consensus reached!")
+                        # Create memory struct for handoff
+                        from soc.agents.investigator import CaseMemory
+                        memory = CaseMemory(case_id=case_id)
+                        memory.findings = p["findings"]
+                        
+                        await self._hand_off_to_remediation(case_id, p["alert"], memory)
+                        
+                        # Cleanup active host block
+                        ip = p["alert"].get("source_ip", "unknown")
+                        if ip in self.active_hosts:
+                            self.active_hosts.remove(ip)
+                        del self.pending_cases[case_id]
+                else:
+                    logger.warning(f"Received callback for unknown/completed case {case_id} from {agent}")
+            else:
+                await asyncio.sleep(1)
 
     async def _hand_off_to_remediation(self, case_id: str, alert: Dict[str, Any], memory):
         """[VQ] Final collective hand-off to SENTINEL-FIX."""
-        from soc.agents.specialists import RemediationAnalyst
-        logger.info(f"[{case_id}] [SYNC] Consensus reached. Handing off to SENTINEL-FIX...")
-        
-        remediator = RemediationAnalyst()
-        loop = asyncio.get_running_loop()
+        logger.info(f"[{case_id}] [SYNC] Consensus reached. Routing to topic_remediation...")
         
         # Merge finding context
-        hive_summary = "\n".join([f"{f['agent']}: {f['content']}" for f in memory.findings])
+        hive_summary = "\n".join([f"{f.get('agent', 'Unknown')}: {f.get('content', '')}" for f in memory.findings])
         
         remediation_prompt = {
             "task": "DRAFT_REMEDIATION",
             "investigation_summary": hive_summary,
             "original_alert": alert
         }
-        await loop.run_in_executor(None, remediator._investigate, remediation_prompt, case_id, memory)
-        logger.info(f"[{case_id}] [SYNC] Hive Remediation plan completed.")
+        
+        # Push to Remediation queue instead of local execution
+        EventBus("topic_remediation").push({
+            "case_id": case_id,
+            "alert": remediation_prompt
+        })
+        logger.info(f"[{case_id}] [SYNC] Hive Remediation task queued.")
 
     async def _monitor_deadlocks(self):
         """[EQ] Monitor for stuck agents or unresponsive tasks."""
@@ -160,6 +182,7 @@ class OrchestratorAgent:
         await asyncio.gather(
             self.enqueue_alerts(),
             self.process_queue(),
+            self._monitor_callbacks(),
             self._monitor_deadlocks()
         )
 

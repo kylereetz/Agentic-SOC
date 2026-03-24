@@ -6,49 +6,37 @@ Reetz Cyber Automation (RCA) offers three engagement tiers designed to scale wit
 
 ---
 
-## Tier 1: Audit-Only (Baseline)
-*Best for: Initial gap analysis, annual compliance snapshots.*
+## Tier 1: Strategic Audit (Portable Rig)
+*Best for: One-time gap analysis and CMMC baseline assessments.*
 
-- **Scope**: Single subnet scan, NIST 800-171 Rev 3 mapping, Hardening audit of up to 5 representative hosts.
-- **Deliverables**: Gap Analysis Report (PDF), Remediation Roadmap.
+- **Scope**: Multi-subnet scan utilizing the portable RCA Audit Rig, NIST 800-171 Rev 3 mapping, and hardening validation of key industrial assets.
+- **Deliverables**: Gap Analysis Report (PDF), Prioritized Remediation Roadmap, CMMC Maturity Scorecard.
 - **Service Type**: One-time implementation.
-- **Target Price**: **$4,500 - $7,500** (depending on node count).
+- **Target Price**: **$6,500 - $9,500** (site-based).
 
 ---
 
-## Tier 2: Scout + Audit (Continuous Visibility)
-*Best for: Mid-sized contractors needing to maintain a "living" SSP.*
+## Tier 2: Sentinel Hive-Monitor (Hardware Lite)
+*Best for: Continuous compliance visibility and asset inventory without autonomous response.*
 
-- **Scope**: Includes Tier 1, plus continuous passive discovery (Sentinel), automated asset inventory (Scout), and quarterly compliance status updates.
-- **Deliverables**: Real-time Topology Map, Monthly Drift Reports, Quarterly Executive Narratives.
-- **Service Type**: Annual Retainer.
+- **Scope**: Permanent deployment of the RCA "Lite" Hardware Appliance (Fanless/Ruggedized). Includes `SENTINEL-SCOUT` for asset inventory, `SENTINEL-LOG-GUARDIAN` for normalization, and `SENTINEL-AUDITOR` for real-time compliance tracking.
+- **Deliverables**: Hardened Appliance, Local Dashboard Access, Monthly Compliance Drift Reports.
+- **Service Type**: Annual Hive License + Hardware Cost.
 - **Target Price**: 
-    - **One-time Setup**: $3,000
-    - **Monthly Retainer**: **$1,500 - $2,500/mo**
+    - **One-time Hardware/Setup**: $4,500
+    - **Annual Hive License**: **$18,000 - $24,000/yr**
 
 ---
 
-## Tier 3: Full Agentic SOC (Managed Defense)
-*Best for: High-sensitivity sites requiring proactive containment and 4-hour SLAs.*
+## Tier 3: Sentinel Hive-SOC (Hardware Pro)
+*Best for: Full autonomous defense, dark network isolation, and sub-hour mitigation requirements.*
 
-- **Scope**: Includes Tier 2, plus Triage & Responder agents for automated containment, Patch Pilot for remediation script generation, and prioritized access to RCA engineering.
-- **Deliverables**: SOC Dashboard Access, Incident Logs, Priority CMMC Audit Support.
-- **Service Type**: Annual Retainer with SLA.
+- **Scope**: Flagship RCA "Pro" Hardware Appliance (High-compute for local LLM inference). Full access to the **24-Agent Digital Hive Mind**, including `SENTINEL-RESPONDER` for automated isolation, `SENTINEL-INVESTIGATOR` for ReAct-based root cause analysis, and `SENTINEL-FIX` for remediation orchestration.
+- **Deliverables**: High-Performance Appliance, Full Autonomous SOC Access, Priority CMMC Audit Evidence Packages.
+- **Service Type**: Premium Annual Hive License + Pro Hardware.
 - **Target Price**:
-    - **One-time Setup**: $5,000
-    - **Monthly Retainer**: **$4,000 - $6,500/mo**
-
----
-
-## Tier 4: Air-Gapped Appliance (Fully On-Prem)
-*Best for: Defense contractors and critical manufacturing requiring absolute data sovereignty.*
-
-- **Scope**: The entire Agentic SOC "Hive Mind" is deployed locally on a ruggedized RCA hardware appliance on the client's network. Uses local LLM inference (e.g., Ollama) instead of cloud APIs. Zero outbound internet connection required.
-- **Deliverables**: Hardened physical edge appliance, locally hosted dashboard, bi-annual secure USB updates.
-- **Service Type**: Premium Annual Retainer + Hardware Cost.
-- **Target Price**:
-    - **One-time Hardware/Setup**: $15,000+
-    - **Monthly Retainer**: **$8,000 - $12,000/mo**
+    - **One-time Hardware/Setup**: $12,000+
+    - **Annual Hive License**: **$45,000 - $75,000/yr**
 
 ---
 

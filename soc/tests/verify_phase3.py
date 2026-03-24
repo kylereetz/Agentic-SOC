@@ -4,7 +4,7 @@ import time
 from datetime import datetime
 from soc.bus.event_queue import EventBus
 from soc.agents.narrator import NarratorAgent
-from soc.utils.telemetry import track_token_usage, track_business_loss, business_bus
+from soc.utils.telemetry import track_compute_usage, track_business_loss, business_bus
 from soc.bootstrap import get_soc_path
 
 async def test_reporting_pipeline():
@@ -19,10 +19,10 @@ async def test_reporting_pipeline():
             if f.endswith(".pdf"):
                 os.remove(os.path.join(report_dir, f))
     
-    # 2. Simulate Token Usage
-    print("[1/4] Simulating cognitive load (tokens)...")
-    track_token_usage("Investigator", "gemini-1.5-pro", 100, 50, "INC-TEST-001")
-    track_token_usage("Investigator", "gemini-1.5-pro", 200, 80, "INC-TEST-001")
+    # 2. Simulate Compute Load
+    print("[1/4] Simulating cognitive load (compute cycles)...")
+    track_compute_usage("Investigator", "llama-3-8b-instruct", 100, 50, "INC-TEST-001")
+    track_compute_usage("Investigator", "llama-3-8b-instruct", 200, 80, "INC-TEST-001")
     
     # 3. Simulate Closed Case
     print("[2/4] Simulating closed cases...")

@@ -152,8 +152,14 @@ class ForensicsAgent:
             "data_pages": pages # Actual content is now paged
         }
         
-        with open(path, "w") as fh:
-            json.dump(evidence_object, fh, indent=2)
+        from soc.network.service_mesh import CloudStorageGateway
+        
+        # [IAM-Enforced] Route via Storage Gateway to prove Strict IAM Execution Role
+        CloudStorageGateway.put_object(
+            client_role="forensics",
+            file_path=path,
+            data=json.dumps(evidence_object, indent=2)
+        )
             
         # [VQ] Chain of Custody / Evidence Timeline
         self._log_coc_event(
