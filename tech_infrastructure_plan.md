@@ -8,80 +8,16 @@
 
 The 4-pillar repo structure is in place. Below is a quick health-check of each pillar.
 
-| Pillar | Directory | Status |
-|---|---|---|
-| 🔧 The Engine | `engine/` | ✅ Hardening & Core API complete |
-| 🛡️ The SOC | `soc/` | ✅ Agents built, integration gaps exist |
-| 📜 The Ethos | `ethos/` | ✅ Universal Constitution & Agent Profiles established |
-| 📦 The Market Kit | `market_kit/` | ✅ Full Legal & Sales kit complete |
-| 🏢 The Shield | `business/` | 🔴 Empty – not started |
 
----
-
-## Pillar 1 — The Engine (`engine/`)
-
-### What's Built
-- [sentinel.py](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/engine/core/sentinel.py) — Passive sniff + ARP + ICMP discovery ✅
-- [industrial.py](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/engine/core/industrial.py) — Modbus / EtherNet/IP probe ✅
-- [mapper.py](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/engine/core/mapper.py) — NIST 800-171 Rev 2 & Rev 3 compliance matrix generation ✅
-- [detector.py](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/engine/core/detector.py) — Local OS hardening checks ✅
-- [schemas/nist_rev2.json](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/engine/schemas/nist_rev2.json), [schemas/nist_rev3.json](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/engine/schemas/nist_rev3.json) — Control definitions ✅
-- [engine/core/__init__.py](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/engine/core/__init__.py) — Lazy-loading public API surface ✅
-- [engine/core/portscanner.py](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/engine/core/portscanner.py) — IT/OT port scanner (NIST 3.11.2) ✅
-- [engine/schemas/asset_schema.json](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/engine/schemas/asset_schema.json) — Canonical JSON asset schema ✅
-- [engine/tests/](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/engine/tests/) — Pytest suite (Sentinel, Mapper, Scanner, Detector) ✅
-
-### Next Steps
-*All Phase 1 core library hardening tasks complete.*
-
----
-
-## Pillar 2 — The SOC (`soc/`)
-
-### What's Built
-- [main.py](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/main.py) — Unified Typer CLI with `start`, `list`, `approve` subcommands. ✅
-- [soc/api/main.py](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/soc/api/main.py) — FastAPI Status Layer for real-time SOC monitoring. ✅
-- [Market Kit](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/market_kit/) — Full Legal (MSA/SOW) and Sales (Pitch/Brief/Copy) kit. ✅
-- [scout.py](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/soc/agents/scout.py), [triage.py](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/soc/agents/triage.py), [responder.py](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/soc/agents/responder.py) ✅
-- [bus/event_queue.py](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/soc/bus/event_queue.py), [bootstrap.py](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/soc/bootstrap.py) ✅
-- [docker/](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/docker/) — Containerized infrastructure (Dockerfile, Compose) ✅
-- [tests/](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/tests/) — Verification & integration suite ✅
-
-### The Ethos (`ethos/`)
-- [core_ethos.md](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/ethos/core_ethos.md) — Sentinel-RCA Universal Constitution (NIST/CMMC rules) ✅
-- [Agent Profiles](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/ethos/) — Specific directives for all 24 agents (e.g., `ethos_sentinel_auditor.md`) ✅
-
-### Next Steps
 
 #### 4.1 — Pillar 4: Operational Shield
 Expand business workflows and infrastructure.
 - Formalize [Lab_Setup.md](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/business/lab/Lab_Setup.md)
 - Implement automated billing/reporting hooks in `main.py`.
 
----
 
-## Pillar 3 — The Market Kit (`market_kit/`)
 
-### What's Built
-- `sales/Pitch_Deck_Outline.md` — 10-slide deck outline ✅
-- `legal/Master_Service_Agreement.md` — MSA draft (incomplete) ✅
 
-### Next Steps
-
-#### 3.1 — Complete the MSA (`market_kit/legal/Master_Service_Agreement.md`)
-Missing critical sections for a deployable contract:
-- **§6 Data Handling & Confidentiality** — How network scan data is stored/deleted
-- **§7 Statement of Work Template** — Scope, deliverables, pricing tiers
-- **§8 Incident Notification SLA** — RCA's obligation to alert the client within X hours
-
-#### 3.2 — SOW Template (`market_kit/legal/Statement_of_Work_Template.md`)
-A reusable SOW with fill-in-the-blank fields for:
-- Client name, site address, subnet ranges
-- Engagement tier (Audit-Only / Scout+Audit / Full Agentic SOC)
-- Monthly retainer fee
-
-#### 3.3 — One-Page Capability Brief (`market_kit/sales/Capability_Brief.md`)
-A concise, leave-behind document (suitable for printing) covering the three-tier service model and CMMC deadline urgency. More actionable than a deck for cold outreach.
 
 #### 3.4 — Pricing Model (`market_kit/sales/Pricing_Model.md`)
 Define and document the three tiers so sales conversations are consistent:
@@ -154,3 +90,8 @@ graph TD
 | **Week 4** | Shield bootstrap | Self-assessment doc, lab spec, legal entity folder |
 | **Week 5** | API layer | FastAPI status/inventory/alerts endpoints |
 | **Week 6** | Integration test | End-to-end: Scout → Triage → Responder → Audit PDF |
+
+
+
+
+|We have another sleeper! We had created a copilot chatbot tab. We need to turn this into an internal model if that holds value.|

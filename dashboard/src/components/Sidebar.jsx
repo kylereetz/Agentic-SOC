@@ -2,17 +2,19 @@ import React from 'react';
 import {
   Search, AlertTriangle, Bot, BarChart2, Lock,
   FlaskConical, ChevronLeft, ChevronRight, Activity, Wifi,
-  TrendingUp, Shield
+  TrendingUp, Shield, Network, Crosshair
 } from 'lucide-react';
 import { useSOC } from '../store/SOCContext';
 
 const NAV_ITEMS = [
   { icon: Search,       label: 'Investigations',  badge: '3',  color: '#3B6FE3' },
+  { icon: Network,      label: 'Discovery / Audit',             color: '#D84C7F' },
   { icon: AlertTriangle,label: 'Alert Queue',      badge: '14', color: '#EF4444' },
   { icon: Bot,          label: 'Agents',           badge: '24', color: '#D84C7F' },
   { icon: TrendingUp,   label: 'Threat Intel',     badge: '2',  color: '#EF4444' },
   { icon: Shield,       label: 'Governance',                    color: '#A78BFA' },
   { icon: BarChart2,    label: 'Analytics',                     color: '#88C057' },
+  { icon: Crosshair,    label: 'Adversary Sim',                 color: '#EF4444' },
   { icon: Lock,         label: 'Permissions',                   color: '#E5A862' },
   { icon: FlaskConical, label: 'Simulation Mode',               color: '#A78BFA' },
 ];

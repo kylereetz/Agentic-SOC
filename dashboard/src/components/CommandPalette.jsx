@@ -4,10 +4,12 @@ import { useSOC, ENTITY_DB } from '../store/SOCContext';
 
 const COMMANDS = [
   { id: 'open-inv',    label: 'Open Investigation INC-2023-981',  icon: Eye,    group: 'Investigations', action: 'nav:Investigations' },
-  { id: 'open-alerts', label: 'Open Alert Queue',                  icon: Zap,    group: 'Navigation',     action: 'nav:Alert Queue' },
-  { id: 'open-agents', label: 'View Agent Fleet',                  icon: Shield, group: 'Navigation',     action: 'nav:Agents' },
-  { id: 'open-analytics',label: 'Analytics Dashboard',             icon: Eye,    group: 'Navigation',     action: 'nav:Analytics' },
-  { id: 'open-sim',    label: 'Simulation Mode',                   icon: Zap,    group: 'Navigation',     action: 'nav:Simulation Mode' },
+  { id: 'open-discovery', label: 'Open Discovery & Audit',        icon: Zap,    group: 'Navigation',     action: 'nav:Discovery / Audit' },
+  { id: 'open-alerts', label: 'Open Alert Queue',                 icon: Zap,    group: 'Navigation',     action: 'nav:Alert Queue' },
+  { id: 'open-agents', label: 'View Agent Fleet',                 icon: Shield, group: 'Navigation',     action: 'nav:Agents' },
+  { id: 'open-analytics',label: 'Analytics Dashboard',            icon: Eye,    group: 'Navigation',     action: 'nav:Analytics' },
+  { id: 'open-sim',    label: 'Simulation Mode',                  icon: Zap,    group: 'Navigation',     action: 'nav:Simulation Mode' },
+  { id: 'open-adsim',  label: 'Adversary Simulation Range',       icon: Zap,    group: 'Navigation',     action: 'nav:Adversary Sim' },
   { id: 'find-host-dx9',label: 'Find Host → Host-DX9',            icon: Server, group: 'Entities',       action: 'entity:Host-DX9' },
   { id: 'find-srv-dc', label: 'Find Host → srv-dc01',             icon: Server, group: 'Entities',       action: 'entity:srv-dc01' },
   { id: 'find-ip',     label: 'Find IP → 192.168.1.105',          icon: Server, group: 'Entities',       action: 'entity:192.168.1.105' },
@@ -16,7 +18,7 @@ const COMMANDS = [
   { id: 'disable-acct',label: 'Disable Account — KR\\admin',      icon: User,   group: 'Actions',        action: 'approval:ACT-002' },
   { id: 'approve-all', label: 'Approve All Pending Actions',       icon: Zap,    group: 'Actions',        action: 'approve-all' },
   { id: 'reset-pw',    label: 'Reset Password — KR\\admin',       icon: Key,    group: 'Actions',        action: 'reset-pwd' },
-  { id: 'copilot',     label: 'Open AI Copilot',                   icon: Zap,    group: 'Tools',          action: 'copilot:open' },
+  { id: 'copilot',     label: 'Open ChitChat',                       icon: Zap,    group: 'Tools',          action: 'copilot:open' },
 ];
 
 function fuzzyMatch(str, query) {
@@ -32,7 +34,7 @@ function fuzzyMatch(str, query) {
 
 const GROUP_ORDER = ['Navigation', 'Investigations', 'Entities', 'Actions', 'Tools'];
 
-export default function CommandPalette({ onNavigate, onOpenCopilot }) {
+export default function CommandPalette({ onNavigate, onOpenChitChat }) {
   const { cmdPaletteOpen, setCmdPaletteOpen, clickEntity, setApprovalAction, pendingActions } = useSOC();
   const [query, setQuery] = useState('');
   const [selectedIdx, setSelectedIdx] = useState(0);
@@ -65,8 +67,8 @@ export default function CommandPalette({ onNavigate, onOpenCopilot }) {
       const action = pendingActions.find(a => a.id === payload);
       if (action) setApprovalAction(action);
     }
-    if (type === 'copilot')  onOpenCopilot?.();
-  }, [clickEntity, setCmdPaletteOpen, onNavigate, onOpenCopilot, pendingActions, setApprovalAction]);
+    if (type === 'copilot')  onOpenChitChat?.();
+  }, [clickEntity, setCmdPaletteOpen, onNavigate, onOpenChitChat, pendingActions, setApprovalAction]);
 
   const onKeyDown = (e) => {
     if (e.key === 'ArrowDown') { e.preventDefault(); setSelectedIdx(i => Math.min(i + 1, flat.length - 1)); }

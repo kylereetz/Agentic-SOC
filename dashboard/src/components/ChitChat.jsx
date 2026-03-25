@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, X, Bot, User, Sparkles } from 'lucide-react';
+import { useAuth } from '../store/AuthContext';
 
 const SUGGESTIONS = [
   'How did the attacker gain access?',
@@ -11,10 +12,11 @@ const SUGGESTIONS = [
 
 const INITIAL_MESSAGES = [{
   role: 'assistant',
-  text: 'Agentic SOC Copilot ready. I have full context on INC-2023-981. I can answer questions about entities, timelines, evidence, and recommended response actions.',
+  text: 'ChitChat ready. I have full context on INC-2023-981. I can answer questions about entities, timelines, evidence, and recommended response actions.',
   refs: [],
 }];
 
+// CANNED_RESPONSES removed; responses will be fetched from internal model API.
 const CANNED_RESPONSES = {
   'How did the attacker gain access?': {
     text: 'Based on evidence collected by SENTINEL-01, the attacker likely gained initial access via **spear phishing** (T1566.001). A malicious macro in an Office attachment was executed by KR\\admin at 02:14 AM, establishing a PowerShell reverse shell.',
@@ -73,10 +75,11 @@ function Msg({ msg, isLatestAI }) {
           background: isUser ? '#3B6FE322' : '#D84C7F22',
           border: `1px solid ${isUser ? '#3B6FE3' : '#D84C7F'}`,
           boxShadow: isUser ? '0 0 8px rgba(59,111,227,0.2)' : '0 0 8px rgba(216,76,127,0.2)',
-        }}>
+        }}
+      >
         {isUser
           ? <User size={12} style={{ color: '#3B6FE3' }} />
-          : <Bot  size={12} style={{ color: '#D84C7F' }} />}
+          : <Bot size={12} style={{ color: '#D84C7F' }} />}
       </div>
 
       {/* Bubble */}
@@ -86,7 +89,8 @@ function Msg({ msg, isLatestAI }) {
           style={{
             background: isUser ? '#3B6FE311' : '#111827',
             border: `1px solid ${isUser ? '#3B6FE322' : '#1F2937'}`,
-          }}>
+          }}
+        >
           <pre className={`text-xs whitespace-pre-wrap leading-relaxed ${!done && isLatestAI && !isUser ? 'typing-cursor' : ''}`}
             style={{ color: '#CBD5E1', fontFamily: 'Inter, system-ui, sans-serif' }}>
             {isLatestAI && !isUser ? displayed : msg.text}
@@ -110,7 +114,7 @@ function Msg({ msg, isLatestAI }) {
   );
 }
 
-export default function AICopilot({ onClose }) {
+export default function ChitChat({ onClose }) {
   const [messages, setMessages] = useState(INITIAL_MESSAGES);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -128,7 +132,7 @@ export default function AICopilot({ onClose }) {
     setMessages(prev => [...prev, { role: 'user', text: q }]);
     setLoading(true);
 
-    // Deliberate stagger: loading dots → typed response
+    // Simulated delay and response (replace with real fetch later)
     setTimeout(() => {
       const canned = CANNED_RESPONSES[q];
       const aiMsg = canned
@@ -145,7 +149,6 @@ export default function AICopilot({ onClose }) {
 
   return (
     <div className="flex flex-col h-full" style={{ background: '#080d14' }}>
-
       {/* Header */}
       <div
         className="flex items-center gap-2.5 px-4 py-2.5 border-b flex-shrink-0"
@@ -153,7 +156,7 @@ export default function AICopilot({ onClose }) {
         <div className="relative">
           <Sparkles size={13} style={{ color: '#D84C7F' }} className="animate-pulse-magenta" />
         </div>
-        <span className="text-xs font-bold tracking-widest sans" style={{ color: '#E2E8F0' }}>AI COPILOT</span>
+        <span className="text-xs font-bold tracking-widest sans" style={{ color: '#E2E8F0' }}>CHITCHAT</span>
         <span className="text-xs terminal px-2 py-0.5 rounded ml-1 animate-pulse-scale"
           style={{ background: '#D84C7F18', color: '#D84C7F', border: '1px solid #D84C7F33' }}>
           INC-2023-981

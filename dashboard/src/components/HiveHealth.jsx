@@ -13,42 +13,45 @@ import AgentDetailDrawer from './AgentDetailDrawer';
 // ── Mock Data ─────────────────────────────────────────────────────────────────
 const AGENT_ROSTER = [
   // Core Orchestration
-  { id: 'SENTINEL-MANAGER',    pillar: 'Core',     status: 'online',  load: 78, latency: 12, task: 'Managing case INC-2026-041' },
-  { id: 'SENTINEL-ORCHESTRATOR',pillar: 'Core',    status: 'online',  load: 55, latency: 8,  task: 'Routing 6 pending alerts' },
+  { id: 'SENTINEL-ORCHESTRATOR', pillar: 'Core',    status: 'online',  load: 55, latency: 8,  task: 'Routing 6 pending alerts' },
   // Detection & Intelligence
-  { id: 'SENTINEL-TRIAGE',     pillar: 'Intel',    status: 'online',  load: 92, latency: 22, task: 'Classifying 14 queued alerts' },
-  { id: 'SENTINEL-CORRELATOR', pillar: 'Intel',    status: 'online',  load: 61, latency: 15, task: 'Tracking campaign ALPHA-7' },
-  { id: 'SENTINEL-LIBRARIAN',  pillar: 'Intel',    status: 'online',  load: 34, latency: 9,  task: 'Indexing 3 new case records' },
-  { id: 'SENTINEL-HUNTER',     pillar: 'Intel',    status: 'online',  load: 88, latency: 35, task: 'APT29 hypothesis backtrack' },
-  { id: 'SENTINEL-LOG-GUARDIAN',pillar: 'Intel',   status: 'online',  load: 45, latency: 11, task: 'Normalizing Palo Alto logs' },
-  { id: 'SENTINEL-TRAFFIC-SIEVE',pillar:'Intel',   status: 'online',  load: 72, latency: 18, task: 'Analyzing /24 netflow burst' },
-  // Investigation & Engineering
-  { id: 'SENTINEL-INVESTIGATOR',pillar: 'Invest',  status: 'online',  load: 95, latency: 180, task: 'CoT reasoning on ALT-004' },
-  { id: 'SENTINEL-FORENSICS',  pillar: 'Invest',   status: 'online',  load: 67, latency: 42, task: 'Processing HOST-DX9 memdump' },
-  { id: 'SENTINEL-MALWARE-PATH',pillar: 'Invest',  status: 'idle',    load: 0,  latency: 0,  task: 'Idle — awaiting sample' },
-  { id: 'SENTINEL-CLOUD-WRAITH',pillar: 'Invest',  status: 'online',  load: 38, latency: 29, task: 'Watching AWS CloudTrail' },
+  { id: 'SENTINEL-TRIAGE',       pillar: 'Intel',    status: 'online',  load: 92, latency: 22, task: 'Classifying 14 queued alerts' },
+  { id: 'SENTINEL-CORRELATOR',   pillar: 'Intel',    status: 'online',  load: 61, latency: 15, task: 'Tracking campaign ALPHA-7' },
+  { id: 'SENTINEL-LIBRARIAN',    pillar: 'Intel',    status: 'online',  load: 34, latency: 9,  task: 'Indexing 3 new case records' },
+  { id: 'SENTINEL-HUNTER',       pillar: 'Intel',    status: 'online',  load: 88, latency: 35, task: 'APT29 hypothesis backtrack' },
+  { id: 'SENTINEL-LOG-GUARDIAN', pillar: 'Intel',   status: 'online',  load: 45, latency: 11, task: 'Normalizing Palo Alto logs' },
+  { id: 'SENTINEL-TRAFFIC-SIEVE',pillar: 'Intel',   status: 'online',  load: 72, latency: 18, task: 'Analyzing /24 netflow burst' },
+  { id: 'SENTINEL-CLOUD-WRAITH', pillar: 'Intel',   status: 'online',  load: 38, latency: 29, task: 'Watching AWS CloudTrail' },
   // Response & Operations
-  { id: 'SENTINEL-RESPONDER',  pillar: 'Response', status: 'pending', load: 20, latency: 5,  task: 'Awaiting approval: VLAN block' },
-  { id: 'SENTINEL-DISPATCH',   pillar: 'Response', status: 'online',  load: 15, latency: 7,  task: 'Sent PagerDuty alert #1882' },
-  { id: 'SENTINEL-PATCHPILOT', pillar: 'Response', status: 'online',  load: 41, latency: 14, task: 'Scheduling log4j patch wks-04' },
-  { id: 'SENTINEL-GATEKEEPER', pillar: 'Response', status: 'online',  load: 57, latency: 19, task: 'Rotating 3 NHI credentials' },
-  { id: 'SENTINEL-VANGUARD',   pillar: 'Response', status: 'online',  load: 30, latency: 13, task: 'Checking SBOM for CVE-2026-011' },
-  { id: 'SENTINEL-MIRAGE',     pillar: 'Response', status: 'online',  load: 5,  latency: 3,  task: 'Silent — 3 decoys active' },
-  { id: 'SENTINEL-SCOUT',      pillar: 'Response', status: 'online',  load: 22, latency: 21, task: 'Passive OT sweep subnet /16' },
-  // Business & Governance
-  { id: 'SENTINEL-AUDITOR',    pillar: 'Gov',      status: 'online',  load: 18, latency: 6,  task: 'NIST control audit cycle' },
-  { id: 'SENTINEL-RISK-QUANT', pillar: 'Gov',      status: 'online',  load: 25, latency: 8,  task: 'Loss magnitude calculations' },
-  { id: 'SENTINEL-POLICY-ARCH',pillar: 'Gov',      status: 'idle',    load: 0,  latency: 0,  task: 'Idle — awaiting feedback batch' },
-  { id: 'SENTINEL-NARRATOR',   pillar: 'Gov',      status: 'online',  load: 12, latency: 10, task: 'Drafting board summary #7' },
-  { id: 'SENTINEL-WATCHDOG',   pillar: 'Gov',      status: 'online',  load: 8,  latency: 4,  task: 'Heartbeat polling all 24 agents' },
+  { id: 'SENTINEL-RESPONDER',    pillar: 'Response', status: 'pending', load: 20, latency: 5,  task: 'Awaiting approval: VLAN block' },
+  { id: 'SENTINEL-GATEKEEPER',   pillar: 'Response', status: 'online',  load: 57, latency: 19, task: 'Rotating 3 NHI credentials' },
+  { id: 'SENTINEL-VANGUARD',     pillar: 'Response', status: 'online',  load: 30, latency: 13, task: 'Checking SBOM for CVE-2026-011' },
+  { id: 'SENTINEL-MIRAGE',       pillar: 'Response', status: 'online',  load: 5,  latency: 3,  task: 'Silent — 3 decoys active' },
+  { id: 'SENTINEL-SCOUT',        pillar: 'Response', status: 'online',  load: 22, latency: 21, task: 'Passive OT sweep subnet /16' },
+  // Governance & Business
+  { id: 'SENTINEL-GOVERNOR',     pillar: 'Gov',      status: 'online',  load: 25, latency: 8,  task: 'Cross-mapping NIST & CMMC controls' },
+  { id: 'SENTINEL-COMMUNICATOR', pillar: 'Gov',      status: 'online',  load: 12, latency: 10, task: 'Drafting board summary report' },
+  { id: 'SENTINEL-WATCHDOG',     pillar: 'Gov',      status: 'online',  load: 8,  latency: 4,  task: 'Heartbeat polling all agents' },
+  // Adversary Simulation
+  { id: 'SENTINEL-RED-TEAM',     pillar: 'Sim',      status: 'idle',    load: 10, latency: 12, task: 'Awaiting Cyber Range parameters' }
+];
+
+const SPECIALIST_ROSTER = [
+  { id: 'specialist-ot',    label: 'OT Security Analyst',    status: 'online', task: 'Modbus traffic analysis' },
+  { id: 'specialist-net',   label: 'Net Behavior Analyst',   status: 'online', task: 'Baseline comparison' },
+  { id: 'specialist-id',    label: 'Identity Access Analyst',status: 'online', task: 'IAM policy review' },
+  { id: 'specialist-fix',   label: 'Remediation Analyst',    status: 'idle',   task: 'Awaiting assignment' },
+  { id: 'specialist-cloud', label: 'Cloud Wraith',           status: 'online', task: 'IAM diff check' },
+  { id: 'specialist-lab',   label: 'Malware Pathologist',    status: 'idle',   task: 'Sandbox ready' },
+  { id: 'specialist-hunt',  label: 'Threat Hunter',          status: 'online', task: 'Scanning for IOCs' },
 ];
 
 const PILLAR_COLORS = {
   Core:     '#3B6FE3',
   Intel:    '#D84C7F',
-  Invest:   '#E5A862',
   Response: '#88C057',
   Gov:      '#A78BFA',
+  Sim:      '#EF4444'
 };
 
 const STATUS_CFG = {
@@ -58,31 +61,21 @@ const STATUS_CFG = {
   error:   { color: '#EF4444', label: 'ERROR',   pulse: true },
 };
 
-// Generate rolling mock telemetry
-function makeTelemetryPoints(n = 20) {
-  return Array.from({ length: n }, (_, i) => ({
-    t: i,
-    tokens: 5000 + Math.random() * 12000,
-    memory: 12 + Math.random() * 45,
-  }));
-}
-
 const WS_MESSAGES = [
   "ORCHESTRATOR >> routing ALRT-882 to SENTINEL-TRIAGE",
   "TRIAGE >> classified ALRT-882 as HIGH (Kerberoasting)",
-  "MANAGER >> case INC-2026-041 state OPEN → ACTIVE",
-  "INVESTIGATOR >> starting CoT reasoning on ALRT-882",
-  "FORENSICS >> evidence collection requested: HOST-DX9",
+  "ORCHESTRATOR >> case INC-2026-041 state OPEN → ACTIVE",
+  "RED-TEAM >> deploying lateral movement payloads in Cyber Range",
   "CORRELATOR >> attachment: ALRT-882 → campaign ALPHA-7",
   "RESPONDER >> action queued: ISOLATE Switch-04 [PENDING HITL]",
   "HUNTER >> hypothesis APT29-MFG match: 4 historical events",
   "VANGUARD >> SBOM scan complete: 0 zero-days in batch",
   "MIRAGE >> silent monitoring — decoy PLC-SIEM-01 active",
-  "WATCHDOG >> heartbeat OK — all 24 agents responsive",
+  "WATCHDOG >> heartbeat OK — all Primary & Secondary nodes responsive",
   "GATEKEEPER >> rotated API key for agent SENTINEL-HUNTER",
-  "NARRATOR >> board report draft #7 pushed to /reports",
-  "AUDITOR >> NIST 3.14.6 control last verified 00:12:03 ago",
-  "RISK-QUANT >> INC-2026-041 loss magnitude: $88,400/hr",
+  "COMMUNICATOR >> board report draft #7 pushed to /reports",
+  "GOVERNOR >> NIST 3.14.6 control verified against live topology",
+  "GOVERNOR >> CMMC Level 3 compliance checks initiated",
 ];
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
@@ -135,32 +128,17 @@ function AgentCard({ agent, onSelect }) {
   );
 }
 
-function TelemetryChart({ data }) {
+function SpecialistCard({ specialist }) {
+  const st = STATUS_CFG[specialist.status] || STATUS_CFG.idle;
   return (
-    <ResponsiveContainer width="100%" height={110}>
-      <AreaChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -30 }}>
-        <defs>
-          <linearGradient id="tokGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%"  stopColor="#3B6FE3" stopOpacity={0.35} />
-            <stop offset="95%" stopColor="#3B6FE3" stopOpacity={0} />
-          </linearGradient>
-          <linearGradient id="costGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%"  stopColor="#D84C7F" stopOpacity={0.35} />
-            <stop offset="95%" stopColor="#D84C7F" stopOpacity={0} />
-          </linearGradient>
-        </defs>
-        <CartesianGrid strokeDasharray="3 3" stroke="#1F2937" />
-        <XAxis dataKey="t" hide />
-        <YAxis tick={{ fill: '#4B5563', fontSize: 9 }} />
-        <Tooltip
-          contentStyle={{ background: '#111827', border: '1px solid #1F2937', borderRadius: 6, fontSize: 11 }}
-          labelStyle={{ color: '#6B7280' }}
-          formatter={(v, n) => [n === 'tokens' ? `${Math.round(v).toLocaleString()} tok` : `${v.toFixed(1)} GB`, n]}
-        />
-        <Area type="monotone" dataKey="tokens" stroke="#3B6FE3" strokeWidth={1.5} fill="url(#tokGrad)" dot={false} />
-        <Area type="monotone" dataKey="memory" stroke="#D84C7F" strokeWidth={1.5} fill="url(#costGrad)" dot={false} />
-      </AreaChart>
-    </ResponsiveContainer>
+    <div className="rounded-lg p-2 flex flex-col justify-between"
+         style={{ background: '#111827', border: `1px solid ${st.color}33` }}>
+      <div className="flex items-center gap-2 mb-1 min-w-0">
+        <span className={`flex-shrink-0 w-2 h-2 rounded-full ${st.pulse ? 'animate-blink' : ''}`} style={{ background: st.color }} />
+        <span className="text-[10px] font-bold terminal truncate" style={{ color: '#E2E8F0' }}>{specialist.label}</span>
+      </div>
+      <p className="text-[9px] truncate" style={{ color: '#6B7280' }}>↳ {specialist.task}</p>
+    </div>
   );
 }
 
@@ -201,12 +179,11 @@ function WSConsole({ lines }) {
   );
 }
 
-// ── Main Component ─────────────────────────────────────────────────────────────
 export default function HiveHealth() {
   const { user } = useAuth();
   const { autonomy, setAutonomy } = useSOC();
   const [agents, setAgents] = useState(AGENT_ROSTER);
-  const [telemetry, setTelemetry] = useState(makeTelemetryPoints());
+  const [specialists, setSpecialists] = useState(SPECIALIST_ROSTER);
   const [wsLines, setWsLines] = useState(WS_MESSAGES.slice(0, 8));
   const [killed, setKilled] = useState(false);
   const [filter, setFilter] = useState('All');
@@ -215,7 +192,6 @@ export default function HiveHealth() {
 
   const isAdmin = user?.role === 'admin';
 
-  // Tick: update latencies + append WS messages
   useEffect(() => {
     const id = setInterval(() => {
       setAgents(prev => prev.map(a => ({
@@ -223,11 +199,6 @@ export default function HiveHealth() {
         latency: a.status === 'idle' ? 0 : Math.max(3, a.latency + Math.round((Math.random() - 0.5) * 6)),
         load: a.status === 'idle' ? 0 : Math.min(99, Math.max(2, a.load + Math.round((Math.random() - 0.5) * 5))),
       })));
-
-      setTelemetry(prev => {
-        const next = [...prev.slice(1), { t: prev[prev.length - 1].t + 1, tokens: 5000 + Math.random() * 12000, memory: 12 + Math.random() * 45 }];
-        return next;
-      });
 
       setWsLines(prev => {
         const msg = WS_MESSAGES[msgIdx.current % WS_MESSAGES.length];
@@ -238,13 +209,13 @@ export default function HiveHealth() {
     return () => clearInterval(id);
   }, []);
 
-  const pillars = ['All', 'Core', 'Intel', 'Invest', 'Response', 'Gov'];
+  const pillars = ['All', 'Core', 'Intel', 'Response', 'Gov', 'Sim'];
   const visible = filter === 'All' ? agents : agents.filter(a => a.pillar === filter);
 
-  const onlineCount  = agents.filter(a => a.status === 'online').length;
+  const onlineCount  = agents.filter(a => a.status === 'online').length + specialists.filter(s => s.status === 'online').length;
+  const totalNodes   = agents.length + specialists.length;
   const pendingCount = agents.filter(a => a.status === 'pending').length;
   const avgLatency   = Math.round(agents.filter(a => a.latency > 0).reduce((s, a) => s + a.latency, 0) / agents.filter(a => a.latency > 0).length);
-  const totalTokens  = Math.round(telemetry.reduce((s, p) => s + p.tokens, 0) / telemetry.length);
 
   const handleKill = useCallback(() => {
     if (!isAdmin) return;
@@ -263,7 +234,7 @@ export default function HiveHealth() {
           </span>
           <span className="terminal text-xs px-2 py-0.5 rounded-full"
             style={{ background: '#88C05720', color: '#88C057', border: '1px solid #88C05733' }}>
-            {onlineCount}/{agents.length} ONLINE
+            {onlineCount}/{totalNodes} ONLINE
           </span>
         </div>
 
@@ -287,10 +258,10 @@ export default function HiveHealth() {
       {/* Stats Row */}
       <div className="grid grid-cols-4 gap-3 px-5 py-3 border-b flex-shrink-0" style={{ borderColor: '#1F2937' }}>
         {[
-          { icon: Activity,   val: `${onlineCount}/24`, label: 'Agents Online',   color: '#88C057' },
+          { icon: Activity,   val: `${onlineCount}/${totalNodes}`, label: 'Nodes Online',   color: '#88C057' },
+          { icon: Cpu,        val: `Ollama Local`,       label: 'Inference Engine', color: '#D84C7F' },
           { icon: Clock,      val: `${avgLatency}ms`,    label: 'Avg Latency',     color: '#3B6FE3' },
           { icon: AlertTriangle,val:`${pendingCount}`,   label: 'HITL Pending',    color: '#E5A862' },
-          { icon: Layers, val: `${(telemetry[telemetry.length-1]?.memory || 14.2).toFixed(1)} GB`, label: 'Memory Pressure', color: '#D84C7F' },
         ].map(({ icon: Icon, val, label, color }) => (
           <div key={label} className="flex items-center gap-3 rounded-lg px-4 py-3"
             style={{ background: '#111827', border: '1px solid #1F2937' }}>
@@ -330,21 +301,18 @@ export default function HiveHealth() {
           </div>
         </div>
 
-        {/* RIGHT: Telemetry + Autonomy + Console */}
+        {/* RIGHT: Auxiliary Nodes + Autonomy + Console */}
         <div className="flex flex-col flex-1 min-w-0">
-          {/* Telemetry chart */}
-          <div className="px-4 pt-4 pb-2 border-b flex-shrink-0" style={{ borderColor: '#1F2937' }}>
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <TrendingUp size={12} style={{ color: '#3B6FE3' }} />
-                <span className="text-xs terminal" style={{ color: '#6B7280' }}>INFERENCE LOAD / MEMORY PRESSURE</span>
-              </div>
-              <div className="flex items-center gap-3 text-xs terminal">
-                <span style={{ color: '#3B6FE3' }}>● Tokens</span>
-                <span style={{ color: '#D84C7F' }}>● Memory (GB)</span>
-              </div>
+          
+          {/* Secondary Sentinels (Specialists) */}
+          <div className="px-4 py-4 border-b flex-shrink-0" style={{ borderColor: '#1F2937' }}>
+            <div className="flex items-center gap-2 mb-3">
+              <Layers size={12} style={{ color: '#3B6FE3' }} />
+              <span className="text-xs terminal font-bold" style={{ color: '#6B7280' }}>SPECIALIST WORKER NODES</span>
             </div>
-            <TelemetryChart data={telemetry} />
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              {specialists.map(s => <SpecialistCard key={s.id} specialist={s} />)}
+            </div>
           </div>
 
           {/* Autonomy Slider */}

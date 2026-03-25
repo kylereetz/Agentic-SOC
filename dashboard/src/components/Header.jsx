@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
-import { PowerOff, Bell, Search, Shield, ChevronDown, AlertTriangle } from 'lucide-react';
+import { PowerOff, Bell, Search, Shield, ChevronDown, AlertTriangle, LogOut } from 'lucide-react';
+import { useAuth } from '../store/AuthContext';
+import { useSOC } from '../store/SOCContext';
 
-export default function Header() {
+export default function Header({ chitchatOpen, onToggleChitChat }) {
+  const { user, logout } = useAuth();
+  const { autonomy } = useSOC();
   const [killActive, setKillActive] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
   return (
     <header
@@ -50,42 +55,76 @@ export default function Header() {
       </div>
 
       {/* RIGHT: Controls */}
-      <div className="flex items-center gap-2.5 min-w-[220px] justify-end">
-        {/* Kill Switch — always-on glow */}
+      <div className="flex items-center gap-4 justify-end flex-1 max-w-[500px]">
+        {/* User Identity & Autonomy (Consolidated here to fix overlap) */}
+        <div className="hidden lg:flex items-center gap-4 pr-2 border-r" style={{ borderColor: '#1F2937' }}>
+          <div className="flex flex-col items-end">
+            <span className="text-[10px] terminal text-[#4B5563] tracking-tighter">IDENTITY: {user?.username?.toUpperCase() || 'UNKNOWN'}</span>
+            <span className="text-[10px] terminal tracking-tighter" style={{ color: user?.role === 'admin' ? '#D84C7F' : '#3B6FE3' }}>
+              {user?.role?.toUpperCase() || 'GUEST'}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-[#88C05710] border border-[#88C05730]">
+             <span className="text-[10px] terminal font-bold" style={{ color: '#88C057' }}>AI {autonomy?.level || 0}%</span>
+          </div>
+        </div>
+
+        {/* Kill Switch */}
         <button
           onClick={() => setKillActive(v => !v)}
-          className="kill-switch-pulse flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold tracking-widest transition-all action-btn"
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold tracking-widest transition-all action-btn ${
+            killActive ? 'bg-red-600' : 'bg-red-500/10'
+          }`}
           style={{
-            background: killActive ? 'rgba(127,29,29,0.9)' : 'rgba(239,68,68,0.1)',
-            border: '1px solid #EF4444',
-            color: '#EF4444',
+            border: `1px solid ${killActive ? '#EF4444' : '#EF444466'}`,
+            color: killActive ? 'white' : '#EF4444',
           }}>
-          <PowerOff size={12} className={killActive ? 'animate-spin-slow' : ''} />
-          <span className="hidden sm:inline">EMERGENCY KILL SWITCH</span>
-          <span className="sm:hidden">KILL</span>
+          <PowerOff size={11} className={killActive ? 'animate-spin-slow' : ''} />
+          <span className="hidden xl:inline">EMERGENCY KILL</span>
+          <span className="xl:hidden">KILL</span>
         </button>
 
-        {/* Bell with notification badge */}
+        {/* Bell */}
         <button
-          className="relative p-2 rounded-lg transition-all hover-glow-blue"
-          style={{ border: '1px solid transparent' }}
+          className="relative p-2 rounded-lg transition-all hover:bg-white/5"
           onClick={() => setNotifOpen(v => !v)}>
-          <Bell size={15} style={{ color: '#9CA3AF' }} className="transition-colors hover:text-white" />
-          <span className="absolute top-1 right-1 w-2 h-2 rounded-full animate-blink"
-            style={{ background: '#EF4444', boxShadow: '0 0 6px rgba(239,68,68,0.8)' }} />
+          <Bell size={15} style={{ color: '#9CA3AF' }} />
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full animate-blink"
+            style={{ background: '#EF4444', boxShadow: '0 0 6px #EF4444' }} />
         </button>
 
-        {/* Divider */}
-        <div className="w-px h-5" style={{ background: '#1F2937' }} />
+        {/* User profile dropdown trigger */}
+        <div className="relative">
+          <button 
+            className="flex items-center gap-2 px-2 py-1 rounded-lg transition-all hover:bg-white/5"
+            onClick={() => setUserDropdownOpen(!userDropdownOpen)}>
+            <div
+              className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
+              style={{ background: 'linear-gradient(135deg,#3B6FE3,#6B8FE8)', color: 'white', boxShadow: '0 0 8px rgba(59,111,227,0.4)' }}>
+              {user?.username?.substring(0,2).toUpperCase() || '??'}
+            </div>
+            <ChevronDown size={11} style={{ color: '#4B5563' }} />
+          </button>
 
-        {/* User avatar */}
-        <button className="flex items-center gap-2 px-2 py-1 rounded-lg transition-all hover:bg-white/5">
-          <div
-            className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
-            style={{ background: 'linear-gradient(135deg,#3B6FE3,#6B8FE8)', color: 'white', boxShadow: '0 0 8px rgba(59,111,227,0.4)' }}>
-            KR
-          </div>
-          <ChevronDown size={11} style={{ color: '#4B5563' }} />
+          {userDropdownOpen && (
+            <div className="absolute top-10 right-0 w-40 rounded-lg overflow-hidden z-[100] shadow-2xl animate-slide-in-up"
+                 style={{ background: '#111827', border: '1px solid #1F2937' }}>
+              <button 
+                onClick={logout}
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-xs terminal text-red-400 hover:bg-red-500/10 transition-colors">
+                <LogOut size={12} />
+                LOGOUT SYSTEM
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Copilot Toggle Button */}
+        <button
+          onClick={onToggleChitChat}
+          className="flex items-center gap-1.5 text-xs terminal px-3 py-1.5 rounded-lg hover:brightness-125 transition-all"
+          style={{ background: chitchatOpen ? '#3B6FE322' : '#111827', color: '#3B6FE3', border: '1px solid #3B6FE344' }}>
+          ✦ ChitChat
         </button>
       </div>
 

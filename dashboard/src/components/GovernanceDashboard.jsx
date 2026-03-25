@@ -53,11 +53,11 @@ const AUDITOR_FEED = [
 
 const NARRATOR_SUMMARY = `Executive Summary — Week of March 16, 2026
 
-The Security Operations Center has maintained continuous surveillance across 24 specialized AI agents with an overall uptime of 99.6%.
+The Security Operations Center has maintained continuous surveillance across all Primary and Secondary AI agents with an overall uptime of 99.6%.
 
 During this reporting period, the most critical incident involves an active COBALT STRIKE intrusion targeting DC-01 (INC-2026-041). SENTINEL-INVESTIGATOR has completed Chain-of-Thought analysis with 95% confidence, attributing the attack to TTPs consistent with APT29. Estimated business risk: $88,400 per hour of dwell time.
 
-CMMC 2.0 Level 3 compliance stands at 79%, a slight decrease of -1% from last week, primarily driven by new findings in System & Communications Protection (SC). Three corrective actions are recommended (see Auditor Feed).
+CMMC 2.0 Level 3 compliance stands at 79%, a slight decrease of -1% from last week, primarily driven by new findings in System & Communications Protection (SC). Three corrective actions are recommended (see Governor Control Feed).
 
 Supply chain posture remains GREEN. SENTINEL-VANGUARD has scanned 14 new SBOM submissions this week with zero critical zero-day findings.
 
@@ -169,7 +169,7 @@ export default function GovernanceDashboard() {
           GOVERNANCE & COMPLIANCE
         </span>
         <span className="text-xs terminal ml-2" style={{ color: '#6B7280' }}>
-          SENTINEL-AUDITOR · SENTINEL-NARRATOR
+          SENTINEL-GOVERNOR · SENTINEL-COMMUNICATOR
         </span>
       </div>
 
@@ -223,12 +223,12 @@ export default function GovernanceDashboard() {
 
         {/* RIGHT: Auditor Feed + Narrator */}
         <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-          {/* Auditor Feed */}
+          {/* Governor Control Feed */}
           <div className="flex flex-col" style={{ flex: '0 0 55%', borderBottom: '1px solid #1F2937' }}>
             <div className="flex items-center gap-2 px-4 py-2.5 border-b flex-shrink-0"
               style={{ borderColor: '#1F2937' }}>
               <BookOpen size={12} style={{ color: '#3B6FE3' }} />
-              <span className="text-xs terminal font-bold" style={{ color: '#6B7280' }}>AUDITOR CONTROL FEED</span>
+              <span className="text-xs terminal font-bold" style={{ color: '#6B7280' }}>GOVERNOR CONTROL FEED</span>
               <span className="ml-auto text-xs terminal"
                 style={{ color: '#EF4444' }}>
                 {AUDITOR_FEED.filter(e => e.status === 'fail').length} failures
@@ -239,7 +239,7 @@ export default function GovernanceDashboard() {
             </div>
           </div>
 
-          {/* Narrator Summary */}
+          {/* Communicator Summary */}
           <div className="flex flex-col" style={{ flex: '1 1 45%' }}>
             <button
               onClick={() => setNarratorExpanded(v => !v)}
@@ -247,7 +247,7 @@ export default function GovernanceDashboard() {
               style={{ borderColor: '#1F2937' }}>
               <FileText size={12} style={{ color: '#A78BFA' }} />
               <span className="text-xs terminal font-bold" style={{ color: '#6B7280' }}>
-                SENTINEL-NARRATOR — EXECUTIVE SUMMARY
+                SENTINEL-COMMUNICATOR — EXECUTIVE SUMMARY
               </span>
               <span className="ml-auto text-xs terminal"
                 style={{ color: '#A78BFA' }}>AI-GENERATED</span>
