@@ -1,3 +1,4 @@
+"""Smoke test: verifies that FastAPI and uvicorn are installed and can serve a minimal HTTP endpoint on port 8888."""
 from fastapi import FastAPI
 app = FastAPI()
 @app.get("/")

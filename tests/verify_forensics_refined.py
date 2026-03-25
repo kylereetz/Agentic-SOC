@@ -1,3 +1,7 @@
+"""
+Verification script: exercises the ForensicsAgent across all four quality dimensions —
+IQ (pattern detection), EQ (SHA-256 integrity seals), SQ (paged storage), and VQ (chain-of-custody timeline).
+"""
 import os
 import sys
 import json

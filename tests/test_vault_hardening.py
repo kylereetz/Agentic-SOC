@@ -1,3 +1,7 @@
+"""
+Hardening test: validates that the Vault encrypts secrets at rest, fails safely when no key is
+provided, and enforces role-based namespacing to prevent confused-deputy privilege escalation.
+"""
 import os
 import sys
 import json

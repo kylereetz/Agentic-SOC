@@ -19,7 +19,7 @@ Reetz Cyber Automation (RCA) offers three engagement tiers designed to scale wit
 ## Tier 2: Sentinel Hive-Monitor (Hardware Lite)
 *Best for: Continuous compliance visibility and asset inventory without autonomous response.*
 
-- **Scope**: Permanent deployment of the RCA "Lite" Hardware Appliance (Fanless/Ruggedized). Includes `SENTINEL-SCOUT` for asset inventory, `SENTINEL-LOG-GUARDIAN` for normalization, and `SENTINEL-AUDITOR` for real-time compliance tracking.
+- **Scope**: Permanent deployment of the RCA "Lite" Hardware Appliance (Fanless/Ruggedized). Includes `SENTINEL-SCOUT` for asset inventory, `SENTINEL-LOG-GUARDIAN` for normalization, and `SENTINEL-GOVERNOR` for real-time compliance tracking.
 - **Deliverables**: Hardened Appliance, Local Dashboard Access, Monthly Compliance Drift Reports.
 - **Service Type**: Annual Hive License + Hardware Cost.
 - **Target Price**: 

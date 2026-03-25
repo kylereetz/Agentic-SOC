@@ -29,7 +29,12 @@ class WatchdogAgent:
     """
     def __init__(self):
         self.health_bus = EventBus("agent_metrics")
-        self.dispatch_bus = EventBus("triage_alerts") # Or dispatch directly?
+        self.out_bus = EventBus("triage_alerts")
+        
+        # [IQ] Doctrine Reference: SENTINEL-WATCHDOG
+        from soc.bootstrap import get_soc_path
+        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_sentinel_watchdog.md')}")
+ # Or dispatch directly?
         self.is_running = False
 
     async def run(self):

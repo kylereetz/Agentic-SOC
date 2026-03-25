@@ -48,7 +48,11 @@ class ResponderAgent:
 
     def __init__(self):
         self.bus = EventBus("triage_alerts")
-        self.pending_actions: List[Dict[str, Any]] = []
+        self.remediation_history: List[Dict[str, Any]] = []
+        
+        # [IQ] Doctrine Reference: SENTINEL-RESPONDER
+        from soc.bootstrap import get_soc_path
+        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_sentinel_responder.md')}")
         # [SQ] Internal Dispatch Queue for non-blocking operations
         self.dispatch_queue: asyncio.Queue = asyncio.Queue()
         self.is_running = False

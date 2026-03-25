@@ -347,6 +347,10 @@ class TriageAgent:
         self.out_bus = EventBus("triage_alerts")
         self.dlq_bus = EventBus("triage_dlq")
         self.intel_bus = EventBus("intel_feedback")
+        
+        # [IQ] Doctrine Reference: SENTINEL-TRIAGE
+        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_sentinel_triage.md')}")
+        
         self.report_path = get_soc_path("reports", "triage", "triage_alerts.json")
         self.is_running = False
 

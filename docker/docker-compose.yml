@@ -1,4 +1,13 @@
 services:
+  # ── LOCAL LLM ENGINE ─────────────────────────────────────────────────────
+  soc-llm:
+    image: ollama/ollama:latest
+    container_name: soc-llm
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+
   # ── API ──────────────────────────────────────────────────────────────────
   soc-api:
     build:
@@ -228,3 +237,4 @@ networks:
 
 volumes:
   soc-data:
+  ollama-data:

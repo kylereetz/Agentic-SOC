@@ -56,6 +56,11 @@ class GatekeeperAgent:
         self.triage_bus = EventBus("triage_alerts")
         self.vault = Vault(SECRETS_PATH, role="gatekeeper")
         self.rules = self._load_rules(rules_path)
+        self.incident_history: List[Dict[str, Any]] = []
+        
+        # [IQ] Doctrine Reference: SENTINEL-GATEKEEPER
+        from soc.bootstrap import get_soc_path
+        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_sentinel_gatekeeper.md')}")
         self.user_states: Dict[str, Dict[str, Any]] = {} # user_id -> state
         self.is_running = False
 

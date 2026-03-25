@@ -43,6 +43,11 @@ class MirageAgent:
         self.rules = self._load_rules(rules_path)
         self.is_running = False
 
+        self.active_lures: Dict[str, Dict[str, Any]] = {}
+        
+        # [IQ] Doctrine Reference: SENTINEL-MIRAGE
+        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_sentinel_mirage.md')}")
+
     def _load_rules(self, path: str) -> Dict[str, Any]:
         try:
             with open(path, "r") as f:

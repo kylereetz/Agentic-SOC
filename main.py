@@ -124,7 +124,7 @@ def report(
     output: Optional[str] = typer.Option(None, help="Output PDF path")
 ):
     """Generate a Gap Analysis PDF from compliance data."""
-    from soc.agents.auditor import AuditorAgent
+    from soc.cemetery.auditor import AuditorAgent
     auditor_obj = AuditorAgent(client_name=client, auditor_name=auditor)
     csv_path = csv or "rca_first_run_audit.csv"
     pdf = auditor_obj.generate_report(csv_path, output_path=output)
@@ -178,7 +178,7 @@ def patch(
 # =========================================================================
 @app.command()
 def start(
-    agent: str = typer.Argument(..., help="Agent to start: scout, triage, responder, red-team, or api")
+    agent: str = typer.Argument(..., help="Agent to start: scout, triage, responder, governor, communicator, or api")
 ):
     """Start a specific SOC agent or the API layer."""
     if agent == "scout":
@@ -268,23 +268,33 @@ def start(
         asyncio.run(agent_obj.run())
 
     elif agent == "dispatch":
-        from soc.agents.dispatch import DispatchAgent
+        from soc.cemetery.dispatch import DispatchAgent
         agent_obj = DispatchAgent()
         asyncio.run(agent_obj.run())
 
     elif agent == "narrator":
-        from soc.agents.narrator import NarratorAgent
+        from soc.cemetery.narrator import NarratorAgent
         agent_obj = NarratorAgent()
         asyncio.run(agent_obj.run())
 
     elif agent == "risk-quantifier":
-        from soc.agents.risk_quantifier import RiskQuantifierAgent
+        from soc.cemetery.risk_quantifier import RiskQuantifierAgent
         agent_obj = RiskQuantifierAgent()
         asyncio.run(agent_obj.run())
 
     elif agent == "policy-architect":
-        from soc.agents.policy_architect import PolicyArchitectAgent
+        from soc.cemetery.policy_architect import PolicyArchitectAgent
         agent_obj = PolicyArchitectAgent()
+        asyncio.run(agent_obj.run())
+
+    elif agent == "governor":
+        from soc.agents.governor import GovernorAgent
+        agent_obj = GovernorAgent()
+        asyncio.run(agent_obj.run())
+
+    elif agent == "communicator":
+        from soc.agents.communicator import CommunicatorAgent
+        agent_obj = CommunicatorAgent()
         asyncio.run(agent_obj.run())
 
     elif agent == "librarian":

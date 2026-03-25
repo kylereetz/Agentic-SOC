@@ -1,3 +1,7 @@
+"""
+Security test: verifies that OSINTSandbox neutralizes prompt-injection payloads embedded in
+external OSINT data (e.g. VirusTotal responses) before they reach the LLM.
+"""
 import os
 import sys
 

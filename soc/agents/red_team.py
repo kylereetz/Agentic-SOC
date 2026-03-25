@@ -38,6 +38,9 @@ class RedTeamAgent:
         self.injection_bus = EventBus("discovery_events")
         self.is_running = False
         
+        # [IQ] Doctrine Reference: SENTINEL-RED
+        logger.warning(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_sentinel_red.md')}")
+        
         # Test Networks - Guaranteed not to intersect with production OT routing
         self.test_subnets = ["192.0.2.100", "198.51.100.55", "203.0.113.88"]
         

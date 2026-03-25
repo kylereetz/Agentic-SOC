@@ -1,3 +1,7 @@
+"""
+Maturity validation: async end-to-end test covering RAG sync (race condition fix),
+intel feedback loop (Correlator → Triage severity boost), and hash-linkage correlation across IPs.
+"""
 import asyncio
 import os
 import sys

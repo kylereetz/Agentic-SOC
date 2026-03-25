@@ -8,12 +8,12 @@ import logging
 import os
 import hashlib
 from datetime import datetime, timezone
-import google.generativeai as genai
 from typing import Any, Dict
 
 from soc.bootstrap import get_soc_path
 from soc.bus.event_queue import EventBus
 from soc.security.vault import Vault
+from engine.core.llm_client import LLMClient
 
 logger = logging.getLogger("RCA-Communicator")
 logger.setLevel(logging.INFO)
@@ -31,23 +31,17 @@ class CommunicatorAgent:
         self.is_running = False
         self.agent_id = "SENTINEL-COMMUNICATOR"
         
-        vault = Vault(get_soc_path("configs", "secrets.json"), role="communicator")
-        secrets_data = vault.load()
-        self.api_key = secrets_data.get("llm_api_keys", {}).get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY")
+        # [IQ] Dynamic Ethos Loading
+        ethos_path = get_soc_path("ethos", "ethos_sentinel_communicator.md")
+        try:
+            with open(ethos_path, "r") as f:
+                self.ethos_content = f.read().strip()
+                logger.info(f"Loaded doctrine from {ethos_path}")
+        except Exception:
+            self.ethos_content = "You are SENTINEL-COMMUNICATOR. You handle executive reporting, financial risk quantification, and paging dispatch."
+            logger.warning(f"Ethos not found at {ethos_path}. Using default.")
 
-        if self.api_key:
-            genai.configure(api_key=self.api_key)
-            self.model = genai.GenerativeModel(
-                "gemini-1.5-pro",
-                system_instruction=(
-                    "You are SENTINEL-COMMUNICATOR. You handle executive reporting, financial risk quantification, "
-                    "and paging dispatch. You must output exactly one JSON object: "
-                    "{'financial_risk': '$X', 'summary': 'C-level summary...', 'page_string': 'URGENT: ...'}"
-                )
-            )
-        else:
-            self.model = None
-            logger.warning("[!] GEMINI_API_KEY not found in Vault. Defaulting to empty reporting.")
+        self.llm_client = LLMClient()
 
         # Naive fatigue filter
         self._last_report_hash: str = ""
@@ -74,34 +68,29 @@ class CommunicatorAgent:
 
         self._last_report_hash = case_hash
 
-        if self.model:
-            prompt = f"""
-            Generate the Tri-Factor Report for the following investigation conclusion:
-            {json.dumps(event)}
+        prompt = f"""
+        Generate the Tri-Factor Report for the following investigation conclusion:
+        {json.dumps(event)}
+        
+        Remember, reply purely in JSON:
+        {{"financial_risk": "$...", "summary": "...", "page_string": "..."}}
+        """
+        try:
+            res = await self.llm_client.generate_json(prompt, system_instruction=self.ethos_content)
             
-            Remember, reply purely in JSON:
-            {{"financial_risk": "$...", "summary": "...", "page_string": "..."}}
-            """
-            try:
-                response = await asyncio.to_thread(self.model.generate_content, prompt)
-                txt = response.text.strip()
-                if txt.startswith("```json"): txt = txt[7:]
-                if txt.endswith("```"): txt = txt[:-3]
-                res = json.loads(txt)
-                
-                report = {
-                    "timestamp": datetime.now(timezone.utc).isoformat(),
-                    "agent_id": self.agent_id,
-                    "investigation_id": event.get("investigation_id", "UNKNOWN"),
-                    "financial_risk": res.get("financial_risk", "Unknown"),
-                    "executive_summary": res.get("summary", "N/A"),
-                    "dispatch_page": res.get("page_string", "Alert")
-                }
-                
-                self.out_bus.push(report)
-                logger.warning(f"[BROADCAST] Paged SOC Analyst: {report['dispatch_page']}")
-            except Exception as e:
-                logger.error(f"[!] Reporting failed: {e}")
+            report = {
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "agent_id": self.agent_id,
+                "investigation_id": event.get("investigation_id", "UNKNOWN"),
+                "financial_risk": res.get("financial_risk", "Unknown"),
+                "executive_summary": res.get("summary", "N/A"),
+                "dispatch_page": res.get("page_string", "Alert")
+            }
+            
+            self.out_bus.push(report)
+            logger.warning(f"[BROADCAST] Paged SOC Analyst: {report['dispatch_page']}")
+        except Exception as e:
+            logger.error(f"[!] Reporting failed: {e}")
 
 if __name__ == "__main__":
     agent = CommunicatorAgent()

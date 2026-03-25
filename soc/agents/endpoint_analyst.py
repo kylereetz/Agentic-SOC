@@ -8,12 +8,12 @@ import logging
 import os
 import hashlib
 from datetime import datetime, timezone
-import google.generativeai as genai
 from typing import Any, Dict, List, Optional
 
 from soc.bootstrap import get_soc_path
 from soc.bus.event_queue import EventBus
 from soc.security.vault import Vault
+from engine.core.llm_client import LLMClient
 
 logger = logging.getLogger("RCA-EndpointAnalyst")
 logger.setLevel(logging.INFO)
@@ -30,17 +30,7 @@ class EndpointAnalystAgent:
         self.is_running = False
         self.agent_id = "SENTINEL-ENDPOINT-ANALYST"
         
-        # Load Vault securely
-        vault = Vault(get_soc_path("configs", "secrets.json"), role="endpoint_analyst")
-        secrets_data = vault.load()
-        self.api_key = secrets_data.get("llm_api_keys", {}).get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY")
-
-        if self.api_key:
-            genai.configure(api_key=self.api_key)
-            self.model = genai.GenerativeModel("gemini-1.5-pro") 
-        else:
-            self.model = None
-            logger.warning("[!] GEMINI_API_KEY not found in Vault. Defaulting to strict heuristics only.")
+        self.llm_client = LLMClient()
 
     async def run(self):
         self.is_running = True
@@ -69,18 +59,14 @@ class EndpointAnalystAgent:
             return
 
         # LLM Fallback Analysis for ambiguous behavioral chains
-        if self.model and command_line:
+        if command_line:
             prompt = f"""
-            <think>Analyze this command line for malicious intent. Look for lateral movement, recon, or defense evasion.</think>
+            Analyze this command line for malicious intent. Look for lateral movement, recon, or defense evasion.
             Event: {json.dumps(event)}
             Reply purely in JSON: {{"malicious": true/false, "reason": "...", "severity": "WARNING"}}
             """
             try:
-                response = await asyncio.to_thread(self.model.generate_content, prompt)
-                txt = response.text.strip()
-                if txt.startswith("```json"): txt = txt[7:]
-                if txt.endswith("```"): txt = txt[:-3]
-                res = json.loads(txt)
+                res = await self.llm_client.generate_json(prompt)
                 
                 if res.get("malicious"):
                     await self._escalate(event, res.get("severity", "WARNING"), f"LLM Match: {res.get('reason')}", 0.8)

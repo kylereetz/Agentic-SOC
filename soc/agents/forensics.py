@@ -50,6 +50,11 @@ class ForensicsAgent:
 
     def __init__(self):
         os.makedirs(FORENSICS_ROOT, exist_ok=True)
+        self.is_running = False
+        
+        # [IQ] Doctrine Reference: SENTINEL-FORENSICS
+        from soc.bootstrap import get_soc_path
+        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_sentinel_forensics.md')}")
         self.coc_file = os.path.join(FORENSICS_ROOT, "chain_of_custody.json")
         self.raw_alerts_bus = EventBus("raw_alerts")
         self._init_coc()

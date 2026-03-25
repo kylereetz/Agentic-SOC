@@ -20,7 +20,8 @@
 **Copy**: Instead of expensive human analysts, we deploy **RCA Agents**. These lightweight, tireless workers live on your network, identify every asset, and map them to NIST controls in real-time.
 - **Sentinel**: Safe, "Polite Discovery" that never disrupts uptime.
 - **Triage**: Distinguishes between normal industrial activity and genuine threats.
-- **Auditor**: Generates high-authority PDF evidence for your next audit.
+- **Governor**: Your automated compliance authority—mapping data directly to NIST 800-171 controls.
+- **Communicator**: Translates deep technical telemetry into clear, financial-centric executive summaries.
 
 ---
 

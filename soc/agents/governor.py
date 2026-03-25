@@ -9,11 +9,10 @@ import os
 import hashlib
 from typing import Any, Dict
 
-import google.generativeai as genai
-
 from soc.bootstrap import get_soc_path
 from soc.bus.event_queue import EventBus
 from soc.security.vault import Vault
+from engine.core.llm_client import LLMClient
 
 logger = logging.getLogger("RCA-Governor")
 logger.setLevel(logging.INFO)
@@ -36,23 +35,17 @@ class GovernorAgent:
         self.agent_id = "SENTINEL-GOVERNOR"
         self._processed_cases = set()
         
-        vault = Vault(get_soc_path("configs", "secrets.json"), role="governor")
-        secrets_data = vault.load()
-        self.api_key = secrets_data.get("llm_api_keys", {}).get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY")
+        # [IQ] Dynamic Ethos Loading
+        ethos_path = get_soc_path("ethos", "ethos_sentinel_governor.md")
+        try:
+            with open(ethos_path, "r") as f:
+                self.ethos_content = f.read().strip()
+                logger.info(f"Loaded doctrine from {ethos_path}")
+        except Exception:
+            self.ethos_content = "You are SENTINEL-GOVERNOR. You merge compliance mapping and continuous triage tuning into one step."
+            logger.warning(f"Ethos not found at {ethos_path}. Using default.")
 
-        if self.api_key:
-            genai.configure(api_key=self.api_key)
-            self.model = genai.GenerativeModel(
-                "gemini-1.5-pro",
-                system_instruction=(
-                    "You are SENTINEL-GOVERNOR. You merge compliance mapping and continuous triage tuning into one step. "
-                    "Analyze the finalized SOC investigation and output ONLY JSON. No markdown wrappers. "
-                    "{'nist_mapping': ['AC-2', 'AU-3'], 'cmmc_level': 'L2', 'triage_feedback': {'rule_id': '...', 'suggested_action': 'Tune Down', 'reason': '...'}, 'confidence_score': 0.95}"
-                )
-            )
-        else:
-            self.model = None
-            logger.warning("[!] LLM API keys are missing. Sentinel Governor falling back to offline retrieval mode.")
+        self.llm_client = LLMClient()
 
     async def run(self):
         self.is_running = True
@@ -74,32 +67,27 @@ class GovernorAgent:
             
         self._processed_cases.add(case_id)
 
-        if self.model:
-            prompt = f"Analyze and finalize the governance feedback for case {case_id}: {json.dumps(event)}"
-            try:
-                response = await asyncio.to_thread(self.model.generate_content, prompt)
-                txt = response.text.strip()
-                if txt.startswith("```json"): txt = txt[7:]
-                if txt.endswith("```"): txt = txt[:-3]
-                
-                res = json.loads(txt)
-                
-                governance_payload = {
-                    "agent_id": self.agent_id,
-                    "case_id": case_id,
-                    "compliance": {
-                        "nist": res.get("nist_mapping", []),
-                        "cmmc": res.get("cmmc_level", "Unknown")
-                    },
-                    "triage_feedback": res.get("triage_feedback", {}),
-                    "confidence_score": res.get("confidence_score", 0.0),
-                    "evidence_array": hashlib.sha256(json.dumps(event).encode()).hexdigest()
-                }
-                
-                self.out_bus.push(governance_payload)
-                logger.info(f"[COMPLIANCE] Generated combined feedback loop for {case_id}: {governance_payload['compliance']['nist']}")
-            except Exception as e:
-                logger.error(f"[!] Governance execution failed: {e}")
+        prompt = f"Analyze and finalize the governance feedback for case {case_id}: {json.dumps(event)}"
+        try:
+            system_inst = f"{self.ethos_content}\n\nAnalyze the finalized SOC investigation and output ONLY JSON.\n{{'nist_mapping': ['AC-2', 'AU-3'], 'cmmc_level': 'L2', 'triage_feedback': {{'rule_id': '...', 'suggested_action': 'Tune Down', 'reason': '...'}}, 'confidence_score': 0.95}}"
+            res = await self.llm_client.generate_json(prompt, system_instruction=system_inst)
+            
+            governance_payload = {
+                "agent_id": self.agent_id,
+                "case_id": case_id,
+                "compliance": {
+                    "nist": res.get("nist_mapping", []),
+                    "cmmc": res.get("cmmc_level", "Unknown")
+                },
+                "triage_feedback": res.get("triage_feedback", {}),
+                "confidence_score": res.get("confidence_score", 0.0),
+                "evidence_array": hashlib.sha256(json.dumps(event).encode()).hexdigest()
+            }
+            
+            self.out_bus.push(governance_payload)
+            logger.info(f"[COMPLIANCE] Generated combined feedback loop for {case_id}: {governance_payload['compliance']['nist']}")
+        except Exception as e:
+            logger.error(f"[!] Governance execution failed: {e}")
 
 if __name__ == "__main__":
     agent = GovernorAgent()

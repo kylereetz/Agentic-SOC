@@ -42,6 +42,10 @@ class TopologyMapper:
         
         self.lock = asyncio.Lock()
         self.is_running = False
+        
+        # [IQ] Doctrine Reference: SENTINEL-TOPOLOGY
+        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_sentinel_topology.md')}")
+        
         self._load_topology()
 
     def _load_topology(self):

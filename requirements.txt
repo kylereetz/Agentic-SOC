@@ -5,6 +5,7 @@ python-nmap
 schedule
 reportlab
 jsonschema
-google-generativeai
+openai
+nest-asyncio
 python-jose[cryptography]
 passlib[bcrypt]

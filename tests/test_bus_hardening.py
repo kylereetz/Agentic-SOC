@@ -1,3 +1,7 @@
+"""
+Hardening test: validates that the EventBus encrypts messages at rest (Fernet), passes
+round-trip decryption, and rejects tampered payloads with an invalid HMAC signature.
+"""
 import os
 import sys
 import json

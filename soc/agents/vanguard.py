@@ -118,6 +118,8 @@ class VanguardAgent:
     async def _alert_supply_chain_threat(self, asset: str, name: str, version: str, 
                                         rule: Dict[str, Any], vuln_info: Dict[str, Any], 
                                         event: Dict[str, Any]):
+        # [IQ] Doctrine Reference: SENTINEL-VANGUARD
+        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_sentinel_vanguard.md')}")
         logger.warning(f"[IQ] Supply Chain Threat on {asset}: {name}@{version} ({vuln_info['cve']})")
         alert = {
             "timestamp": datetime.now(timezone.utc).isoformat(),

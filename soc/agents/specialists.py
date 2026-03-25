@@ -19,29 +19,10 @@ class OTSecurityAnalyst(InvestigatorAgent):
     def __init__(self, config_path: str = DEFAULT_CONFIG_PATH):
         super().__init__(config_path, routing_topic="topic_ot")
         self.agent_name = "SENTINEL-OT"
-        self._set_specialized_prompt()
-
-    def _set_specialized_prompt(self):
-        prompt = f"""You are {self.agent_name}, an elite OT Security Specialist.
-Your expertise is in Industrial Control Systems (ICS), SCADA, and PLC security.
-You are tasked with investigating alerts involving industrial protocols (Modbus, Profinet, etc.).
-
-Your goal:
-1. Identify if the command detected (e.g., Modbus Write) is a legitimate maintenance action or an attack.
-2. Determine the potential physical impact on the plant (e.g., valve manipulation, safety trip).
-3. Identify the source of the unauthorized command.
-
-SPECIALIZED TOOLS:
-- inspect_modbus_traffic(target_ip, port) — Deep packet inspection for industrial protocols. Use this when industrial rules are triggered.
-
-ADVERSARY FOCUS:
-- T0836 (Modbus Write Source)
-- T0831 (DCP Set Command)
-- T0883 (Unauthorized CIP Access)
-
-Use your tools to gather context, but always filter your reasoning through an OT Safety lens (Safety > Availability > Confidentiality).
-"""
-        self._reinit_model(custom_prompt=prompt)
+        super().__init__(config_path, routing_topic="topic_ot")
+        self.agent_name = "SENTINEL-OT"
+        # [IQ] Dynamic Ethos Loading: Base class now automatically loads ethos_sentinel_ot.md
+        self._reinit_model()
 
 class NetworkAnalyst(InvestigatorAgent):
     """
@@ -51,25 +32,10 @@ class NetworkAnalyst(InvestigatorAgent):
     def __init__(self, config_path: str = DEFAULT_CONFIG_PATH):
         super().__init__(config_path, routing_topic="topic_network")
         self.agent_name = "SENTINEL-NET"
-        self._set_specialized_prompt()
-
-    def _set_specialized_prompt(self):
-        prompt = f"""You are {self.agent_name}, a Lead Network Analyst.
-Your expertise is in traffic patterns, beaconing, C2 detection, and lateral movement.
-
-Your goal:
-1. Analyze network connections to identify Command & Control (C2) servers.
-2. Correlate IP/MAC changes to identify ARP spoofing or MITM attacks.
-3. Map the lateral movement path of the adversary.
-
-ADVERSARY FOCUS:
-- T1557.002 (ARP Spoofing)
-- T1584 (Adversary Infrastructure)
-- T1041 (Exfiltration Over C2 Channel)
-
-Always look for timing patterns (jitter) in network connections.
-"""
-        self._reinit_model(custom_prompt=prompt)
+        super().__init__(config_path, routing_topic="topic_network")
+        self.agent_name = "SENTINEL-NET"
+        # [IQ] Dynamic Ethos Loading: Base class now automatically loads ethos_sentinel_net.md
+        self._reinit_model()
 
 class IdentityAnalyst(InvestigatorAgent):
     """
@@ -78,26 +44,10 @@ class IdentityAnalyst(InvestigatorAgent):
     def __init__(self, config_path: str = DEFAULT_CONFIG_PATH):
         super().__init__(config_path, routing_topic="topic_identity")
         self.agent_name = "SENTINEL-ID"
-        self._set_specialized_prompt()
-
-    def _set_specialized_prompt(self):
-        prompt = f"""You are {self.agent_name}, a Senior Identity Analyst.
-Your expertise is in Active Directory, Kerberos, and Authentication protocols.
-
-Your goal:
-1. Detect credential theft (Mimikatz, LSASS dumping).
-2. Identify privilege escalation attempts.
-3. Track the abuse of legitimate accounts (T1078).
-
-SPECIALIZED TOOLS:
-- audit_ad_privileges(entity_id) — Audit AD changes and GPO modifications. Use this for identity/account based alerts.
-
-ADVERSARY FOCUS:
-- T1003 (OS Credential Dumping)
-- T1550.003 (Pass the Ticket)
-- T1078 (Valid Accounts)
-"""
-        self._reinit_model(custom_prompt=prompt)
+        super().__init__(config_path, routing_topic="topic_identity")
+        self.agent_name = "SENTINEL-ID"
+        # [IQ] Dynamic Ethos Loading: Base class now automatically loads ethos_sentinel_id.md
+        self._reinit_model()
 
 class RemediationAnalyst(InvestigatorAgent):
     """
@@ -107,28 +57,10 @@ class RemediationAnalyst(InvestigatorAgent):
     def __init__(self, config_path: str = DEFAULT_CONFIG_PATH):
         super().__init__(config_path, routing_topic="topic_remediation")
         self.agent_name = "SENTINEL-FIX"
-        self._set_specialized_prompt()
-
-    def _set_specialized_prompt(self):
-        prompt = f"""You are {self.agent_name}, a Lead Remediation Specialist.
-Your task is to take a completed investigation summary and produce a high-confidence containment and recovery plan.
-
-Your goal:
-1. Identify the minimal impact containment strategy (e.g., VLAN isolation vs Host shutdown).
-2. Draft specific, actionable commands for the Responder agent.
-3. Ensure no persistence mechanisms are left behind.
-
-SPECIALIZED TOOLS:
-- verify_remediation_safety(strategy, target_ip) — Check if an action will break a critical service. ALWAYS call this before drafting a containment strategy for a high-value asset.
-
-ADVERSARY FOCUS:
-- T1548 (Abuse Elevation Control)
-- T1562 (Impair Defenses)
-- T1485 (Data Destruction)
-
-Your reasoning must emphasize safety and the prevention of re-infection.
-"""
-        self._reinit_model(custom_prompt=prompt)
+        super().__init__(config_path, routing_topic="topic_remediation")
+        self.agent_name = "SENTINEL-FIX"
+        # [IQ] Dynamic Ethos Loading: Base class now automatically loads ethos_sentinel_fix.md
+        self._reinit_model()
 
 class CloudWraith(InvestigatorAgent):
     """

@@ -1,3 +1,7 @@
+"""
+Security test: verifies that TriageEngine caps unverifiable UDP alerts to WARNING (spoofing prevention)
+while allowing CRITICAL severity for TCP/ACK-confirmed and EDR-corroborated events.
+"""
 import os
 import sys
 

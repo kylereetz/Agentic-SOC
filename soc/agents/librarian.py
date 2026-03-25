@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 LIBRARIAN_DB_PATH = get_soc_path("reports", "soc_rag_index.db")
 
-import google.generativeai as genai
+from engine.core.llm_client import LLMClient
 
 class LibrarianAgent:
     """
@@ -48,15 +48,12 @@ class LibrarianAgent:
         self.is_running = False
         self.conn = None
         
-        # [IQ] Configure Gemini for Embeddings
-        from soc.security.vault import Vault
-        vault = Vault(get_soc_path("configs", "secrets.json"))
-        api_key = vault.load().get("llm_api_keys", {}).get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY")
-        if api_key:
-            genai.configure(api_key=api_key)
-        else:
-            logger.warning("[IQ] No GEMINI_API_KEY found. Librarian will fall back to mock embeddings.")
-            
+        # [IQ] Doctrine Reference: SENTINEL-LIBRARIAN
+        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_sentinel_librarian.md')}")
+        
+        # [IQ] Configure Local LLM Client for Embeddings
+        self.llm_client = LLMClient()
+        
         self._init_db()
 
     def _init_db(self):
@@ -185,26 +182,15 @@ class LibrarianAgent:
         return scored_results
 
     async def _generate_embedding(self, text: str) -> List[float]:
-        """Generate real Gemini embedding or fallback to mock."""
-        from soc.security.vault import Vault
-        vault = Vault(get_soc_path("configs", "secrets.json"), role="librarian")
-        api_key = vault.load().get("llm_api_keys", {}).get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY")
-        if api_key:
-            try:
-                # [IQ] Use Vertex AI / Gemini Text Embedding 004
-                result = await asyncio.to_thread(
-                    genai.embed_content,
-                    model="models/text-embedding-004",
-                    content=text,
-                    task_type="retrieval_document"
-                )
-                return result['embedding']
-            except Exception as e:
-                logger.error(f"Gemini Embedding failed: {e}. Falling back to mock.")
+        """Generate Local LLM embedding via Nomic-Embed-Text or fallback to mock."""
+        try:
+            return await self.llm_client.get_embedding(text)
+        except Exception as e:
+            logger.error(f"Local Embedding failed: {e}. Falling back to mock.")
                 
         # Simple deterministic mock embedding for fallback
         np.random.seed(sum(ord(c) for c in text) % 10000)
-        return np.random.rand(768).tolist() # Match Gemini-004 dimensions (768)
+        return np.random.rand(768).tolist() # Match Gemini dimensions (768)
 
     def _cosine_similarity(self, v1: List[float], v2: List[float]) -> float:
         a = np.array(v1)

@@ -266,6 +266,10 @@ class PatchPilotAgent:
     def __init__(self):
         os.makedirs(_DRAFTS_DIR, exist_ok=True)
         self.drafts: List[PatchDraft] = []
+        
+        # [IQ] Doctrine Reference: SENTINEL-PATCHPILOT
+        from soc.bootstrap import get_soc_path
+        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_sentinel_patchpilot.md')}")
 
     def draft_from_alerts(
         self, alerts_path: Optional[str] = None

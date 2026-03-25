@@ -65,12 +65,11 @@ class ReasoningStepSchema(typing.TypedDict, total=False):
     tool: str
     args: ToolArgs
 
-import google.generativeai as genai
-
 from soc.bootstrap import get_soc_path
 from soc.bus.event_queue import EventBus
 from soc.agents.librarian import LibrarianAgent
 from soc.utils.telemetry import track_token_usage
+from engine.core.llm_client import LLMClient
 
 @dataclass
 class CaseMemory:
@@ -434,44 +433,97 @@ class InvestigatorAgent:
         
         # [IQ] Hive Context
         self.memory: Optional[CaseMemory] = None
-        self.model: Optional[genai.GenerativeModel] = None
+        self.llm_client: Optional[LLMClient] = None
+        self.system_prompt: str = ""
 
         # Investigate report dir
         os.makedirs(INVESTIGATION_LOG_DIR, exist_ok=True)
 
-        # Configure Gemini
-        from soc.security.vault import Vault
-        vault = Vault(get_soc_path("configs", "secrets.json"), role="investigator")
-        secrets_data = vault.load()
-        
-        api_key = secrets_data.get("llm_api_keys", {}).get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY") or self.cfg.get("gemini_api_key", "")
-        if not api_key:
-            logger.warning(
-                "GEMINI_API_KEY not set. Set the env variable or add "
-                "'gemini_api_key' to investigator_config.json."
-            )
-        genai.configure(api_key=api_key)
         self._reinit_model()
 
+    def _get_ethos_path(self) -> str:
+        """[IQ] Resolve the correct ethos.md path based on agent name."""
+        ethos_prefix = "ethos_sentinel_"
+        # Map agent names to file names (lowercase, underscore)
+        # e.g. SENTINEL-OT -> ethos_sentinel_ot.md
+        slug = self.agent_name.lower().replace("sentinel-", "").replace("-", "_")
+        
+        # Special cases for naming mismatches
+        overrides = {
+            "patchpilot": "patchpilot",
+            "malware_pathologist": "malware_pathologist",
+            "log_guardian": "log_guardian",
+            "endpoint_analyst": "endpoint_analyst",
+            "cloud_wraith": "cloud_wraith",
+            "manager": "manager"
+        }
+        
+        filename = overrides.get(slug, slug)
+        return get_soc_path("ethos", f"{ethos_prefix}{filename}.md")
+
+    def _load_ethos(self) -> str:
+        """[IQ] Load the agent's doctrine from the ethos/ directory."""
+        path = self._get_ethos_path()
+        try:
+            with open(path, "r") as f:
+                content = f.read().strip()
+                logger.info(f"Loaded doctrine from {path}")
+                return content
+        except FileNotFoundError:
+            logger.warning(f"Ethos file not found at {path}. Using internal default prompt.")
+            return ""
+        except Exception as e:
+            logger.error(f"Error loading ethos from {path}: {e}")
+            return ""
+
     def _reinit_model(self, custom_prompt: str = None):
-        """Allow re-initializing the model with a specialized prompt."""
+        """Allow re-initializing the model with a specialized prompt or loaded ethos."""
+        
+        # [IQ] Dynamic Ethos Loading
+        loaded_ethos = self._load_ethos()
+        
+        # Core prompt elements that MUST always be present
+        core_instruction = """You are an elite autonomous SOC investigator AI running inside Aegis Agent.
+You investigate security alerts using a strict ReAct (Reason -> Act -> Observe) loop.
+For each step you must respond with a single JSON object — no markdown, no extra text.
 
-        prompt = custom_prompt or _SYSTEM_PROMPT
-        self.model = genai.GenerativeModel(
-            model_name=self.cfg["gemini_model"],
-            system_instruction=prompt,
-            generation_config=genai.GenerationConfig(
-                temperature=self.cfg["temperature"],
-                response_mime_type="application/json",
-                response_schema=ReasoningStepSchema,
-            ),
-        )
-        logger.info(f"Model re-initialised for {self.agent_name} with TypedDict strict schema enforcement.")
+RULES:
+- Alternate THOUGHT -> ACTION -> (system provides OBSERVATION) -> THOUGHT -> ...
+- Issue CONCLUSION when you have enough evidence or after being asked to conclude.
+- DEADLOCK PREVENTION: If you request secondary evidence to corroborate a single source, and find nothing after ONE attempt, immediately issue a CONCLUSION with HIGH severity and add the tag [PENDING_SOURCE_CORROBORATION].
+- Always cite a MITRE ATT&CK TTP in THOUGHT and CONCLUSION steps when applicable.
+- Keep content under 150 words.
+"""
 
-        logger.info(
-            f"InvestigatorAgent initialised — model: {self.cfg['gemini_model']}, "
-            f"max_steps: {self.max_steps}, min_severity: {self.min_severity}"
-        )
+        # Combine: Custom Prompt OR Ethos OR Global Default
+        if custom_prompt:
+            prompt = custom_prompt
+        elif loaded_ethos:
+            # Inject the ethos as the primary instruction, then add core ReAct rules
+            prompt = f"{loaded_ethos}\n\n{core_instruction}\n\nAvailable tools:\n{self._get_tool_descriptions()}"
+        else:
+            prompt = _SYSTEM_PROMPT
+
+        self.system_prompt = prompt
+        self.llm_client = LLMClient()
+        logger.info(f"Model re-initialised for {self.agent_name} with local LLMClient strict schema enforcement.")
+
+    def _get_tool_descriptions(self) -> str:
+        """Helper to inject available tools into the dynamic prompt."""
+        return """- query_siem(source_ip, time_range)
+- get_entity_info(entity_id)
+- check_threat_intel(indicator)
+- scan_host(target_ip)
+- correlate_events(investigation_id)
+- analyse_process(pid, host)
+- collect_forensics(target_ip, artifact_type)
+- draft_containment(strategy, target_ip)
+- report_false_positive(rule_id, source_ip, reason)
+- consult_librarian(query)
+- inspect_modbus_traffic(target_ip, port)
+- audit_ad_privileges(entity_id)
+- verify_remediation_safety(strategy, target_ip)
+"""
 
     # ------------------------------------------------------------------
     # Public interface
@@ -531,7 +583,10 @@ class InvestigatorAgent:
         """
         self.memory = memory
         steps: List[ReasoningStep] = []
-        chat = self.model.start_chat(history=[])
+        
+        messages = [
+            {"role": "system", "content": f"{self.system_prompt}\n\nIMPORTANT: Output exactly one JSON object, with no markdown formatting."}
+        ]
         
         # [SECURITY] Generate cryptographic session delimiter for Late-Stage Binding
         delimiter = secrets.token_hex(5).upper()
@@ -545,8 +600,7 @@ class InvestigatorAgent:
             hive_context += f"[/RAW_DATA_{delimiter}]\n"
 
         initial_prompt = self._build_initial_prompt(alert, investigation_id, delimiter) + hive_context
-        messages = [initial_prompt]
-        current_message = initial_prompt
+        messages.append({"role": "user", "content": initial_prompt})
         
         # [RESOURCE LIMITS]
         total_case_tokens = 0
@@ -557,34 +611,45 @@ class InvestigatorAgent:
             t_start = time.monotonic()
 
             try:
-                response = chat.send_message(current_message)
-                raw = response.text.strip()
+                # Local LLM Client generation
+                # We do not have token usage stats from all local API engines natively yet, spoofing simple token cost
+                import nest_asyncio
+                nest_asyncio.apply()
                 
-                # [IQ] Billing & Telemetry
-                usage = getattr(response, "usage_metadata", None)
-                if usage:
-                    step_tokens = usage.prompt_token_count + usage.candidates_token_count
-                    total_case_tokens += step_tokens
+                import asyncio
+                parsed, raw = asyncio.get_event_loop().run_until_complete(
+                     self.llm_client.generate_chat_json(
+                         messages=messages, 
+                         model=self.cfg.get("gemini_model", "llama3:8b-instruct"), 
+                         temperature=self.cfg.get("temperature", 0.2)
+                     )
+                )
+                
+                messages.append({"role": "assistant", "content": raw})
+                
+                # Mock token usage for billing backwards compatibility
+                step_tokens = len(str(messages)) // 4
+                total_case_tokens += step_tokens
                     
-                    track_token_usage(
-                        self.agent_name,
-                        self.cfg["gemini_model"],
-                        usage.prompt_token_count,
-                        usage.candidates_token_count,
-                        case_id=investigation_id
-                    )
-                    
-                    if total_case_tokens > MAX_CASE_TOKENS:
-                        logger.error(f"[{investigation_id}] Hard token quota exceeded ({total_case_tokens} > {MAX_CASE_TOKENS}). Aborting ReAct.")
-                        EventBus("orchestrator_callbacks").push({
-                            "case_id": investigation_id,
-                            "agent": self.agent_name,
-                            "status": "HUMAN_ESCALATION",
-                            "reason": f"Hard token quota exceeded ({total_case_tokens} tokens). DoW mitigation.",
-                            "findings": self.memory.findings if self.memory else [],
-                            "alert": alert
-                        })
-                        break
+                track_token_usage(
+                    self.agent_name,
+                    self.cfg["gemini_model"],
+                    step_tokens // 2,
+                    step_tokens // 2,
+                    case_id=investigation_id
+                )
+                
+                if total_case_tokens > MAX_CASE_TOKENS:
+                    logger.error(f"[{investigation_id}] Hard token quota exceeded ({total_case_tokens} > {MAX_CASE_TOKENS}). Aborting ReAct.")
+                    EventBus("orchestrator_callbacks").push({
+                        "case_id": investigation_id,
+                        "agent": self.agent_name,
+                        "status": "HUMAN_ESCALATION",
+                        "reason": f"Hard token quota exceeded ({total_case_tokens} tokens). DoW mitigation.",
+                        "findings": self.memory.findings if self.memory else [],
+                        "alert": alert
+                    })
+                    break
             except Exception as exc:
                 logger.error(f"LLM call failed on step {step_num}: {exc}")
                 error_step = self._make_step(
@@ -612,8 +677,6 @@ class InvestigatorAgent:
 
             duration_s = time.monotonic() - t_start
 
-            # Parse LLM response
-            parsed = self._parse_llm_response(raw)
             step_type = parsed.get("type", "THOUGHT")
 
             step = self._make_step(
@@ -687,18 +750,11 @@ class InvestigatorAgent:
                              "alert": alert
                          })
                          break
-                else:
-                    consecutive_errors = 0
-                    
-                current_message = f"OBSERVATION: {obs_text}"
-                self._publish_step(obs_step)
-                logger.info(f"[{investigation_id}] OBSERVATION from {tool_name}")
-
-                # Feed observation back as the next message (secured by the cryptographic boundary)
-                current_message = f"OBSERVATION:\n[RAW_DATA_{delimiter}]\n{obs_text}\n[/RAW_DATA_{delimiter}]\n\nContinue your investigation."
+                # Feed observation back as the next message
+                messages.append({"role": "user", "content": f"OBSERVATION:\n[RAW_DATA_{delimiter}]\n{obs_text}\n[/RAW_DATA_{delimiter}]\n\nContinue your investigation."})
             else:
                 # THOUGHT — ask LLM to continue
-                current_message = "Continue."
+                messages.append({"role": "user", "content": "Continue."})
 
         else:
             # Hit step limit — ask for a forced conclusion
@@ -706,10 +762,13 @@ class InvestigatorAgent:
                 f"Investigation {investigation_id} hit max_steps={self.max_steps}. Forcing conclusion."
             )
             try:
-                resp = chat.send_message(
-                    "You have reached the step limit. Issue a CONCLUSION step summarising your findings."
+                messages.append({"role": "user", "content": "You have reached the step limit. Issue a CONCLUSION step summarising your findings."})
+                
+                import asyncio
+                parsed, raw = asyncio.get_event_loop().run_until_complete(
+                     self.llm_client.generate_chat_json(messages=messages, model=self.cfg.get("gemini_model", "llama3:8b-instruct"))
                 )
-                parsed = self._parse_llm_response(resp.text.strip())
+                
                 conclusion = self._make_step(
                     investigation_id=investigation_id,
                     type="CONCLUSION",

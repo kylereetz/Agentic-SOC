@@ -37,7 +37,7 @@
 
 ## Slide 7: From "Gaps" to "Audit-Ready"
 *   **Visual**: A side-by-side comparison. Left: A messy spreadsheet. Right: A professional, branded RCA Auditor PDF.
-*   **Narrative**: "Stop fearing the auditor. Our Auditor agent generates the exact evidence they want. We turn the chaos of compliance into a clear, visual progress bar moving toward 100%."
+*   **Narrative**: "Stop fearing the auditor. Our Governor agent generates the exact evidence they want. We turn the chaos of compliance into a clear, visual progress bar moving toward 100%."
 
 ## Slide 8: The Wisconsin Advantage
 *   **Visual**: A map of Wisconsin highlighting a "Private Lab" icon.

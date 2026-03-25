@@ -1,3 +1,4 @@
+"""Smoke test: verifies that the bcrypt password hashing library (passlib) is installed and functional."""
 from passlib.context import CryptContext
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 try:
