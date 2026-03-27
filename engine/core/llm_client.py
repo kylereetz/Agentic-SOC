@@ -13,7 +13,7 @@ class LLMClient:
     
     Defaults to localhost:11434 (Standard Ollama port).
     """
-    def __init__(self, base_url: str = None, api_key: str = None, default_model: str = "llama3:8b-instruct"):
+    def __init__(self, base_url: Optional[str] = None, api_key: Optional[str] = None, default_model: str = "llama3-soc"):
         self.base_url = base_url or os.environ.get("OLLAMA_API_URL", "http://localhost:11434/v1")
         self.api_key = api_key or os.environ.get("OLLAMA_API_KEY", "ollama_local")
         self.default_model = default_model
@@ -23,7 +23,7 @@ class LLMClient:
             api_key=self.api_key
         )
 
-    async def generate_json(self, prompt: str, system_instruction: str = "", model: str = None, temperature: float = 0.2) -> Dict[str, Any]:
+    async def generate_json(self, prompt: str, system_instruction: str = "", model: Optional[str] = None, temperature: float = 0.2) -> Dict[str, Any]:
         """
         Produce a structured JSON payload from the local model.
         Forces the local model to adhere strictly to JSON output.
@@ -61,7 +61,7 @@ class LLMClient:
             logger.error(f"Local LLM JSON generation failed: {e}")
             raise e
 
-    async def generate(self, prompt: str, system_instruction: str = "", model: str = None, temperature: float = 0.2) -> str:
+    async def generate(self, prompt: str, system_instruction: str = "", model: Optional[str] = None, temperature: float = 0.2) -> str:
         """Generate a raw string completion."""
         target_model = model or self.default_model
         
@@ -83,7 +83,7 @@ class LLMClient:
             logger.error(f"Local LLM raw generation failed: {e}")
             raise e
 
-    async def generate_chat_json(self, messages: List[Dict[str, str]], model: str = None, temperature: float = 0.2) -> tuple[Dict[str, Any], str]:
+    async def generate_chat_json(self, messages: List[Dict[str, str]], model: Optional[str] = None, temperature: float = 0.2) -> tuple[Dict[str, Any], str]:
         """
         Generate a JSON response from an ongoing chat history.
         Always returns a tuple of (parsed_json_dict, raw_assistant_message).
@@ -110,6 +110,23 @@ class LLMClient:
             return (json.loads(raw_content.strip()), orig_content)
         except Exception as e:
             logger.error(f"Local LLM stateful chat failed: {e}")
+            raise e
+
+    async def generate_chat(self, messages: List[Dict[str, str]], model: Optional[str] = None, temperature: float = 0.7) -> str:
+        """
+        Generate a raw string completion from an ongoing chat history.
+        """
+        target_model = model or self.default_model
+        
+        try:
+            response = await self.client.chat.completions.create(
+                model=target_model,
+                messages=messages,
+                temperature=temperature,
+            )
+            return response.choices[0].message.content.strip()
+        except Exception as e:
+            logger.error(f"Local LLM chat generation failed: {e}")
             raise e
 
     async def get_embedding(self, text: str, model: str = "nomic-embed-text") -> List[float]:

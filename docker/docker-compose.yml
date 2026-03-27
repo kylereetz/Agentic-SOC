@@ -7,6 +7,13 @@ services:
       - "11434:11434"
     volumes:
       - ollama-data:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
 
   # ── API ──────────────────────────────────────────────────────────────────
   soc-api:
@@ -20,6 +27,7 @@ services:
       - ..:/app
     environment:
       - SOC_PATH=/app/soc
+      - OLLAMA_API_URL=http://soc-llm:11434/v1
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
       interval: 30s
@@ -40,6 +48,8 @@ services:
     cap_add:
       - NET_RAW
       - NET_ADMIN
+    environment:
+      - OLLAMA_API_URL=http://soc-llm:11434/v1
 
   soc-triage:
     build:
@@ -50,6 +60,8 @@ services:
       - ..:/app
     depends_on:
       - soc-api
+    environment:
+      - OLLAMA_API_URL=http://soc-llm:11434/v1
 
   soc-responder:
     build:
@@ -60,6 +72,8 @@ services:
       - ..:/app
     depends_on:
       - soc-api
+    environment:
+      - OLLAMA_API_URL=http://soc-llm:11434/v1
 
   soc-orchestrator:
     build:
@@ -70,6 +84,8 @@ services:
       - ..:/app
     depends_on:
       - soc-api
+    environment:
+      - OLLAMA_API_URL=http://soc-llm:11434/v1
 
   soc-correlator:
     build:
@@ -80,6 +96,8 @@ services:
       - ..:/app
     depends_on:
       - soc-api
+    environment:
+      - OLLAMA_API_URL=http://soc-llm:11434/v1
 
   soc-vanguard:
     build:
@@ -90,6 +108,8 @@ services:
       - ..:/app
     depends_on:
       - soc-api
+    environment:
+      - OLLAMA_API_URL=http://soc-llm:11434/v1
 
   soc-watchdog:
     build:
@@ -100,6 +120,8 @@ services:
       - ..:/app
     depends_on:
       - soc-api
+    environment:
+      - OLLAMA_API_URL=http://soc-llm:11434/v1
 
   soc-log-guardian:
     build:
@@ -110,6 +132,8 @@ services:
       - ..:/app
     depends_on:
       - soc-api
+    environment:
+      - OLLAMA_API_URL=http://soc-llm:11434/v1
 
   soc-cloud-wraith:
     build:
@@ -120,6 +144,8 @@ services:
       - ..:/app
     depends_on:
       - soc-api
+    environment:
+      - OLLAMA_API_URL=http://soc-llm:11434/v1
 
   soc-mirage:
     build:
@@ -130,6 +156,8 @@ services:
       - ..:/app
     depends_on:
       - soc-api
+    environment:
+      - OLLAMA_API_URL=http://soc-llm:11434/v1
 
   soc-hunter:
     build:
@@ -140,6 +168,8 @@ services:
       - ..:/app
     depends_on:
       - soc-api
+    environment:
+      - OLLAMA_API_URL=http://soc-llm:11434/v1
 
   soc-traffic-sieve:
     build:
@@ -150,6 +180,8 @@ services:
       - ..:/app
     depends_on:
       - soc-api
+    environment:
+      - OLLAMA_API_URL=http://soc-llm:11434/v1
 
   soc-gatekeeper:
     build:
@@ -160,6 +192,8 @@ services:
       - ..:/app
     depends_on:
       - soc-api
+    environment:
+      - OLLAMA_API_URL=http://soc-llm:11434/v1
 
   soc-dispatch:
     build:
@@ -170,6 +204,8 @@ services:
       - ..:/app
     depends_on:
       - soc-api
+    environment:
+      - OLLAMA_API_URL=http://soc-llm:11434/v1
 
   soc-narrator:
     build:
@@ -180,6 +216,8 @@ services:
       - ..:/app
     depends_on:
       - soc-api
+    environment:
+      - OLLAMA_API_URL=http://soc-llm:11434/v1
 
   soc-risk-quantifier:
     build:
@@ -190,6 +228,8 @@ services:
       - ..:/app
     depends_on:
       - soc-api
+    environment:
+      - OLLAMA_API_URL=http://soc-llm:11434/v1
 
   soc-policy-architect:
     build:
@@ -200,6 +240,8 @@ services:
       - ..:/app
     depends_on:
       - soc-api
+    environment:
+      - OLLAMA_API_URL=http://soc-llm:11434/v1
 
   soc-librarian:
     build:
@@ -210,6 +252,8 @@ services:
       - ..:/app
     depends_on:
       - soc-api
+    environment:
+      - OLLAMA_API_URL=http://soc-llm:11434/v1
 
   soc-malware-pathologist:
     build:
@@ -220,6 +264,8 @@ services:
       - ..:/app
     depends_on:
       - soc-api
+    environment:
+      - OLLAMA_API_URL=http://soc-llm:11434/v1
 
   # ── DASHBOARD ────────────────────────────────────────────────────────────
   soc-dashboard:

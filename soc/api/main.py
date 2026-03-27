@@ -25,6 +25,7 @@ from soc.security.vault import Vault
 from soc.security.crypto_cat import sign_action
 from soc.agents.responder import ResponderAgent
 from soc.agents.topology_mapper import TopologyMapper
+from engine.core.llm_client import LLMClient
 
 # ── CONFIG ──────────────────────────────────────────────────────────────────
 vault_path = get_soc_path("configs", "secrets.json")
@@ -70,6 +71,7 @@ app.add_middleware(
 
 # Global agent instances for API access
 topology_mapper = TopologyMapper()
+llm_client = LLMClient()
 
 # ── MOCK USER DATABASE (MVP Start) ──────────────────────────────────────────
 # ── USER DATABASE ────────────────────────────────────────────────────────────
@@ -114,6 +116,10 @@ class StatusResponse(BaseModel):
 class ApprovalRequest(BaseModel):
     approved_indices: Optional[List[int]] = None
 
+class ChitChatRequest(BaseModel):
+    query: str
+    history: Optional[List[Dict[str, str]]] = None
+
 # ── AUTH UTILS ──────────────────────────────────────────────────────────────
 def create_access_token(data: dict):
     to_encode = data.copy()
@@ -154,6 +160,7 @@ def check_role(allowed_roles: List[str]):
 INVENTORY_DIR = get_soc_path("reports", "inventory")
 TRIAGE_LOG = get_soc_path("reports", "triage", "triage_alerts.json")
 PENDING_ACTIONS = get_soc_path("reports", "incidents", "pending_actions.json")
+CHITCHAT_LOG_DIR = get_soc_path("reports", "chitchat")
 
 # ── ENDPOINTS ───────────────────────────────────────────────────────────────
 
@@ -309,6 +316,86 @@ async def get_topology(current_user: User = Depends(get_current_user)):
 @app.get("/api/v1/health")
 async def health_check():
     return {"status": "healthy", "version": "0.1.2"}
+
+@app.post("/api/v1/chitchat")
+async def chitchat(req: ChitChatRequest, user: User = Depends(get_current_user)):
+    """[IQ] Route a natural language query to the internal model (ChitChat) with dynamic documentation context."""
+    try:
+        # 1. Load Agent Ethos (Doctrine)
+        ethos_path = get_soc_path("ethos", "ethos_sentinel_communicator.md")
+        system_logic = "You are ChitChat (Agentic SOC Communicator). You provide concise, expert SOC analysis and support."
+        try:
+            if os.path.exists(ethos_path):
+                with open(ethos_path, "r") as f:
+                    system_logic = f.read().strip()
+        except Exception as e:
+            logger.warning(f"Could not load communicator ethos: {e}")
+
+        # 2. Gather Incident Context (Latest Cases)
+        cases_dir = get_soc_path("reports", "incidents", "cases")
+        context_str = ""
+        try:
+            if os.path.exists(cases_dir):
+                case_files = [f for f in os.listdir(cases_dir) if f.endswith(".json")]
+                if case_files:
+                    # Sort by modification time to get the latest
+                    case_files.sort(key=lambda x: os.path.getmtime(os.path.join(cases_dir, x)), reverse=True)
+                    latest_case_path = os.path.join(cases_dir, case_files[0])
+                    with open(latest_case_path, "r") as f:
+                        case_data = json.load(f)
+                        context_str = f"\n\nCURRENT INCIDENT CONTEXT (LATEST CASE):\n{json.dumps(case_data, indent=2)}"
+        except Exception as e:
+            logger.warning(f"Failed to gather incident context for ChitChat: {e}")
+
+        # Fallback for mock simulation seen in frontend
+        if not context_str:
+            context_str = "\n\nCURRENT INCIDENT CONTEXT (SIMULATION MODE):\nIncident ID: INC-2023-981\nStatus: Active Investigation\nFocus: Potential lateral movement from Host-DX9 to Domain Controllers."
+
+        # 3. Construct messages
+        messages = [
+            {"role": "system", "content": f"{system_logic}{context_str}"}
+        ]
+        
+        if req.history:
+             for msg in req.history:
+                 # Map dashboard's 'role' and 'text' to LLM's 'role' and 'content'
+                 messages.append({"role": msg["role"], "content": msg["text"]})
+        
+        # Add the current query
+        messages.append({"role": "user", "content": req.query})
+        
+        # Use LLMClient to generate response
+        response = await llm_client.generate_chat(messages)
+
+        # Persistence: log to a file for auditing (async not needed for simple append)
+        if not os.path.exists(CHITCHAT_LOG_DIR):
+            os.makedirs(CHITCHAT_LOG_DIR, exist_ok=True)
+            
+        session_id = f"{user.username}_{datetime.utcnow().strftime('%Y%m%d')}"
+        log_file = os.path.join(CHITCHAT_LOG_DIR, f"{session_id}.json")
+        
+        log_entry = {
+            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "user": user.username,
+            "query": req.query,
+            "response": response
+        }
+        
+        try:
+            current_log = []
+            if os.path.exists(log_file):
+                with open(log_file, "r") as f:
+                    current_log = json.load(f)
+            current_log.append(log_entry)
+            with open(log_file, "w") as f:
+                json.dump(current_log, f, indent=2)
+        except Exception as log_err:
+            logger.error(f"Failed to persist ChitChat log: {log_err}")
+
+        return {"response": response}
+    except Exception as e:
+        logger.error(f"ChitChat internal model error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn

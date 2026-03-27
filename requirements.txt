@@ -9,3 +9,11 @@ openai
 nest-asyncio
 python-jose[cryptography]
 passlib[bcrypt]
+fastapi
+uvicorn
+typer
+rich
+python-multipart
+requests
+pydantic
+pydantic-settings

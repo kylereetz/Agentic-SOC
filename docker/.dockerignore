@@ -16,11 +16,23 @@ agent_audit_report.md
 rca_first_run_audit.csv
 rca_backup.zip
 
+# Dashboard / Web
+dashboard/node_modules/
+dashboard/dist/
+dashboard/.next/
+
 # IDEs
 .vscode/
 .idea/
+.aider*
+.git/
 
 # Docker
-Dockerfile
-docker-compose.yml
-.dockerignore
+docker/Dockerfile
+docker/docker-compose.yml
+docker/.dockerignore
+Modelfile
+
+# Temporary
+tmp/
+*.log

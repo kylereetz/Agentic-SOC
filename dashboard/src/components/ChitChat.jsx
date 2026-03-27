@@ -16,29 +16,7 @@ const INITIAL_MESSAGES = [{
   refs: [],
 }];
 
-// CANNED_RESPONSES removed; responses will be fetched from internal model API.
-const CANNED_RESPONSES = {
-  'How did the attacker gain access?': {
-    text: 'Based on evidence collected by SENTINEL-01, the attacker likely gained initial access via **spear phishing** (T1566.001). A malicious macro in an Office attachment was executed by KR\\admin at 02:14 AM, establishing a PowerShell reverse shell.',
-    refs: ['ALT-001: PowerShell execution', 'Entity: KR\\admin', 'Artifact: ps_payload.b64'],
-  },
-  'Show suspicious PowerShell activity': {
-    text: 'SENTINEL-01 flagged 3 anomalous PowerShell executions:\n1. `svchost.exe → powershell.exe -enc [base64]` (Host-DX9, 14:02:11)\n2. `WMI spawned PS` for persistence (14:02:45)\n3. `Invoke-Mimikatz` variant via reflective injection (14:03:01)',
-    refs: ['MITRE: T1059.001', 'Host: Host-DX9', 'PID: 9912'],
-  },
-  'Which hosts are at risk?': {
-    text: 'Based on the entity graph, these hosts are at elevated risk:\n• **Host-DX9** — confirmed compromised (isolated)\n• **srv-dc01** — targeted by Silver Ticket attempt\n• **Host-WS4** — lateral movement beacon detected\n• **OT-PLC-01** — unusual Modbus activity (low confidence)',
-    refs: ['Entity Graph', 'Alert: ALT-002', 'Alert: ALT-003'],
-  },
-  'Summarize the attack timeline': {
-    text: 'Attack timeline summary for INC-2023-981:\n\n→ 02:14 Phishing email opened by KR\\admin\n→ 02:14 PowerShell reverse shell established (Host-DX9)\n→ 02:18 SENTINEL-01 detected anomaly, began investigation\n→ 14:02 Credential dump via LSASS (Mimikatz)\n→ 14:02 Host-DX9 isolated by WARDEN-07\n→ 14:03 Lateral movement to srv-dc01 (Silver Ticket)\n→ ONGOING: Blast radius assessment in progress',
-    refs: ['AgentTimeline', 'INC-2023-981', 'Host: srv-dc01'],
-  },
-  'What MITRE techniques are confirmed?': {
-    text: 'Confirmed MITRE ATT&CK TTPs in INC-2023-981:\n\nInitial Access:\n • T1566.001 — Spear Phishing Attachment\n\nExecution:\n • T1059.001 — PowerShell\n • T1047 — WMI\n\nCredential Access:\n • T1003.001 — LSASS Memory\n • T1558.003 — Kerberoasting\n\nLateral Movement:\n • T1021.002 — SMB/Windows Admin Shares\n • T1550.003 — Pass the Ticket (Silver Ticket)',
-    refs: ['MITRE Navigator', 'Agent: SENTINEL-01', 'Evidence: EVD-001'],
-  },
-};
+// Responses are fetched from the internal model API in real-time.
 
 // ── Typing effect hook ────────────────────────────────────────────────
 function useTypewriter(text, speed = 18, active = true) {
@@ -115,36 +93,75 @@ function Msg({ msg, isLatestAI }) {
 }
 
 export default function ChitChat({ onClose }) {
-  const [messages, setMessages] = useState(INITIAL_MESSAGES);
+  const { authenticatedFetch } = useAuth();
+  const [messages, setMessages] = useState(() => {
+    const saved = localStorage.getItem('chitchat_history');
+    return saved ? JSON.parse(saved) : INITIAL_MESSAGES;
+  });
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [latestAIIdx, setLatestAIIdx] = useState(null);
   const bottomRef = useRef(null);
 
   useEffect(() => {
+    localStorage.setItem('chitchat_history', JSON.stringify(messages));
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const send = (text) => {
+  const send = async (text) => {
     const q = text || input.trim();
     if (!q || loading) return;
+    
     setInput('');
-    setMessages(prev => [...prev, { role: 'user', text: q }]);
+    const userMsg = { role: 'user', text: q };
+    const currentMessages = [...messages, userMsg];
+    setMessages(currentMessages);
     setLoading(true);
 
-    // Simulated delay and response (replace with real fetch later)
-    setTimeout(() => {
-      const canned = CANNED_RESPONSES[q];
-      const aiMsg = canned
-        ? { role: 'assistant', text: canned.text, refs: canned.refs }
-        : {
-            role: 'assistant',
-            text: `Analyzing INC-2023-981 context for: "${q}"\n\nCorrelating entity data, timeline events, and evidence artifacts…\n\n[Context window: 14 entities · 4 artifacts · 8 alerts · 48 tool calls]\n\nNo exact match found. Try: "How did the attacker gain access?" or "Which hosts are at risk?"`,
-            refs: ['INC-2023-981'],
-          };
-      setMessages(prev => { const next = [...prev, aiMsg]; setLatestAIIdx(next.length - 1); return next; });
+    try {
+      console.log(`[ChitChat] Sending query: ${q}`);
+      // Note: Backend expects { query: str, history: List[Dict[role, text]] }
+      // We skip the initial welcome message from the history if it's role: 'assistant'
+      const history = currentMessages.slice(1, -1); 
+
+      const response = await authenticatedFetch('http://localhost:8000/api/v1/chitchat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: q, history })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || 'Internal Model API returned error');
+      }
+
+      const data = await response.json();
+      const aiMsg = { 
+        role: 'assistant', 
+        text: data.response || 'No response from model.', 
+        refs: ['SENTINEL-COMMUNICATOR', 'Local-Ollama']
+      };
+      
+      setMessages(prev => {
+        const next = [...prev, aiMsg];
+        setLatestAIIdx(next.length - 1);
+        return next;
+      });
+    } catch (err) {
+      console.error('ChitChat Error:', err);
+      const errMsg = { 
+        role: 'assistant', 
+        text: `⚠️ Error: ${err.message}. Ensure Ollama is running (llama3-soc) and the backend is online.`,
+        refs: ['OLLAMA_TIMEOUT', 'CONNECTION_ERROR']
+      };
+      setMessages(prev => {
+        const next = [...prev, errMsg];
+        setLatestAIIdx(next.length - 1); // Ensure typewriter/scrolling works for error
+        return next;
+      });
+    } finally {
       setLoading(false);
-    }, 900 + Math.random() * 400);
+    }
   };
 
   return (
@@ -166,6 +183,12 @@ export default function ChitChat({ onClose }) {
             <span className="w-1.5 h-1.5 rounded-full animate-blink" style={{ background: '#88C057', boxShadow: '0 0 4px #88C057' }} />
             LIVE CTX
           </span>
+          <button 
+            onClick={() => { if(confirm('Clear history?')) { setMessages(INITIAL_MESSAGES); localStorage.removeItem('chitchat_history'); } }}
+            className="text-[10px] terminal px-1.5 py-0.5 rounded hover:bg-white/10 transition-colors"
+            style={{ color: '#4B5563', border: '1px solid #1F2937' }}>
+            CLEAR
+          </button>
           {onClose && (
             <button onClick={onClose} className="p-1 rounded hover:bg-white/5 transition-colors">
               <X size={12} style={{ color: '#6B7280' }} />
