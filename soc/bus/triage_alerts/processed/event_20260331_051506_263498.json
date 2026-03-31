@@ -1,0 +1,25 @@
+{
+  "version": "1.0",
+  "secure": false,
+  "payload": {
+    "timestamp": "2026-03-31T05:15:06.263498+00:00",
+    "rule_id": "HISTORIAN_DORMANT_WAKE",
+    "rule_name": "Dormant Entity Awakening",
+    "severity": "CRITICAL",
+    "classification": "suspicious",
+    "source_ip": "Unknown",
+    "description": "The entity 'USER::admin_service' communicated on the network after a dormant period of 0.0 days.",
+    "nist_control": "3.1.8",
+    "mitre_ttp": "T1078",
+    "semantic_detail": "System threshold mandates activity within 2.0s. This event violated standard lifecycle heuristics.",
+    "vector_id": "historian_dormancy_vector",
+    "raw_event": {
+      "src_endpoint": {
+        "ip": "10.0.0.51"
+      },
+      "user": "admin_service",
+      "action": "login"
+    }
+  },
+  "signature": "unsigned"
+}

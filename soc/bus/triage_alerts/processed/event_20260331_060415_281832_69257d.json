@@ -1,0 +1,20 @@
+{
+  "version": "1.0",
+  "secure": false,
+  "payload": {
+    "timestamp": "2026-03-31T06:04:15.281832+00:00",
+    "rule_id": "CORR_GRAPHML_CAMPAIGN",
+    "rule_name": "Intelligent Incident Grouping: Subgraph Density Exceeded Threshold",
+    "severity": "CRITICAL",
+    "description": "Graph Analytics Engine dynamically grouped 4 distinct entities into a unified Attack Campaign. Detected Stages: RECON. Involved IPs: ['10.0.0.50']. Involved Users: ['it_admin_svc']. This alerts was mathematically clustered via property similarity and behavioral linkage.",
+    "correlation_strength": 0.8,
+    "subgraph_size": 4,
+    "involved_entities": [
+      "10.0.0.50",
+      "e99a18c428cb38d5f260853678922e03",
+      "mimikatz.exe",
+      "it_admin_svc"
+    ]
+  },
+  "signature": "unsigned"
+}

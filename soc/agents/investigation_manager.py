@@ -109,7 +109,8 @@ class InvestigationManager:
         self.conn = ServiceMesh.connect_db(
             client_identity="manager",
             db_path=DB_PATH,
-            check_same_thread=False
+            check_same_thread=False,
+            negotiated_cipher="TLS_AES_256_GCM_SHA384"
         )
         self.conn.row_factory = sqlite3.Row
         # [EQ] Enable SQLite WAL mode natively

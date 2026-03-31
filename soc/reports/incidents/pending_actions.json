@@ -61,5 +61,274 @@
       "notes": "CRITICAL RISK: Target is CORE INFRASTRUCTURE. Action blocked.",
       "autonomy_drift": 0.05
     }
+  },
+  {
+    "id": "ACT_20260331_051850_728716",
+    "created_at": "2026-03-31T05:18:50.728626+00:00",
+    "target_ip": "Unknown",
+    "target_os": "windows",
+    "trigger_alert": {
+      "timestamp": "2026-03-31T05:15:06.263498+00:00",
+      "rule_id": "HISTORIAN_DORMANT_WAKE",
+      "rule_name": "Dormant Entity Awakening",
+      "severity": "CRITICAL",
+      "classification": "suspicious",
+      "source_ip": "Unknown",
+      "description": "The entity 'USER::admin_service' communicated on the network after a dormant period of 0.0 days.",
+      "nist_control": "3.1.8",
+      "mitre_ttp": "T1078",
+      "semantic_detail": "System threshold mandates activity within 2.0s. This event violated standard lifecycle heuristics.",
+      "vector_id": "historian_dormancy_vector",
+      "raw_event": {
+        "src_endpoint": {
+          "ip": "10.0.0.51"
+        },
+        "user": "admin_service",
+        "action": "login"
+      }
+    },
+    "status": "REJECTED_BY_SYSTEM",
+    "strategy": "VALIDATION_FAILED",
+    "commands": [
+      {
+        "cmd": "# BLOCKED: Command injection or invalid IP detected in 'Unknown'",
+        "status": "REJECTED_BY_SYSTEM"
+      }
+    ],
+    "risk_assessment": {
+      "score": 50,
+      "notes": "Standard containment risk.",
+      "autonomy_drift": 0.05
+    }
+  },
+  {
+    "id": "ACT_20260331_051850_744637",
+    "created_at": "2026-03-31T05:18:50.744595+00:00",
+    "target_ip": "Unknown",
+    "target_os": "windows",
+    "trigger_alert": {
+      "timestamp": "2026-03-31T05:15:33.637338+00:00",
+      "rule_id": "HISTORIAN_DORMANT_WAKE",
+      "rule_name": "Dormant Entity Awakening",
+      "severity": "CRITICAL",
+      "classification": "suspicious",
+      "source_ip": "Unknown",
+      "description": "The entity 'USER::admin_service' communicated on the network after a dormant period of 0.0 days.",
+      "nist_control": "3.1.8",
+      "mitre_ttp": "T1078",
+      "semantic_detail": "System threshold mandates activity within 2.0s. This event violated standard lifecycle heuristics.",
+      "vector_id": "historian_dormancy_vector",
+      "raw_event": {
+        "src_endpoint": {
+          "ip": "10.0.0.51"
+        },
+        "user": "admin_service",
+        "action": "login"
+      }
+    },
+    "status": "REJECTED_BY_SYSTEM",
+    "strategy": "VALIDATION_FAILED",
+    "commands": [
+      {
+        "cmd": "# BLOCKED: Command injection or invalid IP detected in 'Unknown'",
+        "status": "REJECTED_BY_SYSTEM"
+      }
+    ],
+    "risk_assessment": {
+      "score": 50,
+      "notes": "Standard containment risk.",
+      "autonomy_drift": 0.05
+    }
+  },
+  {
+    "id": "ACT_20260331_051850_752699",
+    "created_at": "2026-03-31T05:18:50.752660+00:00",
+    "target_ip": "Unknown",
+    "target_os": "windows",
+    "trigger_alert": {
+      "timestamp": "2026-03-31T05:16:23.191086+00:00",
+      "rule_id": "HISTORIAN_DORMANT_WAKE",
+      "rule_name": "Dormant Entity Awakening",
+      "severity": "CRITICAL",
+      "classification": "suspicious",
+      "source_ip": "Unknown",
+      "description": "The entity 'USER::admin_service' communicated on the network after a dormant period of 0.0 days.",
+      "nist_control": "3.1.8",
+      "mitre_ttp": "T1078",
+      "semantic_detail": "System threshold mandates activity within 2.0s. This event violated standard lifecycle heuristics.",
+      "vector_id": "historian_dormancy_vector",
+      "raw_event": {
+        "src_endpoint": {
+          "ip": "10.0.0.51"
+        },
+        "user": "admin_service",
+        "action": "login"
+      }
+    },
+    "status": "REJECTED_BY_SYSTEM",
+    "strategy": "VALIDATION_FAILED",
+    "commands": [
+      {
+        "cmd": "# BLOCKED: Command injection or invalid IP detected in 'Unknown'",
+        "status": "REJECTED_BY_SYSTEM"
+      }
+    ],
+    "risk_assessment": {
+      "score": 50,
+      "notes": "Standard containment risk.",
+      "autonomy_drift": 0.05
+    }
+  },
+  {
+    "id": "ACT_20260331_051850_768170",
+    "created_at": "2026-03-31T05:18:50.768129+00:00",
+    "target_ip": "Unknown",
+    "target_os": "windows",
+    "trigger_alert": {
+      "timestamp": "2026-03-31T05:17:15.863893+00:00",
+      "rule_id": "HISTORIAN_DORMANT_WAKE",
+      "rule_name": "Dormant Entity Awakening",
+      "severity": "CRITICAL",
+      "classification": "suspicious",
+      "source_ip": "Unknown",
+      "description": "The entity 'USER::admin_service' communicated on the network after a dormant period of 0.0 days.",
+      "nist_control": "3.1.8",
+      "mitre_ttp": "T1078",
+      "semantic_detail": "System threshold mandates activity within 2.0s. This event violated standard lifecycle heuristics.",
+      "vector_id": "historian_dormancy_vector",
+      "raw_event": {
+        "src_endpoint": {
+          "ip": "10.0.0.51"
+        },
+        "user": "admin_service",
+        "action": "login"
+      }
+    },
+    "status": "REJECTED_BY_SYSTEM",
+    "strategy": "VALIDATION_FAILED",
+    "commands": [
+      {
+        "cmd": "# BLOCKED: Command injection or invalid IP detected in 'Unknown'",
+        "status": "REJECTED_BY_SYSTEM"
+      }
+    ],
+    "risk_assessment": {
+      "score": 50,
+      "notes": "Standard containment risk.",
+      "autonomy_drift": 0.05
+    }
+  },
+  {
+    "id": "ACT_20260331_051850_783734",
+    "created_at": "2026-03-31T05:18:50.783690+00:00",
+    "target_ip": "Unknown",
+    "target_os": "windows",
+    "trigger_alert": {
+      "timestamp": "2026-03-31T05:17:55.653807+00:00",
+      "rule_id": "HISTORIAN_DORMANT_WAKE",
+      "rule_name": "Dormant Entity Awakening",
+      "severity": "CRITICAL",
+      "classification": "suspicious",
+      "source_ip": "Unknown",
+      "description": "The entity 'USER::admin_service' communicated on the network after a dormant period of 0.0 days.",
+      "nist_control": "3.1.8",
+      "mitre_ttp": "T1078",
+      "semantic_detail": "System threshold mandates activity within 2.0s. This event violated standard lifecycle heuristics.",
+      "vector_id": "historian_dormancy_vector",
+      "raw_event": {
+        "src_endpoint": {
+          "ip": "10.0.0.51"
+        },
+        "user": "admin_service",
+        "action": "login"
+      }
+    },
+    "status": "REJECTED_BY_SYSTEM",
+    "strategy": "VALIDATION_FAILED",
+    "commands": [
+      {
+        "cmd": "# BLOCKED: Command injection or invalid IP detected in 'Unknown'",
+        "status": "REJECTED_BY_SYSTEM"
+      }
+    ],
+    "risk_assessment": {
+      "score": 50,
+      "notes": "Standard containment risk.",
+      "autonomy_drift": 0.05
+    }
+  },
+  {
+    "id": "ACT_20260331_051850_799475",
+    "created_at": "2026-03-31T05:18:50.799432+00:00",
+    "target_ip": "Unknown",
+    "target_os": "windows",
+    "trigger_alert": {
+      "timestamp": "2026-03-31T05:18:48.383728+00:00",
+      "rule_id": "HISTORIAN_DORMANT_WAKE",
+      "rule_name": "Dormant Entity Awakening",
+      "severity": "CRITICAL",
+      "classification": "suspicious",
+      "source_ip": "Unknown",
+      "description": "The entity 'USER::admin_service' communicated on the network after a dormant period of 0.0 days.",
+      "nist_control": "3.1.8",
+      "mitre_ttp": "T1078",
+      "semantic_detail": "System threshold mandates activity within 2.0s. This event violated standard lifecycle heuristics.",
+      "vector_id": "historian_dormancy_vector",
+      "raw_event": {
+        "src_endpoint": {
+          "ip": "10.0.0.51"
+        },
+        "user": "admin_service",
+        "action": "login"
+      }
+    },
+    "status": "REJECTED_BY_SYSTEM",
+    "strategy": "VALIDATION_FAILED",
+    "commands": [
+      {
+        "cmd": "# BLOCKED: Command injection or invalid IP detected in 'Unknown'",
+        "status": "REJECTED_BY_SYSTEM"
+      }
+    ],
+    "risk_assessment": {
+      "score": 50,
+      "notes": "Standard containment risk.",
+      "autonomy_drift": 0.05
+    }
+  },
+  {
+    "id": "ACT_20260331_060421_319908",
+    "created_at": "2026-03-31T06:04:21.319788+00:00",
+    "target_ip": "unknown",
+    "target_os": "windows",
+    "trigger_alert": {
+      "timestamp": "2026-03-31T06:04:17.308466+00:00",
+      "rule_id": "CORR_GRAPHML_CAMPAIGN",
+      "rule_name": "Intelligent Incident Grouping: Subgraph Density Exceeded Threshold",
+      "severity": "CRITICAL",
+      "description": "Graph Analytics Engine dynamically grouped 5 distinct entities into a unified Attack Campaign. Detected Stages: LATERAL. Involved IPs: ['10.0.0.50', '10.0.0.200']. Involved Users: ['it_admin_svc']. This alerts was mathematically clustered via property similarity and behavioral linkage.",
+      "correlation_strength": 1.0,
+      "subgraph_size": 5,
+      "involved_entities": [
+        "10.0.0.50",
+        "e99a18c428cb38d5f260853678922e03",
+        "mimikatz.exe",
+        "it_admin_svc",
+        "10.0.0.200"
+      ]
+    },
+    "status": "REJECTED_BY_SYSTEM",
+    "strategy": "VALIDATION_FAILED",
+    "commands": [
+      {
+        "cmd": "# BLOCKED: Command injection or invalid IP detected in 'unknown'",
+        "status": "REJECTED_BY_SYSTEM"
+      }
+    ],
+    "risk_assessment": {
+      "score": 50,
+      "notes": "Standard containment risk.",
+      "autonomy_drift": 0.05
+    }
   }
 ]

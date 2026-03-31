@@ -1,0 +1,38 @@
+{
+  "version": "1.0",
+  "secure": false,
+  "payload": {
+    "metadata": {
+      "version": "1.0-OCSF",
+      "normalization_type": "graph_engine"
+    },
+    "ocsf_class_uid": 4001,
+    "time": 1774933535.9378943,
+    "src_endpoint": {
+      "ip": "10.0.0.5",
+      "port": null
+    },
+    "dst_endpoint": {
+      "ip": "10.0.0.54",
+      "port": 445
+    },
+    "unmapped": {
+      "graph_anomaly": "Degree Centrality Spiked",
+      "description": "Host outbound volume spike detected: 37 distinct edges.",
+      "out_degree": 37,
+      "rule_id": "GRAPH_CENTRALITY_SPIKE",
+      "raw_netflow": {
+        "src_ip": "10.0.0.5",
+        "dst_ip": "10.0.0.54",
+        "dst_port": 445,
+        "protocol": "TCP",
+        "bytes": 50
+      }
+    },
+    "protocol": "TCP",
+    "action": "Allowed",
+    "bytes_in": 0,
+    "bytes_out": 0
+  },
+  "signature": "unsigned"
+}

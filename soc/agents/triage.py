@@ -141,6 +141,19 @@ class TriageEngine:
 
         # Satisfies NIST 800-171 3.14.6
         """
+        # [OCSF Compatibility] Normalize OCSF payload fields to legacy fields for the rule engine
+        if "ocsf_class_uid" in event:
+            event_type_map = {3002: "authentication", 4001: "network_activity", 9999: "proprietary_ot"}
+            event["event_type"] = event_type_map.get(event["ocsf_class_uid"], "unknown_ocsf")
+            
+            # Extract IP
+            if "src_endpoint" in event and event["src_endpoint"]:
+                event["ip"] = event["src_endpoint"].get("ip", "")
+                
+            # Bring unmapped context to the top level for rules
+            unmapped = event.get("unmapped", {})
+            event["semantic_detail"] = unmapped.get("inferred_meaning", event.get("message", "OCSF Event"))
+                
         best_match: Optional[TriageAlert] = None
         severity_order = {"INFO": 0, "WARNING": 1, "CRITICAL": 2}
 

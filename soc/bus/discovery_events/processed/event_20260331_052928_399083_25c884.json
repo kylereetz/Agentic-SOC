@@ -1,0 +1,44 @@
+{
+  "version": "1.0",
+  "secure": false,
+  "payload": {
+    "metadata": {
+      "version": "1.0-OCSF",
+      "normalization_type": "graph_engine"
+    },
+    "ocsf_class_uid": 4001,
+    "time": 1774934968.3990834,
+    "src_endpoint": {
+      "ip": "10.0.0.100",
+      "port": null
+    },
+    "dst_endpoint": {
+      "ip": "203.0.113.50",
+      "port": 443
+    },
+    "unmapped": {
+      "graph_anomaly": "Volumetric Data Anomaly",
+      "description": "Data transfer of 50000000000 bytes exceeded historical normal of 5096875.0 bytes by 4.2 Sigma.",
+      "out_degree": 1,
+      "rule_id": "GRAPH_VOLUMETRIC_SPIKE",
+      "raw_netflow": {
+        "src_ip": "10.0.0.100",
+        "dst_ip": "203.0.113.50",
+        "dst_port": 443,
+        "protocol": "TCP",
+        "bytes": 50000000000
+      },
+      "time_series_math": {
+        "historical_mean": 5096875.0,
+        "std_dev": 11763506617.9,
+        "actual_bytes": 50000000000,
+        "sigma_deviation": 4.2
+      }
+    },
+    "protocol": "TCP",
+    "action": "Allowed",
+    "bytes_in": 0,
+    "bytes_out": 0
+  },
+  "signature": "unsigned"
+}

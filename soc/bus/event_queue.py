@@ -104,8 +104,10 @@ class EventBus:
         """
         Push a secured event onto the channel.
         """
+        import uuid
         ts = datetime.utcnow().strftime("%Y%m%d_%H%M%S_%f")
-        filename = f"event_{ts}.json"
+        rand_id = uuid.uuid4().hex[:6]
+        filename = f"event_{ts}_{rand_id}.json"
         filepath = os.path.join(self.channel_dir, filename)
 
         # [Hardening] Sanitize Prompt Injection Vectors
@@ -181,7 +183,11 @@ class EventBus:
             return payload
 
         except Exception as exc:
-            logger.error(f"Bus [{self.channel_name}] POP error on {filename}: {exc}")
+            logger.error(f"Bus [{self.channel_name}] POP error on {filename}. Quarantining: {exc}")
+            try:
+                os.replace(src_path, dst_path + ".corrupt")
+            except Exception:
+                pass
             return None
 
     def peek(self) -> Optional[Dict[str, Any]]:

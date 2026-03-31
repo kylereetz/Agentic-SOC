@@ -1,0 +1,14 @@
+{
+  "version": "1.0",
+  "secure": false,
+  "payload": {
+    "entity_id": "10.0.0.200",
+    "file_hashes": [
+      "e99a18c428cb38d5f260853678922e03"
+    ],
+    "intelligence_type": "GRAPHML_CAMPAIGN_NODE",
+    "confidence": 1.0,
+    "timestamp": "2026-03-31T06:04:17.309554+00:00"
+  },
+  "signature": "unsigned"
+}

@@ -1,0 +1,30 @@
+{
+  "version": "1.0",
+  "secure": false,
+  "payload": {
+    "timestamp": "2026-03-31T05:37:55.384668+00:00",
+    "rule_id": "PEER_GROUP_DEVIATION",
+    "rule_name": "Behavioral Peer Deviation",
+    "severity": "CRITICAL",
+    "classification": "malicious",
+    "source_ip": "10.0.0.99",
+    "description": "PEER GROUP DEVIATION: User 'alicew' executed 'whoami.exe', which has never been executed by anyone else in their naturally mapped Behavioral Cluster (3 members).",
+    "nist_control": "3.14.6",
+    "mitre_ttp": "T1059",
+    "raw_event": {
+      "event_type": "sysmon",
+      "eid": 1,
+      "user": "alicew",
+      "process_name": "whoami.exe",
+      "command_line": "whoami /priv",
+      "source_ip": "10.0.0.99"
+    },
+    "confidence": 0.95,
+    "agent_id": "SENTINEL-ENDPOINT-ANALYST",
+    "evidence_array": [
+      "62891cf59cc8108a5d54b97bb8344f331a0b275494ab81737ef40dafa872b935"
+    ],
+    "vector_id": "endpoint_behavior_vector"
+  },
+  "signature": "unsigned"
+}

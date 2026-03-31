@@ -1,0 +1,19 @@
+2026-03-31 00:28:03,026 - INFO - RCA Bootstrap - Initializing Time Series Model Test...
+2026-03-31 00:28:03,026 - WARNING - RCA Bootstrap - Bus [discovery_events] NO SOC_BUS_KEY FOUND. Using plain-text (UNSAFE).
+2026-03-31 00:28:03,030 - ERROR - RCA Bootstrap - Bus [discovery_events] POP error on event_20260316_210616_667493.json. Quarantining: 'payload'
+2026-03-31 00:28:03,031 - WARNING - RCA Bootstrap - Bus [network_telemetry] NO SOC_BUS_KEY FOUND. Using plain-text (UNSAFE).
+2026-03-31 00:28:03,031 - WARNING - RCA Bootstrap - Bus [discovery_events] NO SOC_BUS_KEY FOUND. Using plain-text (UNSAFE).
+2026-03-31 00:28:03,032 - INFO - RCA Bootstrap - === Phase 1: Establishing Welford's Statistical Baseline ===
+2026-03-31 00:28:03,033 - WARNING - RCA TrafficSieve - [IQ] Structural Relational Anomaly detected for 10.0.0.100.
+2026-03-31 00:28:03,033 - WARNING - RCA Bootstrap - [IQ] Structural Relational Anomaly detected for 10.0.0.100.
+2026-03-31 00:28:03,034 - ERROR - RCA Bootstrap - Bus [discovery_events] POP error on event_20260316_210737_149650.json. Quarantining: 'payload'
+2026-03-31 00:28:03,035 - INFO - RCA Bootstrap - Success: Statistical Baseline modeled via Welford's Algorithm (15 events).
+2026-03-31 00:28:03,035 - INFO - RCA Bootstrap - Edge Memory State: Mean=5100000.0 bytes, Count=15
+2026-03-31 00:28:03,035 - INFO - RCA Bootstrap - === Phase 2: Active Simulation (Non-Anomalous Flow) ===
+2026-03-31 00:28:03,036 - ERROR - RCA Bootstrap - Bus [discovery_events] POP error on event_20260316_210838_937340.json. Quarantining: 'payload'
+2026-03-31 00:28:03,036 - INFO - RCA Bootstrap - Success: Valid traffic accepted. No volumetric spike triggered.
+2026-03-31 00:28:03,036 - INFO - RCA Bootstrap - === Phase 3: Volumetric Data Exfiltration (3-Sigma Spike) ===
+2026-03-31 00:28:03,036 - WARNING - RCA TrafficSieve - [IQ] Volumetric Data Anomaly detected for 10.0.0.100.
+2026-03-31 00:28:03,036 - WARNING - RCA Bootstrap - [IQ] Volumetric Data Anomaly detected for 10.0.0.100.
+2026-03-31 00:28:03,039 - ERROR - RCA Bootstrap - Bus [discovery_events] POP error on event_20260316_211751_996200.json. Quarantining: 'payload'
+2026-03-31 00:28:03,040 - ERROR - RCA Bootstrap - Failed to trigger GRAPH_VOLUMETRIC_SPIKE on 50GB exfiltration anomaly.

@@ -7,6 +7,7 @@
 - **IQ**: Hypothesis Generator — auto-populates case hypotheses based on findings.
 - **EQ**: WAL (Write-Ahead-Log) for case persistence; SQLite/PostgreSQL transition for 10k+ scalability.
 - **SQ**: Asynchronous Sync Barriers to prevent RAG race conditions.
+- **CQ**: Crypto-Agile Service Mesh enforcement — mathematically mandates Quantum-Resistant X25519 ciphers for all component mTLS connections.
 - **VQ**: Real-time WebSocket updates for global investigation state.
 
 ### 2. SENTINEL-ORCHESTRATOR ([Orchestrator](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/soc/agents/orchestrator.py#25-165))
@@ -117,22 +118,40 @@
 
 ### 19. SENTINEL-SCOUT ([ScoutAgent](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/soc/agents/scout.py#162-335))
 **Role**: Asset discovery and inventory management.
-- **IQ**: Agentless discovery of OT/ICS assets via passive monitoring.
-- **EQ**: Inventory diffing to detect unauthorized changes (Shadow IT).
+- **IQ**: Agentless discovery of OT/ICS assets and proactive **Quantum Vulnerability (PQC) Asset Mapping** via passive TLS network sniffing.
+- **EQ**: Inventory diffing to detect unauthorized changes (Shadow IT) and legacy cryptography drift.
+
+### 20. SENTINEL-TOPOLOGY ([TopologyMapper](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/soc/agents/topology_mapper.py))
+**Role**: The Asset Relationship Graph.
+- **IQ**: Dynamic Graphing — tracks User -> Host, Host -> IP, and Host -> Service mappings.
+- **EQ**: Continuous Integration — synthesizes events from discovery, identity, and network telemetry buses.
+- **VQ**: Visualizes relationships in a ReactFlow compatible format to aid investigation context.
 
 ## Business & Governance
 
-### 20. SENTINEL-GOVERNOR ([GovernorAgent](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/soc/agents/governor.py))
+### 21. SENTINEL-GOVERNOR ([GovernorAgent](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/soc/agents/governor.py))
 **Role**: Unified Governance & Tuning.
 - **IQ**: Compliance Cross-Mapping — maps detections directly to NIST 800-171/CMMC 2.0 domains.
 - **EQ**: Triage Feedback Loop — parses success/failure ratios to autonomously tune upstream triage algorithms.
 
-### 21. SENTINEL-COMMUNICATOR ([CommunicatorAgent](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/soc/agents/communicator.py))
+### 22. SENTINEL-COMMUNICATOR ([CommunicatorAgent](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/soc/agents/communicator.py))
 **Role**: Tri-Factor Unified Reporting.
 - **IQ**: Single-Pass Synthesis — calculates financial downtime, creates executives summaries, and pushes analyst pages inside a single LLM execution to minimize API bloat.
 - **EQ**: Alert Fatigue Filter — silently caches identical outcome hashes to throttle outbound duplicate paging storms.
 
-### 22. SENTINEL-WATCHDOG ([WatchdogAgent](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/soc/agents/watchdog.py#24-60))
+### 23. SENTINEL-WATCHDOG ([WatchdogAgent](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/soc/agents/watchdog.py#24-60))
 **Role**: Heartbeat-Monitor & System Health.
 - **IQ**: Self-Healing Hive — monitors other agents for hallucinations, lag, or downtime.
 - **EQ**: Performance Telemetry — tracks token usage and latency across the fleet.
+
+### 24. SENTINEL-HISTORIAN ([HistorianAgent](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/soc/agents/historian.py))
+**Role**: The Long-Term Dormancy Tracker (Rare Event Model).
+- **IQ**: Automatically extracts multi-entity formats (IP, User) from incoming telemetry.
+- **EQ**: Eliminates temporal noise by ignoring active entities; specifically hunts "threshold of silence" awakenings.
+- **SQ**: Ultra-lightweight WAL SQLite persistence for long-dwell entity state (30+ days).
+
+### 25. SENTINEL-RED ([RedTeamAgent](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/soc/agents/red_team.py))
+**Role**: Agent-on-Agent Auditing & Adversary Simulation.
+- **IQ**: Synthetic Anomaly Generation — crafts realistic OT Modbus overwrites, network C2 beacons, and identity sprays.
+- **EQ**: Continuous Efficacy Auditing — constantly measures the blue team's response and detection rate without human prompting.
+- **VQ**: Satisfies NIST 800-171 Rev 3 controls for continuous security control assessment.

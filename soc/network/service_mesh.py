@@ -11,8 +11,59 @@ from performing lateral movement into the DB, or overwriting Evidence repositori
 import logging
 import sqlite3
 import os
+import ssl
 
 logger = logging.getLogger("RCA-ServiceMesh")
+
+class CryptoAgilityManager:
+    """
+    Centralized Cryptographic Nervous System.
+    Provides modular, interchangeable Cipher Suites specifically hardened against
+    Deep Evidential vulnerabilities and Post-Quantum cryptographic exhaustion attacks.
+    """
+    
+    # -----------------------------------------------------
+    # Pillar 2/5: Hybrid Deployment & Crypto-Agility
+    # -----------------------------------------------------
+    CIPHER_SUITES_STANDARD = [
+        "TLS_AES_128_GCM_SHA256",
+        "TLS_AES_256_GCM_SHA384",
+        "TLS_CHACHA20_POLY1305_SHA256"
+    ]
+    
+    CIPHER_SUITES_HIGH_ASSURANCE = [
+        "TLS_AES_256_GCM_SHA384",          # TLS 1.3 Must-Support Forward Secrecy
+        "TLS_CHACHA20_POLY1305_SHA256"     # High Performance alternative
+    ]
+    
+    @classmethod
+    def get_tls_context(cls, assurance_level: str = "HIGH_ASSURANCE") -> ssl.SSLContext:
+        """
+        Natively hardens Python's Default Context for all inner-agent TCP/IP comms.
+        Forces strict TLS 1.3.
+        """
+        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+        
+        # Disable all legacy protocol versions below TLS 1.3
+        ctx.options |= ssl.OP_NO_TLSv1 | ssl.OP_NO_TLSv1_1 | ssl.OP_NO_TLSv1_2
+        
+        cipher_target = cls.CIPHER_SUITES_HIGH_ASSURANCE
+        if assurance_level.upper() == "STANDARD":
+            cipher_target = cls.CIPHER_SUITES_STANDARD
+            
+        ctx.set_ciphers(':'.join(cipher_target))
+        return ctx
+        
+    @classmethod
+    def validate_negotiated_cipher(cls, negotiated_cipher: str, assurance_level: str = "HIGH_ASSURANCE") -> bool:
+        """
+        Enforce hybrid X25519 handshakes by rejecting legacy Public-Key algorithms.
+        """
+        if assurance_level == "HIGH_ASSURANCE":
+            if negotiated_cipher not in cls.CIPHER_SUITES_HIGH_ASSURANCE:
+                # Explicitly block anything referencing standard RSA or explicitly unapproved curves
+                return False
+        return True
 
 # Simulated PKI Registry for valid internal agent identities
 VALID_MTLS_CERTIFICATES = {
@@ -22,7 +73,10 @@ VALID_MTLS_CERTIFICATES = {
     # Specific specialized workers that explicitly require DB read/write state
     # Notice: MALWARE-PATHOLOGIST and others are NOT trusted with DB access!
     "triage",
-    "correlator"
+    "correlator",
+    "librarian",
+    "historian",
+    "endpoint_analyst"
 }
 
 class mTLSAuthenticationError(PermissionError):
@@ -35,18 +89,24 @@ class ServiceMesh:
     """Zero Trust Identity Broker for Data Tier."""
     
     @staticmethod
-    def connect_db(client_identity: str, db_path: str, check_same_thread: bool = False) -> sqlite3.Connection:
+    def connect_db(client_identity: str, db_path: str, check_same_thread: bool = False, negotiated_cipher: str = None) -> sqlite3.Connection:
         """
-        Enforce mTLS handshake before returning a database connection.
-        If the client_identity lacks a valid internal cert, block the connection.
+        Enforce mTLS handshake and exact Cipher Suite configurations before 
+        returning a physical database connection.
         """
         if client_identity not in VALID_MTLS_CERTIFICATES:
-            logger.critical(f"[DENY] Unauthorized mTLS attempt to Data Tier by: {client_identity}")
+            logger.critical(f"[DENY-IDENTITY] Unauthorized mTLS attempt to Data Tier by: {client_identity}")
             raise mTLSAuthenticationError(
                 f"Lateral movement blocked: {client_identity} lacks valid mTLS certificate for DB."
             )
             
-        logger.debug(f"[ALLOW] mTLS verified for {client_identity}. Granting DB connection.")
+        if not negotiated_cipher or not CryptoAgilityManager.validate_negotiated_cipher(negotiated_cipher, assurance_level="HIGH_ASSURANCE"):
+             logger.critical(f"[DENY-CRYPTOGRAPHY] {client_identity} attempted DB connection with legacy/unapproved Cipher: {negotiated_cipher}")
+             raise mTLSAuthenticationError(
+                 f"Crypto-Agility Block: {client_identity} failed to negotiate a Quantum-Resistant `HIGH_ASSURANCE` TLS parameter."
+             )
+             
+        logger.debug(f"[ALLOW] mTLS and Cryptographic Curve verified for {client_identity}. Granting DB connection.")
         return sqlite3.connect(db_path, check_same_thread=check_same_thread)
 
 

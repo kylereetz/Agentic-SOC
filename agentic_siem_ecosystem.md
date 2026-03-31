@@ -11,7 +11,7 @@ Below is the exhaustive list of specialized agents categorized by our 4-Pillar s
 
 | Agent Name | Specialization | Key Capability |
 | :--- | :--- | :--- |
-| **SENTINEL-MANAGER** | Case Lifecycle | Orchestrates case lifecycles and agent assignments via a SQLite/WAL engine. |
+| **SENTINEL-MANAGER** | Case Lifecycle | Orchestrates case lifecycles, Zero-Trust Crypto-Agility, and agent assignments via a SQLite/WAL engine. |
 | **SENTINEL-ORCHESTRATOR** | Task Dispatcher | High-level dispatcher and multi-agent coordinator for specialized tasking. |
 
 ---
@@ -21,7 +21,8 @@ Below is the exhaustive list of specialized agents categorized by our 4-Pillar s
 
 | Agent Name | Specialization | Key Capability |
 | :--- | :--- | :--- |
-| **SENTINEL-SCOUT** | Asset Discovery | Performs agentless discovery and inventory diffing for IT/OT assets. |
+| **SENTINEL-SCOUT** | Asset Discovery | Performs agentless discovery, diffing, and Post-Quantum Cryptography (PQC) Vulnerability Tracking for IT/OT assets. |
+| **SENTINEL-TOPOLOGY** | Network Mapping | Maintains an active relationship graph mapping Users to Hosts to Services. |
 | **SENTINEL-LOG-GUARDIAN** | Normalization | Fixes "broken" logs from legacy systems using NLP-guided schemas. |
 | **SENTINEL-TRAFFIC-SIEVE** | Netflow Analysis | Identifies anomalous data exfiltration patterns in netflow/PCAPs. |
 | **SENTINEL-WATCHDOG** | System Health | Monitors the hive for "hallucinations," performance lag, or downtime. |
@@ -37,6 +38,7 @@ Below is the exhaustive list of specialized agents categorized by our 4-Pillar s
 | **SENTINEL-CORRELATOR** | Temporal Linking | Links distributed entity states across 48-hour windows to detect campaigns. |
 | **SENTINEL-LIBRARIAN** | Institutional Memory | Shared RAG service for semantic search across historical case data. |
 | **SENTINEL-HUNTER** | Proactive Search | Hypothesis-driven search for "living-off-the-land" (LotL) and APT patterns. |
+| **SENTINEL-ENDPOINT-ANALYST** | Execution Forensics | Sysmon / EDR parsing to detect obfuscated command lines and suspicious processes. |
 | **SENTINEL-INVESTIGATOR** | Deep Analysis | LLM-driven root cause analysis using Chain-of-Thought reasoning. |
 | **SENTINEL-FORENSICS** | Evidence Isolation | Collects and signs (SHA-256) forensic artifacts (RAM, PCAP, Disk). |
 | **SENTINEL-MALWARE-PATHOLOGIST** | Malware Analysis | Static and dynamic analysis of binaries in a high-fidelity sandbox. |
@@ -55,7 +57,6 @@ Below is the exhaustive list of specialized agents categorized by our 4-Pillar s
 | :--- | :--- | :--- |
 | **SENTINEL-PATCHPILOT** | Vulnerability Patching | Drafts context-aware fix scripts for vulnerabilities and hardening failures. |
 | **SENTINEL-RESPONDER** | Automated Containment | Performs process kills and network isolation with a built-in dead-man's switch. |
-| **SENTINEL-DISPATCH** | Crisis Notification | Manages sentiment-aware alerting across Slack, Email, and PagerDuty. |
 
 ---
 
@@ -64,10 +65,9 @@ Below is the exhaustive list of specialized agents categorized by our 4-Pillar s
 
 | Agent Name | Specialization | Key Capability |
 | :--- | :--- | :--- |
-| **SENTINEL-AUDITOR** | Compliance | Maps every SOC action to NIST 800-171/CMMC controls for automated reporting. |
-| **SENTINEL-RISK-QUANTIFIER** | Financial Impact | Calculates "Loss Magnitude" for incidents based on asset value and likelihood. |
-| **SENTINEL-POLICY-ARCHITECT** | Adaptive Governance | Auto-tunes triage sensitivity based on historical analyst feedback loops. |
-| **SENTINEL-NARRATOR** | Executive Reporting | Translates complex forensic data into Board-level business narratives. |
+| **SENTINEL-GOVERNOR** | Unified Governance & Tuning | Compliance cross-mapping (NIST/CMMC) and autonomous triage algorithm tuning. |
+| **SENTINEL-COMMUNICATOR** | Tri-Factor Reporting | Single-pass synthesis of financial impact, executive reports, and paging dispatch with fatigue filtering. |
+| **SENTINEL-HISTORIAN** | Long-Term Tracking | Eliminates temporal noise by ignoring active entities to hunt long-dwell awakenings via WAL. |
 
 ---
 

@@ -1,0 +1,38 @@
+{
+  "version": "1.0",
+  "secure": false,
+  "payload": {
+    "metadata": {
+      "version": "1.0-OCSF",
+      "normalization_type": "graph_engine"
+    },
+    "ocsf_class_uid": 4001,
+    "time": 1774933535.933407,
+    "src_endpoint": {
+      "ip": "10.0.0.5",
+      "port": null
+    },
+    "dst_endpoint": {
+      "ip": "10.0.0.52",
+      "port": 445
+    },
+    "unmapped": {
+      "graph_anomaly": "Structural Relational Anomaly",
+      "description": "Host established an entirely novel path to 10.0.0.52 on port 445.",
+      "out_degree": 35,
+      "rule_id": "GRAPH_STRUCTURAL_SHIFT",
+      "raw_netflow": {
+        "src_ip": "10.0.0.5",
+        "dst_ip": "10.0.0.52",
+        "dst_port": 445,
+        "protocol": "TCP",
+        "bytes": 50
+      }
+    },
+    "protocol": "TCP",
+    "action": "Allowed",
+    "bytes_in": 0,
+    "bytes_out": 0
+  },
+  "signature": "unsigned"
+}

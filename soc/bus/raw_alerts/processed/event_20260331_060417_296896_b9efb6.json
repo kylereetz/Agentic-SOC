@@ -1,0 +1,13 @@
+{
+  "version": "1.0",
+  "secure": false,
+  "payload": {
+    "event_type": "network",
+    "rule_name": "Lateral SMB Login",
+    "severity": "HIGH",
+    "source_ip": "10.0.0.50",
+    "dest_ip": "10.0.0.200",
+    "user": "it_admin_svc"
+  },
+  "signature": "unsigned"
+}

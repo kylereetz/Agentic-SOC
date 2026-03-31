@@ -133,6 +133,19 @@ class InventoryDiff:
             if before.get("os_label") != after.get("os_label"):
                 changed_fields.append(f"OS: {before.get('os_label')} -> {after.get('os_label')}")
             
+            # [PQC] Quantum Readiness Audit Feature
+            pqc_val = after.get("pqc_vulnerable", False)
+            if pqc_val and not before.get("pqc_vulnerable", False):
+                events.append({
+                    "timestamp": ts,
+                    "event_type": "asset_pqc_vulnerable",
+                    "severity": "WARNING",
+                    "ip": ip,
+                    "legacy_ciphers": after.get("legacy_ciphers_used", []),
+                    "detail": "Asset is utilizing legacy RSA/ECC ciphers vulnerable to Post-Quantum Cryptanalysis",
+                    "semantic_detail": f"QUANTUM RISK: {ip} is using legacy cryptographic suites."
+                })
+
             summary = ", ".join(changed_fields) if changed_fields else "Attributes updated"
 
             events.append({

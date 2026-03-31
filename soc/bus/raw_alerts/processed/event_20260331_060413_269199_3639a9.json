@@ -1,0 +1,13 @@
+{
+  "version": "1.0",
+  "secure": false,
+  "payload": {
+    "event_type": "sysmon",
+    "rule_name": "Suspicious Recon Executable",
+    "severity": "MEDIUM",
+    "source_ip": "10.0.0.50",
+    "file_hash": "e99a18c428cb38d5f260853678922e03",
+    "process_name": "mimikatz.exe"
+  },
+  "signature": "unsigned"
+}

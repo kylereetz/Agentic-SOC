@@ -20,7 +20,10 @@ import ssl
 from typing import Dict, List, Set, Optional, Any
 from datetime import datetime, timezone
 
-from scapy.all import ARP, Ether, IP, ICMP, srp, sr1, sniff
+from scapy.all import ARP, Ether, IP, ICMP, srp, sr1, sniff, load_layer
+
+# Pre-load the TLS dissection layer for Passive PQC Vulnerability mapping
+load_layer("tls")
 
 # Configure logging
 logging.basicConfig(
@@ -75,15 +78,34 @@ class SentinelEngine:
         if packet.haslayer(IP):
             src_ip = packet[IP].src
             src_mac = packet[Ether].src if packet.haslayer(Ether) else "Unknown"
+            
             if src_ip not in self.seen_ips:
                 self.seen_ips.add(src_ip)
                 asset = {
                     "ip_address": src_ip,
                     "mac_address": src_mac,
                     "discovery_method": "passive_sniff",
+                    "pqc_vulnerable": False,
+                    "legacy_ciphers_used": []
                 }
                 self.inventory[src_ip] = asset
                 logger.info(f"[Passive] New asset: {src_ip} ({src_mac})")
+                
+            # [PQC] Post-Quantum Passive Cryptography Sniffer
+            if packet.haslayer("TLSServerHello"):
+                try:
+                    # Passively extract the cipher suite the Server is aggressively choosing.
+                    cipher = packet["TLSServerHello"].cipher
+                    cipher_str = str(cipher)
+                    
+                    # If it's performing legacy Public Key exchanges (RSA/ECC), flag it for the Board
+                    if "RSA" in cipher_str or "ECDHE" in cipher_str or "DHE" in cipher_str:
+                        self.inventory[src_ip]["pqc_vulnerable"] = True
+                        if cipher_str not in self.inventory[src_ip]["legacy_ciphers_used"]:
+                            self.inventory[src_ip]["legacy_ciphers_used"].append(cipher_str)
+                            logger.warning(f"[PQC Audit] Discovered legacy cryptographic cipher on {src_ip}: {cipher_str}")
+                except Exception as e:
+                    pass
 
     # ------------------------------------------------------------------
     # 2. Active ARP Scan (Layer 2)
@@ -203,7 +225,7 @@ class SentinelEngine:
             return None
 
     def _get_tls_metadata(self, ip: str, port: int, timeout: int = 3) -> Optional[Dict[str, Any]]:
-        """Extract TLS version and certificate common names."""
+        """Extract TLS version and assess PQC cryptographic risk."""
         context = ssl.create_default_context()
         context.check_hostname = False
         context.verify_mode = ssl.CERT_NONE
@@ -215,12 +237,18 @@ class SentinelEngine:
                     if not cert:
                         return None
                     
-                    # Wrap the binary cert to get info if not provided
-                    # In CERT_NONE mode, getpeercert() returns None, so we'd need binary_form=True
-                    # Here we just return the version and basic info
+                    cipher_info = ssock.cipher()
+                    cipher_name = cipher_info[0] if cipher_info else "UNKNOWN"
+                    
+                    # [PQC] Quantum Vulnerability Evaluation
+                    pqc_vulnerable = False
+                    if "RSA" in cipher_name or "ECDHE" in cipher_name or "DHE" in cipher_name:
+                        pqc_vulnerable = True
+
                     return {
                         "version": ssock.version(),
-                        "cipher": ssock.cipher()[0],
+                        "cipher": cipher_name,
+                        "pqc_vulnerable": pqc_vulnerable,
                         "active": True
                     }
         except Exception:

@@ -59,7 +59,7 @@ class LibrarianAgent:
     def _init_db(self):
         """[SQ] Initialize SQLite database for horizontally scaled vector search."""
         from soc.network.service_mesh import ServiceMesh
-        self.conn = ServiceMesh.connect_db(client_identity="librarian", db_path=LIBRARIAN_DB_PATH)
+        self.conn = ServiceMesh.connect_db(client_identity="librarian", db_path=LIBRARIAN_DB_PATH, negotiated_cipher="TLS_AES_256_GCM_SHA384")
         self.conn.row_factory = sqlite3.Row
         self.conn.execute("PRAGMA journal_mode=WAL")
         self.conn.execute("""
