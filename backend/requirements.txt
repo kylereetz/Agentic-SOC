@@ -1,0 +1,24 @@
+scapy==2.7.0
+pandas==3.0.1
+paramiko==4.0.0
+python-nmap==0.7.1
+schedule==1.2.2
+reportlab==4.4.10
+jsonschema==4.26.0
+openai
+nest-asyncio
+python-jose[cryptography]==3.5.0
+passlib[bcrypt]==1.7.4
+fastapi==0.135.1
+uvicorn==0.41.0
+typer==0.24.1
+rich==14.3.3
+python-multipart==0.0.22
+requests==2.32.5
+pydantic==2.12.5
+pydantic-settings
+networkx
+# Test dependencies
+pytest
+pytest-asyncio>=0.23.0
+python-dotenv

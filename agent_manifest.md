@@ -82,10 +82,6 @@
 - **IQ**: Sandbox Behavioral Tracking — process creation, registry modification, and network beaconing.
 - **EQ**: Signature Correlation — links malware behavior to known APT group toolkits.
 
-### 13. SENTINEL-CLOUD-WRAITH ([CloudWraithAgent](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/soc/agents/cloud_wraith.py#29-68))
-**Role**: Cloud Security & IAM Surveillance.
-- **IQ**: IAM Surveillance — detects privilege escalation (e.g., AdministratorAccess attachment) in real-time.
-- **EQ**: Multi-Cloud Support — AWS/Azure/GCP activity monitoring and normalization.
 
 ## Response & Operations
 

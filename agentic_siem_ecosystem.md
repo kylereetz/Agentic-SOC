@@ -42,7 +42,6 @@ Below is the exhaustive list of specialized agents categorized by our 4-Pillar s
 | **SENTINEL-INVESTIGATOR** | Deep Analysis | LLM-driven root cause analysis using Chain-of-Thought reasoning. |
 | **SENTINEL-FORENSICS** | Evidence Isolation | Collects and signs (SHA-256) forensic artifacts (RAM, PCAP, Disk). |
 | **SENTINEL-MALWARE-PATHOLOGIST** | Malware Analysis | Static and dynamic analysis of binaries in a high-fidelity sandbox. |
-| **SENTINEL-CLOUD-WRAITH** | Cloud Security | Monitors AWS/Azure/GCP for IAM privilege escalation and unusual activity. |
 | **SENTINEL-GATEKEEPER** | Identity & Access | Detects MFA fatigue, impossible travel, and NHI (Non-Human Identity) risk. |
 | **SENTINEL-VANGUARD** | Supply Chain Risk | Ingests SBOMs to instantly flag zero-day impacts on nested libraries. |
 | **SENTINEL-MIRAGE** | Deception Operations | Deploys and monitors lightweight honeypots (PLCs, CAD shares) and canaries. |

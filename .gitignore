@@ -1,0 +1,58 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Packages
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+lib/
+lib64/
+
+# Virtual Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Environment variable files (secrets) — catch all locations, allow example templates
+**/.env
+**/.env.*
+!**/.env.example
+
+# Testing
+.pytest_cache/
+.tox/
+.coverage
+htmlcov/
+
+# Logs and databases
+*.log
+logs/
+*.sqlite
+*.sqlite3
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+.spyderproject
+
+# Temp/Scratch files
+tmp/
+*.tmp
+test*.txt
+pytest_out*.txt

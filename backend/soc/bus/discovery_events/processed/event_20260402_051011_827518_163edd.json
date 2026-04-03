@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "secure": false,
+  "payload": {
+    "metadata": {
+      "version": "1.0-OCSF",
+      "normalization_type": "standard"
+    },
+    "ocsf_class_uid": 3002,
+    "time": 1775106611.8275187,
+    "src_endpoint": {
+      "ip": "10.0.0.1",
+      "port": null
+    },
+    "dst_endpoint": null,
+    "unmapped": {},
+    "user": "authed_user",
+    "status": "Success",
+    "message": "User login attempt natively recognized."
+  },
+  "signature": "unsigned"
+}

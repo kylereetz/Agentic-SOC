@@ -1,0 +1,493 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import "tailwindcss";
+
+/* ── Design Tokens ─────────────────────────────────────────────────── */
+@layer base {
+  :root {
+    --color-bg:      #0B1117;
+    --color-panel:   #111827;
+    --color-border:  #1F2937;
+    --color-magenta: #D84C7F;
+    --color-blue:    #3B6FE3;
+    --color-lime:    #88C057;
+    --color-peach:   #E5A862;
+    --color-red:     #EF4444;
+
+    /* Glow intensities */
+    --glow-red:     0 0 12px rgba(239,68,68,0.55), 0 0 28px rgba(239,68,68,0.25);
+    --glow-blue:    0 0 10px rgba(59,111,227,0.45), 0 0 22px rgba(59,111,227,0.2);
+    --glow-magenta: 0 0 10px rgba(216,76,127,0.45), 0 0 22px rgba(216,76,127,0.2);
+    --glow-lime:    0 0 8px rgba(136,192,87,0.45),  0 0 16px rgba(136,192,87,0.2);
+    --glow-peach:   0 0 8px rgba(229,168,98,0.45),  0 0 16px rgba(229,168,98,0.2);
+
+    /* Card elevations */
+    --shadow-card:  0 1px 3px rgba(0,0,0,0.4), 0 4px 12px rgba(0,0,0,0.3);
+    --shadow-panel: 0 2px 8px rgba(0,0,0,0.5), 0 8px 24px rgba(0,0,0,0.35);
+    --shadow-modal: 0 8px 40px rgba(0,0,0,0.7), 0 0 60px rgba(0,0,0,0.4);
+  }
+
+  * { box-sizing: border-box; }
+
+  html { font-feature-settings: "cv02", "cv03", "cv04", "cv11"; }
+
+  body {
+    background: var(--color-bg);
+    color: #E2E8F0;
+    font-family: 'Inter', 'JetBrains Mono', system-ui, sans-serif;
+    margin: 0;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar       { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #2D3748; border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: #3B6FE366; }
+}
+
+/* ── Keyframes ─────────────────────────────────────────────────────── */
+@layer utilities {
+
+  /* ----- Attention pulses ----- */
+  @keyframes pulse-red {
+    0%, 100% { box-shadow: var(--glow-red); }
+    50%       { box-shadow: 0 0 20px rgba(239,68,68,0.9), 0 0 40px rgba(239,68,68,0.45); }
+  }
+  @keyframes pulse-blue {
+    0%, 100% { box-shadow: 0 0 8px rgba(59,111,227,0.4); }
+    50%       { box-shadow: var(--glow-blue); }
+  }
+  @keyframes pulse-magenta {
+    0%, 100% { box-shadow: 0 0 6px rgba(216,76,127,0.35); }
+    50%       { box-shadow: var(--glow-magenta); }
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.25; }
+  }
+  @keyframes pulse-scale {
+    0%, 100% { transform: scale(1); }
+    50%       { transform: scale(1.06); }
+  }
+
+  /* ----- Slide / Fade entrances ----- */
+  @keyframes slide-in-left {
+    from { transform: translateX(-12px); opacity: 0; }
+    to   { transform: translateX(0);     opacity: 1; }
+  }
+  @keyframes slide-in-right {
+    from { transform: translateX(16px); opacity: 0; }
+    to   { transform: translateX(0);    opacity: 1; }
+  }
+  @keyframes slide-in-up {
+    from { transform: translateY(10px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+  @keyframes slide-in-down {
+    from { transform: translateY(-10px) scaleY(0.9); opacity: 0; }
+    to   { transform: translateY(0)      scaleY(1);   opacity: 1; }
+  }
+  @keyframes fade-scale-in {
+    from { transform: scale(0.95); opacity: 0; }
+    to   { transform: scale(1);    opacity: 1; }
+  }
+
+  /* ----- Border & Edge glow ----- */
+  @keyframes border-trace {
+    0%   { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+  }
+
+  /* ----- Typing cursor ----- */
+  @keyframes type-cursor {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0; }
+  }
+
+  /* ----- Scan line ----- */
+  @keyframes scan-line {
+    0%   { top: -4px; }
+    100% { top: 100%; }
+  }
+
+  /* ----- Shimmer ----- */
+  @keyframes shimmer {
+    from { background-position: -200% 0; }
+    to   { background-position: 200% 0; }
+  }
+
+  /* ----- Rotate ----- */
+  @keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+
+  /* ----- Data scroll simulation ----- */
+  @keyframes data-scroll {
+    from { transform: translateY(0); }
+    to   { transform: translateY(-50%); }
+  }
+
+  /* ── Animation utility classes ────────────────────────────────────── */
+
+  /* Pulses */
+  .animate-pulse-red     { animation: pulse-red     1.6s ease-in-out infinite; }
+  .animate-pulse-blue    { animation: pulse-blue    2s   ease-in-out infinite; }
+  .animate-pulse-magenta { animation: pulse-magenta 2s   ease-in-out infinite; }
+  .animate-blink         { animation: pulse-dot     1.2s ease-in-out infinite; }
+  .animate-pulse-scale   { animation: pulse-scale   2s   ease-in-out infinite; }
+
+  /* Entrances */
+  .animate-slide-in      { animation: slide-in-right 0.35s ease-out forwards; }
+  .animate-slide-in-left { animation: slide-in-left  0.35s ease-out forwards; }
+  .animate-slide-in-up   { animation: slide-in-up    0.35s ease-out forwards; }
+  .animate-slide-in-down { animation: slide-in-down  0.35s ease-out forwards; }
+  .animate-fade-scale    { animation: fade-scale-in  0.3s  ease-out forwards; }
+
+  /* Misc */
+  .animate-spin-slow { animation: spin-slow 3s linear infinite; }
+  .animate-shimmer {
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.06) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: shimmer 2s ease-in-out infinite;
+  }
+
+  /* ── Typography ──────────────────────────────────────────────────── */
+  .terminal {
+    font-family: 'JetBrains Mono', 'Consolas', 'Courier New', monospace;
+    font-size: 0.75rem;
+    line-height: 1.6;
+    letter-spacing: 0.02em;
+  }
+  .sans { font-family: 'Inter', system-ui, sans-serif; }
+
+  /* ── Semantic Hierarchy Scale ────────────────────────────────────── */
+  /*
+   * Five levels of visual weight for the SOC terminal aesthetic.
+   * Use these instead of ad-hoc text-xs/text-sm to enforce consistency.
+   *
+   * .h-stat    → Large KPI values (threat count, risk %, autonomy level)
+   * .h-title   → Alert titles, panel headings, case names
+   * .h-body    → Standard row content, descriptions, normal text
+   * .h-label   → Column headers, field names, section subheadings
+   * .h-meta    → IDs, timestamps, secondary metadata, latency readings
+   */
+
+  /* Level 1 — Display metric (numbers that matter most) */
+  .h-stat {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 1.5rem;       /* 24px */
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+  .h-stat-sm {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 1.125rem;     /* 18px */
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+
+  /* Level 2 — Primary content (alert titles, case names, host names) */
+  .h-title {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.875rem;     /* 14px */
+    font-weight: 600;
+    line-height: 1.4;
+    color: #E2E8F0;
+  }
+  .h-title-sm {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.8125rem;    /* 13px */
+    font-weight: 600;
+    line-height: 1.4;
+    color: #CBD5E1;
+  }
+
+  /* Level 3 — Body (secondary content, descriptions, values in forms) */
+  .h-body {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.75rem;      /* 12px */
+    font-weight: 400;
+    line-height: 1.6;
+    color: #94A3B8;
+  }
+
+  /* Level 4 — Label (column headers, field names, section keys) */
+  .h-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6875rem;    /* 11px */
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #4B5563;
+  }
+
+  /* Level 5 — Meta (IDs, timestamps, latency, secondary counts) */
+  .h-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.625rem;     /* 10px */
+    font-weight: 400;
+    line-height: 1.4;
+    letter-spacing: 0.04em;
+    color: #374151;
+  }
+
+  /* ── Severity-aware title colours ────────────────────────────────── */
+  /* Apply to .h-title as a modifier: class="h-title sev-critical" */
+  .sev-critical { color: #FECACA !important; } /* near-white red tint — stands out */
+  .sev-high     { color: #FDE68A !important; }
+  .sev-medium   { color: #BFDBFE !important; }
+  .sev-low      { color: #BBF7D0 !important; }
+
+  /* ── Panel section heading (the "[ICON] LABEL" rows at top of each view) */
+  .panel-heading {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #E2E8F0;
+  }
+
+  /* ── KPI card layout helper ──────────────────────────────────────── */
+  .kpi-card {
+    background: #111827;
+    border: 1px solid #1F2937;
+    border-radius: 0.5rem;
+    padding: 1rem;
+  }
+  .kpi-card:hover {
+    border-color: #374151;
+    background: #131d2e;
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+
+
+  /* ── Color utilities ─────────────────────────────────────────────── */
+  .bg-app    { background: var(--color-bg); }
+  .bg-panel  { background: var(--color-panel); }
+  .border-panel { border-color: var(--color-border); }
+  .text-magenta { color: var(--color-magenta); }
+  .text-elblue  { color: var(--color-blue); }
+  .text-lime    { color: var(--color-lime); }
+  .text-peach   { color: var(--color-peach); }
+
+  /* ── Static Glows ─────────────────────────────────────────────────── */
+  .glow-red     { box-shadow: var(--glow-red); }
+  .glow-blue    { box-shadow: var(--glow-blue); }
+  .glow-lime    { box-shadow: var(--glow-lime); }
+  .glow-magenta { box-shadow: var(--glow-magenta); }
+  .glow-peach   { box-shadow: var(--glow-peach); }
+
+  /* ── Card / panel elevation ──────────────────────────────────────── */
+  .card-elevated { box-shadow: var(--shadow-card);  border: 1px solid #1F2937; }
+  .panel-shadow  { box-shadow: var(--shadow-panel); }
+
+  /* ── Interactive hover glows ─────────────────────────────────────── */
+  .hover-glow-blue:hover {
+    box-shadow: var(--glow-blue);
+    border-color: #3B6FE366 !important;
+    transition: box-shadow 0.25s ease, border-color 0.25s ease;
+  }
+  .hover-glow-red:hover {
+    box-shadow: var(--glow-red);
+    border-color: #EF444466 !important;
+    transition: box-shadow 0.25s ease, border-color 0.25s ease;
+  }
+  .hover-glow-magenta:hover {
+    box-shadow: var(--glow-magenta);
+    border-color: #D84C7F66 !important;
+    transition: box-shadow 0.25s ease, border-color 0.25s ease;
+  }
+
+  /* ── Typing cursor utility ───────────────────────────────────────── */
+  .typing-cursor::after {
+    content: '▊';
+    margin-left: 1px;
+    animation: type-cursor 0.8s step-end infinite;
+    color: var(--color-magenta);
+  }
+
+  /* ── Scanline overlay (apply to a container) ─────────────────────── */
+  .scanline-overlay {
+    position: relative;
+    overflow: hidden;
+  }
+  .scanline-overlay::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(to right, transparent, rgba(59,111,227,0.15), transparent);
+    animation: scan-line 6s linear infinite;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* ── Gradient border (accentuated panels) ────────────────────────── */
+  .border-gradient-blue {
+    border: 1px solid transparent;
+    background-clip: padding-box;
+    position: relative;
+  }
+  .border-gradient-blue::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    background: linear-gradient(135deg, #3B6FE344, #D84C7F22, #3B6FE344);
+    z-index: -1;
+  }
+
+  /* ── Progress bar smooth transition ─────────────────────────────── */
+  .progress-bar {
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* ── Timeline entry (stagger-friendly) ──────────────────────────── */
+  .timeline-entry {
+    opacity: 0;
+    animation: slide-in-left 0.4s ease-out forwards;
+  }
+  .timeline-entry:nth-child(1) { animation-delay: 0ms; }
+  .timeline-entry:nth-child(2) { animation-delay: 80ms; }
+  .timeline-entry:nth-child(3) { animation-delay: 160ms; }
+  .timeline-entry:nth-child(4) { animation-delay: 240ms; }
+  .timeline-entry:nth-child(5) { animation-delay: 320ms; }
+
+  /* ── Sidebar nav hover state ─────────────────────────────────────── */
+  .sidebar-nav-item {
+    position: relative;
+    transition: background 0.15s ease, box-shadow 0.15s ease;
+  }
+  .sidebar-nav-item::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 0;
+    background: var(--item-color, #3B6FE3);
+    opacity: 0.12;
+    transition: width 0.2s ease;
+  }
+  .sidebar-nav-item:hover::before { width: 100%; }
+  .sidebar-nav-item:hover {
+    box-shadow: inset 0 0 20px rgba(255,255,255,0.02);
+  }
+
+  /* ── Alert row entrance ──────────────────────────────────────────── */
+  @keyframes alert-bounce {
+    0%   { transform: translateY(-8px); opacity: 0; }
+    60%  { transform: translateY(2px);  opacity: 1; }
+    80%  { transform: translateY(-1px); }
+    100% { transform: translateY(0);    opacity: 1; }
+  }
+  .animate-alert-bounce { animation: alert-bounce 0.45s ease-out forwards; }
+
+  /* ── Confidence pulse (intensity via custom property) ──────────── */
+  @keyframes conf-pulse-low {
+    0%, 100% { opacity: 0.5; }
+    50%       { opacity: 0.8; }
+  }
+  @keyframes conf-pulse-high {
+    0%, 100% { filter: brightness(1); }
+    50%       { filter: brightness(1.4); }
+  }
+  .conf-pulse-low  { animation: conf-pulse-low  1.8s ease-in-out infinite; }
+  .conf-pulse-high { animation: conf-pulse-high 0.8s ease-in-out infinite; }
+
+  /* ── Expand/collapse smooth height ──────────────────────────────── */
+  .collapsible {
+    overflow: hidden;
+    transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
+  }
+  .collapsible.open  { opacity: 1; }
+  .collapsible.closed { opacity: 0; max-height: 0 !important; }
+
+  /* ── Drag-resize highlight ───────────────────────────────────────── */
+  .resize-active { box-shadow: 0 0 0 1px #3B6FE366; }
+
+  /* ── Button action glow on hover ─────────────────────────────────── */
+  button.action-btn {
+    position: relative;
+    overflow: hidden;
+    transition: box-shadow 0.2s ease, filter 0.2s ease, transform 0.15s ease;
+  }
+  button.action-btn:hover {
+    filter: brightness(1.15);
+    transform: translateY(-1px);
+  }
+  button.action-btn:active { transform: translateY(0); }
+  button.action-btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  button.action-btn:hover::after { opacity: 1; }
+
+  /* ── Data matrix text (decorative) ──────────────────────────────── */
+  .data-scroll-container {
+    overflow: hidden;
+    mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+  }
+  .data-scroll-content {
+    animation: data-scroll 20s linear infinite;
+  }
+
+  /* ── Kill switch — always-on pulse ──────────────────────────────── */
+  .kill-switch-pulse {
+    animation: pulse-red 1.8s ease-in-out infinite;
+    position: relative;
+  }
+  .kill-switch-pulse::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    background: rgba(239,68,68,0);
+    animation: pulse-red 1.8s ease-in-out infinite;
+  }
+
+  /* ── Insight card entrance ───────────────────────────────────────── */
+  @keyframes card-pop {
+    0%   { transform: scale(0.96) translateY(6px); opacity: 0; }
+    100% { transform: scale(1)    translateY(0);   opacity: 1; }
+  }
+  .animate-card-pop { animation: card-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+
+  /* ── Node flash (graph) ──────────────────────────────────────────── */
+  @keyframes node-flash {
+    0%   { filter: brightness(1); }
+    25%  { filter: brightness(2.2) drop-shadow(0 0 6px currentColor); }
+    100% { filter: brightness(1); }
+  }
+  .animate-node-flash { animation: node-flash 0.8s ease-out forwards; }
+
+  /* ── Neon border trace (highlights important panels) ─────────────── */
+  .neon-border {
+    position: relative;
+  }
+  .neon-border::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, #3B6FE3, #D84C7F, #3B6FE3);
+    background-size: 200% 200%;
+    animation: border-trace 3s linear infinite;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: destination-out;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+}

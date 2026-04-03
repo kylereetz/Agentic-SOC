@@ -1,0 +1,10 @@
+{
+  "version": "1.0",
+  "secure": false,
+  "payload": {
+    "timestamp": "2026-04-02T05:10:11.819767+00:00",
+    "source": "Legacy-Firewall-01",
+    "raw_data": "USER login successful from 10.0.0.1"
+  },
+  "signature": "unsigned"
+}

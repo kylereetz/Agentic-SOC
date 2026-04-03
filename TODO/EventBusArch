@@ -1,0 +1,32 @@
+Agentic SOC's entire nervous system is built on an EventBus architecture (using the /soc/bus/ directory). This makes ingesting external data streams incredibly straightforward since the system is naturally decoupled.
+
+Right now, the architecture expects raw logs to be dropped into the raw_logs channel, where the LogGuardian agent (soc/agents/log_guardian.py) picks them up, uses NLP to normalize the schema, and routes them to the Triage agent for anomaly detection.
+
+To tie in live log streams from external systems (like a SIEM, Windows Event Forwarder, AWS CloudWatch, or EDR), you have three primary architectural choices:
+
+1. The Webhook Approach (Recommended)
+We simply add a new ingestion endpoint to your FastAPI backend (soc/api/main.py), like POST /api/v1/ingest/logs.
+
+How it works: You configure your external systems (Splunk, Elastic, or even custom scripts) to send HTTP POST requests with log payloads to this endpoint.
+The code: The endpoint takes the JSON payload and instantly drops it into EventBus("raw_logs").push(payload). The LogGuardian agent takes over from there.
+
+2. The Syslog Receiver Server
+If you are dealing with traditional firewalls, routers, or Linux endpoints that only know how to send Syslog stream data natively:
+
+How it works: We create a lightweight UDP/TCP Python server acting as a "Syslog Receiver".
+The code: It listens on port 514, captures the raw text logs, wraps them in a basic JSON envelope ({"source": "firewall", "raw_data": "<syslog_string>"}), and pushes them to the raw_logs EventBus.
+
+3. Direct File-Drop (Logstash/Fluentd)
+Because the EventBus is physically backed by the file system (in soc/bus/raw_logs/), you can bypass the network entirely if you prefer.
+
+How it works: You can use a log shipper like Filebeat or Fluentd on the host machine to write directly into that mounted Docker volume. LogGuardian constantly watches the folder and will process the logs as soon as the files are created.
+
+2. The Syslog Receiver Server
+If you are dealing with traditional firewalls, routers, or Linux endpoints that only know how to send Syslog stream data natively:
+
+How it works: We create a lightweight UDP/TCP Python server acting as a "Syslog Receiver".
+The code: It listens on port 514, captures the raw text logs, wraps them in a basic JSON envelope ({"source": "firewall", "raw_data": "<syslog_string>"}), and pushes them to the raw_logs EventBus.
+3. Direct File-Drop (Logstash/Fluentd)
+Because the EventBus is physically backed by the file system (in soc/bus/raw_logs/), you can bypass the network entirely if you prefer.
+
+How it works: You can use a log shipper like Filebeat or Fluentd on the host machine to write directly into that mounted Docker volume. LogGuardian constantly watches the folder and will process the logs as soon as the files are created.

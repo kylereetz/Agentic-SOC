@@ -18,13 +18,13 @@ services:
   # ── API ──────────────────────────────────────────────────────────────────
   soc-api:
     build:
-      context: ..
-      dockerfile: docker/Dockerfile
+      context: ../backend
+      dockerfile: ../docker/Dockerfile
     command: python main.py start api
     ports:
       - "8000:8000"
     volumes:
-      - ..:/app
+      - ../backend:/app
     environment:
       - SOC_PATH=/app/soc
       - OLLAMA_API_URL=http://soc-llm:11434/v1
@@ -37,12 +37,12 @@ services:
   # ── AGENTS ───────────────────────────────────────────────────────────────
   soc-scout:
     build:
-      context: ..
-      dockerfile: docker/Dockerfile
+      context: ../backend
+      dockerfile: ../docker/Dockerfile
     user: root # Required for scapy/nmap low-level networking
     command: python main.py start scout
     volumes:
-      - ..:/app
+      - ../backend:/app
     depends_on:
       - soc-api
     cap_add:
@@ -53,11 +53,11 @@ services:
 
   soc-triage:
     build:
-      context: ..
-      dockerfile: docker/Dockerfile
+      context: ../backend
+      dockerfile: ../docker/Dockerfile
     command: python main.py start triage
     volumes:
-      - ..:/app
+      - ../backend:/app
     depends_on:
       - soc-api
     environment:
@@ -65,11 +65,11 @@ services:
 
   soc-responder:
     build:
-      context: ..
-      dockerfile: docker/Dockerfile
+      context: ../backend
+      dockerfile: ../docker/Dockerfile
     command: python main.py start responder
     volumes:
-      - ..:/app
+      - ../backend:/app
     depends_on:
       - soc-api
     environment:
@@ -77,11 +77,11 @@ services:
 
   soc-orchestrator:
     build:
-      context: ..
-      dockerfile: docker/Dockerfile
+      context: ../backend
+      dockerfile: ../docker/Dockerfile
     command: python main.py start orchestrate
     volumes:
-      - ..:/app
+      - ../backend:/app
     depends_on:
       - soc-api
     environment:
@@ -89,11 +89,11 @@ services:
 
   soc-correlator:
     build:
-      context: ..
-      dockerfile: docker/Dockerfile
+      context: ../backend
+      dockerfile: ../docker/Dockerfile
     command: python main.py start correlator
     volumes:
-      - ..:/app
+      - ../backend:/app
     depends_on:
       - soc-api
     environment:
@@ -101,11 +101,11 @@ services:
 
   soc-vanguard:
     build:
-      context: ..
-      dockerfile: docker/Dockerfile
+      context: ../backend
+      dockerfile: ../docker/Dockerfile
     command: python main.py start vanguard
     volumes:
-      - ..:/app
+      - ../backend:/app
     depends_on:
       - soc-api
     environment:
@@ -113,11 +113,11 @@ services:
 
   soc-watchdog:
     build:
-      context: ..
-      dockerfile: docker/Dockerfile
+      context: ../backend
+      dockerfile: ../docker/Dockerfile
     command: python main.py start watchdog
     volumes:
-      - ..:/app
+      - ../backend:/app
     depends_on:
       - soc-api
     environment:
@@ -125,11 +125,11 @@ services:
 
   soc-log-guardian:
     build:
-      context: ..
-      dockerfile: docker/Dockerfile
+      context: ../backend
+      dockerfile: ../docker/Dockerfile
     command: python main.py start log-guardian
     volumes:
-      - ..:/app
+      - ../backend:/app
     depends_on:
       - soc-api
     environment:
@@ -137,11 +137,11 @@ services:
 
   soc-cloud-wraith:
     build:
-      context: ..
-      dockerfile: docker/Dockerfile
+      context: ../backend
+      dockerfile: ../docker/Dockerfile
     command: python main.py start cloud-wraith
     volumes:
-      - ..:/app
+      - ../backend:/app
     depends_on:
       - soc-api
     environment:
@@ -149,11 +149,11 @@ services:
 
   soc-mirage:
     build:
-      context: ..
-      dockerfile: docker/Dockerfile
+      context: ../backend
+      dockerfile: ../docker/Dockerfile
     command: python main.py start mirage
     volumes:
-      - ..:/app
+      - ../backend:/app
     depends_on:
       - soc-api
     environment:
@@ -161,11 +161,11 @@ services:
 
   soc-hunter:
     build:
-      context: ..
-      dockerfile: docker/Dockerfile
+      context: ../backend
+      dockerfile: ../docker/Dockerfile
     command: python main.py start hunter
     volumes:
-      - ..:/app
+      - ../backend:/app
     depends_on:
       - soc-api
     environment:
@@ -173,11 +173,11 @@ services:
 
   soc-traffic-sieve:
     build:
-      context: ..
-      dockerfile: docker/Dockerfile
+      context: ../backend
+      dockerfile: ../docker/Dockerfile
     command: python main.py start traffic-sieve
     volumes:
-      - ..:/app
+      - ../backend:/app
     depends_on:
       - soc-api
     environment:
@@ -185,11 +185,11 @@ services:
 
   soc-gatekeeper:
     build:
-      context: ..
-      dockerfile: docker/Dockerfile
+      context: ../backend
+      dockerfile: ../docker/Dockerfile
     command: python main.py start gatekeeper
     volumes:
-      - ..:/app
+      - ../backend:/app
     depends_on:
       - soc-api
     environment:
@@ -197,11 +197,11 @@ services:
 
   soc-dispatch:
     build:
-      context: ..
-      dockerfile: docker/Dockerfile
+      context: ../backend
+      dockerfile: ../docker/Dockerfile
     command: python main.py start dispatch
     volumes:
-      - ..:/app
+      - ../backend:/app
     depends_on:
       - soc-api
     environment:
@@ -209,11 +209,11 @@ services:
 
   soc-narrator:
     build:
-      context: ..
-      dockerfile: docker/Dockerfile
+      context: ../backend
+      dockerfile: ../docker/Dockerfile
     command: python main.py start narrator
     volumes:
-      - ..:/app
+      - ../backend:/app
     depends_on:
       - soc-api
     environment:
@@ -221,11 +221,11 @@ services:
 
   soc-risk-quantifier:
     build:
-      context: ..
-      dockerfile: docker/Dockerfile
+      context: ../backend
+      dockerfile: ../docker/Dockerfile
     command: python main.py start risk-quantifier
     volumes:
-      - ..:/app
+      - ../backend:/app
     depends_on:
       - soc-api
     environment:
@@ -233,11 +233,11 @@ services:
 
   soc-policy-architect:
     build:
-      context: ..
-      dockerfile: docker/Dockerfile
+      context: ../backend
+      dockerfile: ../docker/Dockerfile
     command: python main.py start policy-architect
     volumes:
-      - ..:/app
+      - ../backend:/app
     depends_on:
       - soc-api
     environment:
@@ -245,11 +245,11 @@ services:
 
   soc-librarian:
     build:
-      context: ..
-      dockerfile: docker/Dockerfile
+      context: ../backend
+      dockerfile: ../docker/Dockerfile
     command: python main.py start librarian
     volumes:
-      - ..:/app
+      - ../backend:/app
     depends_on:
       - soc-api
     environment:
@@ -257,11 +257,11 @@ services:
 
   soc-malware-pathologist:
     build:
-      context: ..
-      dockerfile: docker/Dockerfile
+      context: ../backend
+      dockerfile: ../docker/Dockerfile
     command: python main.py start malware-pathologist
     volumes:
-      - ..:/app
+      - ../backend:/app
     depends_on:
       - soc-api
     environment:
@@ -269,7 +269,7 @@ services:
 
   # ── DASHBOARD ────────────────────────────────────────────────────────────
   soc-dashboard:
-    build: ../dashboard
+    build: ../frontend
     ports:
       - "5173:80"
     depends_on:
