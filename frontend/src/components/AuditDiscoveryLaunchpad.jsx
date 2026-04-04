@@ -12,7 +12,7 @@ const AUDIT_STAGES = [
 ];
 
 export default function AuditDiscoveryLaunchpad() {
-  const { user } = useAuth();
+  const { user, authenticatedFetch } = useAuth();
   const isAdmin = user?.role === 'admin';
   const [isRunning, setIsRunning] = useState(false);
   const [activeStage, setActiveStage] = useState(-1);
@@ -22,6 +22,29 @@ export default function AuditDiscoveryLaunchpad() {
 
   const addLog = (msg) => {
     setLogs(prev => [...prev.slice(-30), `[${new Date().toLocaleTimeString()}] ${msg}`]);
+  };
+
+  const fetchRealInventory = async () => {
+    addLog("SYNCHRONIZING WITH ENGINE.CORE.INVENTORY...");
+    try {
+      const res = await authenticatedFetch('http://localhost:8000/inventory');
+      if (!res.ok) throw new Error(`Inventory sync failed: ${res.status}`);
+      
+      const data = await res.json();
+      // Normalize to array
+      const normalized = Array.isArray(data) ? data : Object.values(data || {});
+      
+      if (normalized.length === 0) {
+        addLog("WARNING: Zero assets discovered in target segment.");
+      } else {
+        addLog(`SUCCESS: ${normalized.length} active nodes indexed.`);
+      }
+      setInventory(normalized);
+    } catch (err) {
+      addLog(`CRITICAL ERROR: ${err.message}`);
+      // Minimal fallback to keep UI functional
+      setInventory([]);
+    }
   };
 
   const startAudit = () => {
@@ -39,14 +62,8 @@ export default function AuditDiscoveryLaunchpad() {
       if (currentStage >= AUDIT_STAGES.length) {
         setIsRunning(false);
         setActiveStage(-1);
-        addLog("AUDIT COMPLETED SUCESSFULLY. INVENTORY UPDATED.");
-        // Mock inventory updates
-        setInventory([
-          { ip: '192.168.1.1', mac: 'AA:BB:CC:DD:EE:01', type: 'Gateway' },
-          { ip: '192.168.1.10', mac: 'AA:BB:CC:DD:EE:10', type: 'Server (Windows)' },
-          { ip: '10.0.0.50', mac: 'AA:BB:CC:DD:EE:50', type: 'OT PLC (Modbus)' },
-          { ip: '192.168.1.105', mac: 'AA:BB:CC:DD:EE:A5', type: 'Workstation' },
-        ]);
+        addLog("VULNERABILITY SCAN & DISCOVERY PHASES COMPLETE.");
+        fetchRealInventory();
         return;
       }
 
@@ -106,7 +123,7 @@ export default function AuditDiscoveryLaunchpad() {
 
       <div className="flex flex-1 min-h-0">
         {/* LEFT: Stages & Configuration */}
-        <div className="flex flex-col p-6 overflow-y-auto" style={{ width: '40%', borderRight: '1px solid #1F2937' }}>
+        <div className="flex flex-col p-6 overflow-y-auto" style={{ flex: '0 0 40%', minWidth: 300, borderRight: '1px solid #1F2937' }}>
           <p className="text-xs terminal mb-4" style={{ color: '#6B7280' }}>DISCOVERY STAGES</p>
           <div className="space-y-4">
             {AUDIT_STAGES.map((stage, idx) => {

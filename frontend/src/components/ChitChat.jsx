@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, X, Bot, User, Sparkles } from 'lucide-react';
 import { useAuth } from '../store/AuthContext';
+import { useSOC } from '../store/SOCContext';
 
 const SUGGESTIONS = [
   'How did the attacker gain access?',
@@ -10,11 +11,11 @@ const SUGGESTIONS = [
   'What MITRE techniques are confirmed?',
 ];
 
-const INITIAL_MESSAGES = [{
+const getWelcomeMessage = (caseId) => ({
   role: 'assistant',
-  text: 'ChitChat ready. I have full context on INC-2023-981. I can answer questions about entities, timelines, evidence, and recommended response actions.',
+  text: `ChitChat ready. I have full context on ${caseId}. I can answer questions about entities, timelines, evidence, and recommended response actions.`,
   refs: [],
-}];
+});
 
 // Responses are fetched from the internal model API in real-time.
 
@@ -70,7 +71,7 @@ function Msg({ msg, isLatestAI }) {
           }}
         >
           <pre className={`text-xs whitespace-pre-wrap leading-relaxed ${!done && isLatestAI && !isUser ? 'typing-cursor' : ''}`}
-            style={{ color: '#CBD5E1', fontFamily: 'Inter, system-ui, sans-serif' }}>
+            style={{ color: '#CBD5E1' }}>
             {isLatestAI && !isUser ? displayed : msg.text}
           </pre>
         </div>
@@ -94,9 +95,15 @@ function Msg({ msg, isLatestAI }) {
 
 export default function ChitChat({ onClose }) {
   const { authenticatedFetch } = useAuth();
+  const { investigations } = useSOC();
+  
+  const activeCaseId = investigations && investigations.length > 0 
+    ? investigations[0].id 
+    : 'Global SOC';
+
   const [messages, setMessages] = useState(() => {
     const saved = localStorage.getItem('chitchat_history');
-    return saved ? JSON.parse(saved) : INITIAL_MESSAGES;
+    return saved ? JSON.parse(saved) : [getWelcomeMessage(activeCaseId)];
   });
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -176,7 +183,7 @@ export default function ChitChat({ onClose }) {
         <span className="text-xs font-bold tracking-widest sans" style={{ color: '#E2E8F0' }}>CHITCHAT</span>
         <span className="text-xs terminal px-2 py-0.5 rounded ml-1 animate-pulse-scale"
           style={{ background: '#D84C7F18', color: '#D84C7F', border: '1px solid #D84C7F33' }}>
-          INC-2023-981
+          {activeCaseId}
         </span>
         <div className="ml-auto flex items-center gap-2">
           <span className="flex items-center gap-1 text-xs terminal" style={{ color: '#4B5563' }}>
@@ -184,7 +191,7 @@ export default function ChitChat({ onClose }) {
             LIVE CTX
           </span>
           <button 
-            onClick={() => { if(confirm('Clear history?')) { setMessages(INITIAL_MESSAGES); localStorage.removeItem('chitchat_history'); } }}
+            onClick={() => { if(confirm('Clear history?')) { setMessages([getWelcomeMessage(activeCaseId)]); localStorage.removeItem('chitchat_history'); } }}
             className="text-[10px] terminal px-1.5 py-0.5 rounded hover:bg-white/10 transition-colors"
             style={{ color: '#4B5563', border: '1px solid #1F2937' }}>
             CLEAR

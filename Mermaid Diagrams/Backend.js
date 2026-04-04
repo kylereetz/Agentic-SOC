@@ -34,15 +34,15 @@ LB-- >| HTTPS | API
 API < -->| REST / gRPC | Auth
 API-- >| REST / WebSockets | Orchestrator
 
-    %% Topic-Based Routing & Agent Execution Dynamics
+    %% Topic - Based Routing & Agent Execution Dynamics
 Orchestrator-- >| gRPC / REST API | Scaling
 Scaling-- >| Control Plane Metrics | Workers
-Orchestrator-- >| AMQP Topic Exchange (e.g. topic_cloud) | Queue
+Orchestrator-- >| AMQP Topic Exchange(e.g.topic_cloud) | Queue
 Queue -.->| Subscribed Topic Consumption | Workers
-Workers -.->| Hive Consensus Callbacks (orchestrator_callbacks) | Queue
+Workers -.->| Hive Consensus Callbacks(orchestrator_callbacks) | Queue
 Queue -.->| Consensus Monitor Loop | Orchestrator
 
-    %% Service Mesh Data Tier Connections (Zero Trust)
+    %% Service Mesh Data Tier Connections(Zero Trust)
 Orchestrator-- >| mTLS / SQL | PrimaryDB
 Workers-- >| mTLS / SQL | PrimaryDB
 Workers -.->| mTLS RAG Query | LibrarianCluster[Librarian Cluster]
@@ -52,8 +52,8 @@ Orchestrator-- >| mTLS / Redis RESP | Cache
 
     %% External Systems Interfacing
 Workers-- >| HTTPS / REST | ExternalAPI
-Workers-- >| HTTPS (Strict IAM Role) | Storage
-Orchestrator-- >| HTTPS (Strict IAM Role) | Storage
+Workers-- >| HTTPS(Strict IAM Role) | Storage
+Orchestrator-- >| HTTPS(Strict IAM Role) | Storage
 
     %% Telemetry, Observability & Logging(Dotted lines for non - blocking flows)
     API -.->| HTTP / UDP | Log

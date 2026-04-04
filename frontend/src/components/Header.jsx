@@ -1,14 +1,54 @@
-import React, { useState } from 'react';
-import { PowerOff, Bell, Search, Shield, ChevronDown, AlertTriangle, LogOut } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { PowerOff, Bell, Search, Shield, ChevronDown, AlertTriangle, LogOut, X, CheckCircle, Clock } from 'lucide-react';
 import { useAuth } from '../store/AuthContext';
 import { useSOC } from '../store/SOCContext';
 
 export default function Header({ chitchatOpen, onToggleChitChat }) {
   const { user, logout } = useAuth();
-  const { autonomy, killSwitch, toggleKillSwitch } = useSOC();
+  const { autonomy, killSwitch, toggleKillSwitch, alerts, pendingActions, backendOnline, backendVersion } = useSOC();
   const isAdmin = user?.role === 'admin';
   const [notifOpen, setNotifOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [dismissed, setDismissed] = useState(new Set());
+
+  // Derive live notifications from alerts + pending actions
+  const notifications = useMemo(() => {
+    const items = [];
+
+    // Top 3 most recent critical/high alerts
+    const critAlerts = [...(alerts || [])]
+      .filter(a => a.severity === 'Critical' || a.severity === 'High')
+      .slice(0, 3)
+      .map(a => ({
+        id: `alert-${a.id || a.alert_id}`,
+        color: a.severity === 'Critical' ? '#EF4444' : '#E5A862',
+        icon: a.severity === 'Critical' ? '🔴' : '🟠',
+        text: a.title || a.description || 'Alert detected',
+        time: a.timestamp ? new Date(a.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'now',
+        type: 'alert',
+      }));
+
+    // Pending HITL actions
+    const pendingNotifs = [...(pendingActions || [])]
+      .slice(0, 2)
+      .map(p => ({
+        id: `pending-${p.id}`,
+        color: '#D84C7F',
+        icon: '⏳',
+        text: `HITL Required: ${p.type?.replace(/_/g, ' ')} — ${p.target}`,
+        time: 'Pending Approval',
+        type: 'pending',
+      }));
+
+    return [...critAlerts, ...pendingNotifs].filter(n => !dismissed.has(n.id));
+  }, [alerts, pendingActions, dismissed]);
+
+  const unreadCount = notifications.length;
+
+  const dismiss = (id, e) => {
+    e.stopPropagation();
+    setDismissed(prev => new Set([...prev, id]));
+  };
 
   return (
     <header
@@ -27,8 +67,25 @@ export default function Header({ chitchatOpen, onToggleChitChat }) {
           <span className="font-bold tracking-widest text-sm" style={{ color: '#E2E8F0' }}>AGENT</span>
         </div>
         <div className="flex items-center gap-1.5 ml-2">
-          <span className="animate-blink w-2 h-2 rounded-full inline-block" style={{ background: '#88C057', boxShadow: '0 0 6px #88C057' }} />
-          <span className="text-xs terminal font-mono" style={{ color: '#88C057', textShadow: '0 0 8px rgba(136,192,87,0.5)' }}>LIVE</span>
+          <span className={`w-2 h-2 rounded-full inline-block ${backendOnline ? 'animate-blink' : ''}`}
+            style={{
+              background: backendOnline ? (killSwitch ? '#E5A862' : '#88C057') : '#EF4444',
+              boxShadow: backendOnline
+                ? `0 0 6px ${killSwitch ? '#E5A862' : '#88C057'}`
+                : '0 0 6px #EF4444',
+            }} />
+          <span
+            className="text-xs terminal font-mono"
+            style={{
+              color: backendOnline ? (killSwitch ? '#E5A862' : '#88C057') : '#EF4444',
+              textShadow: backendOnline
+                ? `0 0 8px rgba(${backendOnline && !killSwitch ? '136,192,87' : '229,168,98'},0.5)`
+                : '0 0 8px rgba(239,68,68,0.5)',
+            }}
+            title={backendOnline ? `Backend v${backendVersion || '…'} · Healthy` : 'Backend unreachable'}
+          >
+            {backendOnline ? (killSwitch ? 'KILL ACTIVE' : 'LIVE') : 'OFFLINE'}
+          </span>
         </div>
       </div>
 
@@ -95,9 +152,13 @@ export default function Header({ chitchatOpen, onToggleChitChat }) {
         <button
           className="relative p-2 rounded-lg transition-all hover:bg-white/5"
           onClick={() => setNotifOpen(v => !v)}>
-          <Bell size={15} style={{ color: '#9CA3AF' }} />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full animate-blink"
-            style={{ background: '#EF4444', boxShadow: '0 0 6px #EF4444' }} />
+          <Bell size={15} style={{ color: unreadCount > 0 ? '#E5A862' : '#9CA3AF' }} />
+          {unreadCount > 0 && (
+            <span className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-bold animate-blink"
+              style={{ background: '#EF4444', color: 'white', boxShadow: '0 0 6px #EF4444', lineHeight: 1 }}>
+              {Math.min(unreadCount, 9)}
+            </span>
+          )}
         </button>
 
         {/* User profile dropdown trigger */}
@@ -138,27 +199,55 @@ export default function Header({ chitchatOpen, onToggleChitChat }) {
       {/* Notification dropdown */}
       {notifOpen && (
         <div
-          className="absolute top-14 right-4 w-72 rounded-xl overflow-hidden animate-slide-in-down z-50"
+          className="absolute top-14 right-4 w-80 rounded-xl overflow-hidden animate-slide-in-down z-50"
           style={{ background: '#111827', border: '1px solid #1F2937', boxShadow: '0 16px 40px rgba(0,0,0,0.6)' }}>
           <div className="px-4 py-2.5 border-b flex items-center justify-between" style={{ borderColor: '#1F2937' }}>
             <span className="text-xs font-bold terminal" style={{ color: '#E2E8F0' }}>NOTIFICATIONS</span>
-            <span className="text-xs terminal px-1.5 py-0.5 rounded" style={{ background: '#EF444418', color: '#EF4444' }}>3 NEW</span>
+            {unreadCount > 0 ? (
+              <span className="text-xs terminal px-1.5 py-0.5 rounded" style={{ background: '#EF444418', color: '#EF4444' }}>
+                {unreadCount} LIVE
+              </span>
+            ) : (
+              <span className="text-xs terminal px-1.5 py-0.5 rounded" style={{ background: '#88C05718', color: '#88C057' }}>
+                ALL CLEAR
+              </span>
+            )}
           </div>
-          {[
-            { color: '#EF4444', icon: '🔴', text: 'Host isolation confirmed — Host-DX9', time: '2m ago' },
-            { color: '#E5A862', icon: '⚠', text: 'WARDEN-07 waiting for approval',      time: '4m ago' },
-            { color: '#D84C7F', icon: '🧠', text: 'New hypothesis: Silver Ticket attack', time: '6m ago' },
-          ].map((n, i) => (
-            <div key={i} className="flex items-start gap-3 px-4 py-3 border-b hover:bg-white/5 transition-colors cursor-pointer"
-              style={{ borderColor: '#1F2937' }}>
-              <span className="text-sm mt-0.5">{n.icon}</span>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs" style={{ color: '#CBD5E1' }}>{n.text}</p>
-                <p className="text-xs terminal mt-0.5" style={{ color: '#4B5563' }}>{n.time}</p>
-              </div>
-              <div className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ background: n.color }} />
+
+          {notifications.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8 gap-2" style={{ color: '#4B5563' }}>
+              <CheckCircle size={20} style={{ color: '#88C057' }} />
+              <p className="text-xs terminal">No active notifications</p>
+              <p className="text-[10px] terminal">Hive is operating normally</p>
             </div>
-          ))}
+          ) : (
+            notifications.map(n => (
+              <div key={n.id} className="flex items-start gap-3 px-4 py-3 border-b hover:bg-white/5 transition-colors cursor-pointer group"
+                style={{ borderColor: '#1F2937' }}>
+                <span className="text-sm mt-0.5 flex-shrink-0">{n.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="h-body" style={{ color: '#CBD5E1' }}>{n.text}</p>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    {n.type === 'pending' ? (
+                      <Clock size={9} style={{ color: '#D84C7F' }} />
+                    ) : (
+                      <AlertTriangle size={9} style={{ color: n.color }} />
+                    )}
+                    <p className="h-meta" style={{ color: '#4B5563' }}>{n.time}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 ml-1 flex-shrink-0">
+                  <div className="w-1.5 h-1.5 rounded-full mt-0.5" style={{ background: n.color }} />
+                  <button
+                    onClick={(e) => dismiss(n.id, e)}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-white/10"
+                    title="Dismiss">
+                    <X size={10} style={{ color: '#6B7280' }} />
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       )}
     </header>

@@ -1,16 +1,13 @@
 {
-  "_comment": "RCA InvestigatorAgent configuration. Set GEMINI_API_KEY as an environment variable, or add 'gemini_api_key' here (not recommended for production).",
-
-  "gemini_model": "gemini-1.5-pro-latest",
+  "_comment": "Agentic SOC Multi-Head Configuration (16GB VRAM Optimized)",
+  "reasoning_model": "llama3.1:8b",
+  "syntactic_model": "qwen2.5:3b",
+  "num_ctx": 16384,
   "temperature": 0.2,
   "max_steps_per_investigation": 10,
-
   "agent_name": "SENTINEL-01",
   "min_severity": "WARNING",
   "poll_interval_seconds": 15,
   "save_investigations": true,
-  "tool_timeout_seconds": 10,
-
-  "_gemini_api_key_note": "Set GEMINI_API_KEY env var instead of hardcoding here",
-  "gemini_api_key": ""
+  "tool_timeout_seconds": 15
 }

@@ -16,6 +16,7 @@ import json
 import logging
 import time
 import os
+import math
 from datetime import datetime, timezone
 from typing import Any, Dict
 
@@ -91,9 +92,67 @@ class TrafficSieveAgent:
         novel_edge = False
         volumetric_spike = False
         v_details = {}
+        entropy_spike = False
+        e_details = {}
         
         if self.graph.has_edge(src_ip, dst_ip):
             edge_data = self.graph[src_ip][dst_ip]
+            
+            if "byte_bins_window" not in edge_data:
+                edge_data["byte_bins_window"] = []
+                edge_data["entropy_count"] = 0
+                edge_data["entropy_mean"] = 0.0
+                edge_data["entropy_m2"] = 0.0
+
+            # 1a. Shannon Entropy AETD logic
+            if bytes_sent < 100:
+                byte_bin = "<100B"
+            elif bytes_sent < 1000:
+                byte_bin = "100B-1KB"
+            elif bytes_sent < 10000:
+                byte_bin = "1KB-10KB"
+            elif bytes_sent < 100000:
+                byte_bin = "10KB-100KB"
+            else:
+                byte_bin = ">100KB"
+            
+            edge_data["byte_bins_window"].append(byte_bin)
+            if len(edge_data["byte_bins_window"]) > 50:
+                edge_data["byte_bins_window"].pop(0)
+
+            window = edge_data["byte_bins_window"]
+            if len(window) >= 20: 
+                counts = {}
+                for b in window:
+                    counts[b] = counts.get(b, 0) + 1
+                    
+                h_t = 0.0
+                total_k = len(window)
+                for freq in counts.values():
+                    p_x = freq / total_k
+                    h_t -= p_x * math.log2(p_x)
+                    
+                e_count = edge_data["entropy_count"] + 1
+                old_h_mean = edge_data["entropy_mean"]
+                new_h_mean = old_h_mean + (h_t - old_h_mean) / e_count
+                h_m2 = edge_data["entropy_m2"] + (h_t - old_h_mean) * (h_t - new_h_mean)
+                
+                if e_count > 10:
+                    h_var = h_m2 / e_count
+                    h_std = h_var ** 0.5
+                    if h_std > 0 and h_t > (old_h_mean + 3 * h_std):
+                        entropy_spike = True
+                        e_details = {
+                            "shannon_entropy": round(h_t, 3),
+                            "historical_mean": round(old_h_mean, 3),
+                            "std_dev": round(h_std, 3),
+                            "window_size": total_k,
+                        }
+                
+                edge_data["entropy_count"] = e_count
+                edge_data["entropy_mean"] = new_h_mean
+                edge_data["entropy_m2"] = h_m2
+
             
             # Welford's online variance algorithm
             count = edge_data.get("connection_count", 0) + 1
@@ -128,6 +187,7 @@ class TrafficSieveAgent:
                 edge_data["ports"].append(dst_port)
         else:
             novel_edge = True
+            byte_bin = "<100B" if bytes_sent < 100 else ("100B-1KB" if bytes_sent < 1000 else ("1KB-10KB" if bytes_sent < 10000 else ("10KB-100KB" if bytes_sent < 100000 else ">100KB")))
             self.graph.add_edge(
                 src_ip, dst_ip, 
                 first_seen=now, 
@@ -136,14 +196,18 @@ class TrafficSieveAgent:
                 bytes_transfer=bytes_sent,
                 ports=[dst_port],
                 mean_bytes=float(bytes_sent),
-                m2_bytes=0.0
+                m2_bytes=0.0,
+                byte_bins_window=[byte_bin],
+                entropy_count=0,
+                entropy_mean=0.0,
+                entropy_m2=0.0
             )
 
         # 2. Heuristics & Anomalies
         if not is_learning_mode:
-            await self._run_detection_algorithms(src_ip, dst_ip, dst_port, novel_edge, volumetric_spike, v_details, protocol, flow)
+            await self._run_detection_algorithms(src_ip, dst_ip, dst_port, novel_edge, volumetric_spike, v_details, entropy_spike, e_details, protocol, flow)
 
-    async def _run_detection_algorithms(self, src: str, dst: str, port: int, novel_edge: bool, volumetric_spike: bool, v_details: dict, proto: str, raw: dict):
+    async def _run_detection_algorithms(self, src: str, dst: str, port: int, novel_edge: bool, volumetric_spike: bool, v_details: dict, entropy_spike: bool, e_details: dict, proto: str, raw: dict):
         """Analyzes updated graph metrics to trigger Structural or Centrality alerts."""
         alerts_fired = []
         
@@ -169,8 +233,17 @@ class TrafficSieveAgent:
             alerts_fired.append({
                 "rule_id": "GRAPH_VOLUMETRIC_SPIKE",
                 "name": "Volumetric Data Anomaly",
-                "desc": f"Data transfer of {v_details['actual_bytes']} bytes exceeded historical normal of {v_details['historical_mean']} bytes by {v_details['sigma_deviation']} Sigma.",
+                "desc": f"Data transfer of {v_details.get('actual_bytes')} bytes exceeded historical normal of {v_details.get('historical_mean')} bytes by {v_details.get('sigma_deviation')} Sigma.",
                 "details": v_details
+            })
+            
+        # D. Shannon Entropy Spike (AETD - Obfuscated Payload Randomness)
+        if entropy_spike:
+            alerts_fired.append({
+                "rule_id": "GRAPH_ENTROPY_SPIKE",
+                "name": "Entropy-Based Anomaly",
+                "desc": f"Payload size distribution exhibited critical uncertainty (Shannon Entropy: {e_details.get('shannon_entropy')}), exceeding historical threshold.",
+                "details": e_details
             })
         
         for anomaly in alerts_fired:

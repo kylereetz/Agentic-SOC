@@ -2,23 +2,29 @@ import React from 'react';
 import {
   Search, AlertTriangle, Bot, BarChart2, Lock,
   FlaskConical, ChevronLeft, ChevronRight, Activity, Wifi,
-  TrendingUp, Shield, Network, Crosshair, FileText
+  TrendingUp, Shield, Network, Crosshair, FileText, GitMerge, History, Wrench, Microscope, Bug
 } from 'lucide-react';
 import { useSOC } from '../store/SOCContext';
 
 const NAV_ITEMS = [
-  { icon: Search,       label: 'Investigations',  badge: '3',  color: '#3B6FE3' },
-  { icon: Network,      label: 'Discovery / Audit',             color: '#D84C7F' },
-  { icon: AlertTriangle,label: 'Alert Queue',      badge: '14', color: '#EF4444' },
-  { icon: FileText,     label: 'Log Guardian',                  color: '#88C057' },
-  { icon: Wifi,         label: 'Netflow / Traffic',             color: '#3B6FE3' },
-  { icon: Bot,          label: 'Agents',           badge: '24', color: '#D84C7F' },
-  { icon: TrendingUp,   label: 'Threat Intel',     badge: '2',  color: '#EF4444' },
-  { icon: Shield,       label: 'Governance',                    color: '#A78BFA' },
-  { icon: BarChart2,    label: 'Analytics',                     color: '#88C057' },
-  { icon: Crosshair,    label: 'Adversary Sim',                 color: '#EF4444' },
-  { icon: Lock,         label: 'Permissions',                   color: '#E5A862' },
-  { icon: FlaskConical, label: 'Simulation Mode',               color: '#A78BFA' },
+  { icon: Search,       label: 'Investigations',    badge: '3',  color: '#3B6FE3' },
+  { icon: Network,      label: 'Discovery / Audit',              color: '#D84C7F' },
+  { icon: AlertTriangle,label: 'Alert Queue',        badge: '14', color: '#EF4444' },
+  { icon: FileText,     label: 'Log Guardian',                   color: '#88C057' },
+  { icon: Wifi,         label: 'Netflow / Traffic',              color: '#3B6FE3' },
+  { icon: GitMerge,     label: 'Topology',                       color: '#3B6FE3' },
+  { icon: History,      label: 'Case History',                    color: '#D84C7F' },
+  { icon: Wrench,       label: 'Patch Pilot',                     color: '#88C057' },
+  { icon: Microscope,   label: 'Forensics',                       color: '#D84C7F' },
+  { icon: Bug,          label: 'Malware Lab',                     color: '#EF4444' },
+  { icon: Bot,          label: 'Agents',             badge: '26', color: '#D84C7F' },
+  { icon: TrendingUp,   label: 'Threat Intel',       badge: '2',  color: '#EF4444' },
+  { icon: Activity,     label: 'Risk Heatmap',                   color: '#E5A862' },
+  { icon: Shield,       label: 'Governance',                     color: '#A78BFA' },
+  { icon: BarChart2,    label: 'Analytics',                      color: '#88C057' },
+  { icon: Crosshair,    label: 'Adversary Sim',                  color: '#EF4444' },
+  { icon: Lock,         label: 'Permissions',                    color: '#E5A862' },
+  { icon: FlaskConical, label: 'Simulation Mode',                color: '#A78BFA' },
 ];
 
 export default function Sidebar({ collapsed, onToggle, activeNav, onNavChange }) {
@@ -98,18 +104,18 @@ export default function Sidebar({ collapsed, onToggle, activeNav, onNavChange })
             <Activity size={11} style={{ color: '#88C057' }} className="animate-pulse" />
             <span className="h-label" style={{ color: '#4B5563' }}>Agent Mesh</span>
           </div>
-          {/* Mini node grid — 24 agents */}
+          {/* Mini node grid — 26 agents */}
           <div className="grid grid-cols-6 gap-1">
-            {Array.from({ length: 24 }).map((_, i) => (
+            {Array.from({ length: 26 }).map((_, i) => (
               <div key={i}
                 className="w-2.5 h-2.5 rounded-sm transition-all"
                 style={{
-                  background: i < 22 ? '#88C057' : i === 22 ? '#E5A862' : '#EF4444',
-                  boxShadow: i < 22 ? '0 0 3px rgba(136,192,87,0.5)' : i === 22 ? '0 0 3px rgba(229,168,98,0.5)' : '0 0 3px rgba(239,68,68,0.5)',
+                  background: i < 23 ? '#88C057' : i === 23 ? '#E5A862' : '#EF4444',
+                  boxShadow: i < 23 ? '0 0 3px rgba(136,192,87,0.5)' : i === 23 ? '0 0 3px rgba(229,168,98,0.5)' : '0 0 3px rgba(239,68,68,0.5)',
                 }} />
             ))}
           </div>
-          <p className="h-meta mt-1.5" style={{ color: '#4B5563' }}>22/24 ONLINE · 1 PENDING</p>
+          <p className="h-meta mt-1.5" style={{ color: '#4B5563' }}>23/26 ONLINE · 1 PENDING</p>
 
           {/* Pending approvals */}
           {pendingCount > 0 && (

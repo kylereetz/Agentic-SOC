@@ -22,6 +22,12 @@ import BottomDock from './components/BottomDock';
 import NetflowView from './components/NetflowView';
 import HostDrilldownPanel from './components/HostDrilldownPanel';
 import LogIntegrityMonitor from './components/LogIntegrityMonitor';
+import EntityGraph from './components/EntityGraph';
+import CaseHistoryView from './components/CaseHistoryView';
+import PatchPilotView from './components/PatchPilotView';
+import ForensicsPanel from './components/ForensicsPanel';
+import MalwarePathologistView from './components/MalwarePathologistView';
+import HeatmapView from './components/HeatmapView';
 
 import { 
   ShieldAlert, 
@@ -99,10 +105,12 @@ function DashboardInner() {
     return <LoginPage />;
   }
 
-  const sidebarW  = sidebarCollapsed ? 56 : 220;
+  // Sidebar: collapses to icon-only (56px) or expands to clamp(180px, 15vw, 220px)
+  const sidebarW  = sidebarCollapsed ? 56 : 'clamp(180px, 15vw, 220px)';
   const headerH   = 56;
   const dockH     = 64;
-  const chitchatW  = chitchatOpen ? 360 : 0;
+  // ChitChat: clamp between 300px and 380px, capped at 30vw to avoid eating the main area
+  const chitchatW = chitchatOpen ? 'clamp(300px, 25vw, 380px)' : 0;
 
   const handleNav = (navItem) => setActiveNav(navItem);
 
@@ -115,6 +123,12 @@ function DashboardInner() {
       case 'Agents':         return <HiveHealth />;
       case 'Threat Intel':   return <ThreatTelemetry />;
       case 'Netflow / Traffic': return <NetflowView />;
+      case 'Topology':         return <EntityGraph />;
+      case 'Case History':     return <CaseHistoryView />;
+      case 'Patch Pilot':      return <PatchPilotView />;
+      case 'Forensics':         return <ForensicsPanel />;
+      case 'Malware Lab':       return <MalwarePathologistView />;
+      case 'Risk Heatmap':      return <HeatmapView />;
       case 'Governance':     return <GovernanceDashboard />;
       case 'Analytics':      return <AnalyticsDashboard />;
       case 'Adversary Sim':  return <CyberRange />;
@@ -125,7 +139,7 @@ function DashboardInner() {
   };
 
   return (
-    <div className="bg-app" style={{ height: '100vh', width: '100vw', overflow: 'hidden' }}>
+    <div className="bg-app" style={{ minHeight: '100vh', minWidth: 1152, overflowX: 'auto' }}>
       {/* Header */}
       <Header 
         chitchatOpen={chitchatOpen} 

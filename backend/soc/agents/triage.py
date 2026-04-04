@@ -23,12 +23,15 @@ import logging
 import os
 import asyncio
 import hashlib
+import random
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 from soc.bootstrap import get_soc_path
 from soc.bus.event_queue import EventBus
+from soc.agents.fuzzy_evaluator import FuzzyThreatEvaluator
+from soc.utils.audio import play_critical_alert, play_milestone_learning
 
 logger = logging.getLogger(__name__)
 
@@ -81,7 +84,29 @@ class TriageEngine:
         self.known_bad_entities: Dict[str, float] = {} # entity_id -> confidence
         self.known_bad_hashes: Dict[str, float] = {} # file_hash -> confidence
         
+        self.fuzzy_evaluator = FuzzyThreatEvaluator()
+        
+        # [IQ] Layer 4: MARL properties
+        self.qtable_path = get_soc_path("configs", "triage_qtable.json")
+        self.q_table: Dict[str, Dict[str, float]] = self._load_qtable()
+        self.alpha = 0.1
+        self.gamma = 0.9
+        self.epsilon = 0.05
+        
         self._load_rules(rules_path)
+
+    def _load_qtable(self) -> Dict[str, Dict[str, float]]:
+        if os.path.exists(self.qtable_path):
+            try:
+                with open(self.qtable_path, "r") as fh:
+                    return json.load(fh)
+            except Exception:
+                pass
+        return {}
+
+    def save_qtable(self):
+        with open(self.qtable_path, "w") as fh:
+            json.dump(self.q_table, fh, indent=2)
 
     def _load_rules(self, path: str) -> None:
         """Load triage rules from JSON config."""
@@ -256,6 +281,82 @@ class TriageEngine:
                 best_match.description += f" [INTEL BOOST from {old_sev}]"
                 logger.info(f"[IQ] Boosted {best_match.source_ip} to {best_match.severity}")
 
+        # [IQ] Fuzzy Logic Override (FTSE)
+        if best_match:
+            metrics = {}
+
+            # Gather generic contextual math metrics pushed from Scout, Sieve, Gatekeeper, EndpointAnalyst, etc.
+            if "time_series_math" in event.get("unmapped", {}):
+                math_dict = event["unmapped"]["time_series_math"]
+                if "sigma_deviation" in math_dict: metrics["entropy_sigma"] = math_dict["sigma_deviation"]
+                if "resource_variance" in math_dict: metrics["resource_variance"] = math_dict["resource_variance"]
+                if "lineage_depth" in math_dict: metrics["process_lineage_depth"] = math_dict["lineage_depth"]
+            
+            if "out_degree" in event.get("unmapped", {}):
+                metrics["out_degree"] = event["unmapped"]["out_degree"]
+            if "in_degree_velocity" in event.get("unmapped", {}):
+                metrics["in_degree_velocity"] = event["unmapped"]["in_degree_velocity"]
+            if "asymmetry_ratio" in event.get("unmapped", {}):
+                metrics["payload_asymmetry"] = event["unmapped"]["asymmetry_ratio"]
+            if "subnet_velocity" in event.get("unmapped", {}):
+                metrics["subnet_velocity"] = event["unmapped"]["subnet_velocity"]
+            if "token_access_freq" in event.get("unmapped", {}):
+                metrics["token_access_freq"] = event["unmapped"]["token_access_freq"]
+
+            # Authentications mapping to failed_logins metric
+            logins = 0
+            if best_match.source_ip in self.alert_history:
+                for a in self.alert_history[best_match.source_ip]:
+                    if "auth" in a.rule_id.lower() or "login" in a.rule_id.lower() or "fail" in a.description.lower():
+                        logins += 1
+            if event.get("event_type") == "authentication" and str(event.get("action", "")).lower() == "failed":
+                logins += 1
+            
+            if logins > 0:
+                metrics["failed_logins"] = logins
+
+            if metrics:
+                threat_score = self.fuzzy_evaluator.evaluate(metrics)
+                
+                fuzzy_sev = "INFO"
+                if threat_score >= 0.8:
+                    fuzzy_sev = "CRITICAL"
+                elif threat_score >= 0.6:
+                    fuzzy_sev = "WARNING"
+                elif threat_score >= 0.3:
+                    fuzzy_sev = "WARNING"
+
+                if severity_order.get(fuzzy_sev, 0) > severity_order.get(best_match.severity, 0):
+                    old_sev = best_match.severity
+                    best_match.severity = fuzzy_sev
+                    best_match.description = f"[FTSE Override] {best_match.description} (Threat Score: {threat_score:.2f}, escalated from {old_sev})"
+                    logger.info(f"[IQ] Fuzzy Logic Overrode severity to {fuzzy_sev} for {best_match.source_ip}. Driving Metrics: {list(metrics.keys())}")
+
+        # [IQ] Layer 4: MARL Epsilon-Greedy Policy
+        if best_match:
+            q_state_key = f"{best_match.rule_id}_{best_match.severity}"
+            if q_state_key in self.q_table:
+                q_state = self.q_table[q_state_key]
+                # Epsilon Exploration
+                if random.random() > self.epsilon:
+                    # Exploitation: Follow Q-Table Max decisively
+                    if q_state["SUPPRESS"] > q_state["ESCALATE"] + 0.1:
+                        old_sev = best_match.severity
+                        if best_match.severity == "CRITICAL":
+                            best_match.severity = "WARNING"
+                        elif best_match.severity == "WARNING":
+                            best_match.severity = "INFO"
+                        best_match.description += f" [MARL Action: SUPPRESSED from {old_sev} due to historical Q-Value aversion]."
+                        logger.info(f"[MARL] Suppressed {q_state_key} for {best_match.source_ip}")
+                    elif q_state["ESCALATE"] > q_state["SUPPRESS"] + 0.1:
+                        old_sev = best_match.severity
+                        best_match.severity = "CRITICAL"
+                        if old_sev != "CRITICAL":
+                            best_match.description += f" [MARL Action: ESCALATED from {old_sev} due to historical Q-Value reinforcement]."
+                            logger.info(f"[MARL] Escalated {q_state_key} for {best_match.source_ip}")
+                else:
+                    best_match.description += " [MARL: Random Exploration Selected (Epsilon).]"
+
         # [SECURITY] Structural Is_Stateful Check (Anti-Spoofing DoS Mitigation)
         if best_match and best_match.severity == "CRITICAL":
             is_stateful = self._verify_stateful_correlation(event)
@@ -354,6 +455,7 @@ class TriageAgent:
         self.out_bus = EventBus("triage_alerts")
         self.dlq_bus = EventBus("triage_dlq")
         self.intel_bus = EventBus("intel_feedback")
+        self.marl_bus = EventBus("marl_rewards")
         
         # [IQ] Doctrine Reference: SENTINEL-TRIAGE
         logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_sentinel_triage.md')}")
@@ -366,6 +468,50 @@ class TriageAgent:
         self.is_running = True
         logger.info("[SQ] Triage Agent started in async mode.")
         
+        tasks = [
+            asyncio.create_task(self._process_events()),
+            asyncio.create_task(self._marl_worker())
+        ]
+        await asyncio.gather(*tasks)
+
+    async def _marl_worker(self):
+        """Asynchronously updates the Hive Mind Q-Table based on downstream rewards."""
+        logger.info("[MARL] Q-Learning Worker active.")
+        while self.is_running:
+            reward_event = await asyncio.to_thread(self.marl_bus.pop)
+            if reward_event:
+                q_state_key = reward_event.get("source_state")
+                if not q_state_key:
+                    # Backward compatibility safely assumed if rule missing context
+                    q_state_key = reward_event.get("source_rule")
+                    
+                reward = float(reward_event.get("reward", 0.0))
+                
+                if q_state_key not in self.engine.q_table:
+                    self.engine.q_table[q_state_key] = {"ESCALATE": 0.0, "SUPPRESS": 0.0}
+                    
+                # Bellman update for ESCALATE actions (Since Responder handles actions driven by escalations)
+                old_q = self.engine.q_table[q_state_key]["ESCALATE"]
+                new_q = old_q + self.engine.alpha * (reward - old_q)
+                
+                # [IQ] Audio Milestone Trigger: crossing 0.1 threshold (decile)
+                if int(new_q * 10) > int(old_q * 10):
+                    play_milestone_learning()
+                    logger.info(f"[MARL] Q-Value Milestone Reached for {q_state_key}: {new_q}")
+                
+                self.engine.q_table[q_state_key]["ESCALATE"] = round(new_q, 3)
+                
+                # If reward is explicitly negative (human rejection), SUPPRESS implicitly gains relative expected value
+                if reward < 0:
+                    old_sup_q = self.engine.q_table[q_state_key]["SUPPRESS"]
+                    self.engine.q_table[q_state_key]["SUPPRESS"] = round(old_sup_q + self.engine.alpha * (1.0 - old_sup_q), 3)
+                
+                self.engine.save_qtable()
+                logger.debug(f"[MARL] Q-Table updated for {q_state_key}: {self.engine.q_table[q_state_key]}")
+            else:
+                await asyncio.sleep(2)
+
+    async def _process_events(self):
         while self.is_running:
             # 1. Ingest ALL pending Intel Feedback before processing alerts
             while True:
@@ -394,6 +540,11 @@ class TriageAgent:
                     else:
                         self.out_bus.push(self._serialise_alert(alert))
                         self._update_persistent_log([alert])
+                        
+                        # [IQ] Audio Trigger: Critical Alert detected
+                        if alert.severity == "CRITICAL":
+                            play_critical_alert()
+
                         logger.info(
                             f"[{alert.severity}] {alert.rule_name} — "
                             f"{alert.source_ip}: {alert.description}"

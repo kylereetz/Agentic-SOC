@@ -10,30 +10,41 @@ import { useAuth } from '../store/AuthContext';
 import { useSOC } from '../store/SOCContext';
 import AgentDetailDrawer from './AgentDetailDrawer';
 
-// ── Mock Data ─────────────────────────────────────────────────────────────────
+// ── Agent Roster (synced with backend/soc/agents/ — 26 agents) ───────────────
 const AGENT_ROSTER = [
   // Core Orchestration
-  { id: 'SENTINEL-ORCHESTRATOR', pillar: 'Core',    status: 'online',  load: 55, latency: 8,  task: 'Routing 6 pending alerts' },
+  { id: 'SENTINEL-ORCHESTRATOR',      pillar: 'Core',      status: 'online',  load: 55, latency: 8,  task: 'Routing 6 pending alerts' },
+
   // Detection & Intelligence
-  { id: 'SENTINEL-TRIAGE',       pillar: 'Intel',    status: 'online',  load: 92, latency: 22, task: 'Classifying 14 queued alerts' },
-  { id: 'SENTINEL-CORRELATOR',   pillar: 'Intel',    status: 'online',  load: 61, latency: 15, task: 'Tracking campaign ALPHA-7' },
-  { id: 'SENTINEL-LIBRARIAN',    pillar: 'Intel',    status: 'online',  load: 34, latency: 9,  task: 'Indexing 3 new case records' },
-  { id: 'SENTINEL-HUNTER',       pillar: 'Intel',    status: 'online',  load: 88, latency: 35, task: 'APT29 hypothesis backtrack' },
-  { id: 'SENTINEL-LOG-GUARDIAN', pillar: 'Intel',   status: 'online',  load: 45, latency: 11, task: 'Normalizing Palo Alto logs' },
-  { id: 'SENTINEL-TRAFFIC-SIEVE',pillar: 'Intel',   status: 'online',  load: 72, latency: 18, task: 'Analyzing /24 netflow burst' },
+  { id: 'SENTINEL-TRIAGE',            pillar: 'Intel',     status: 'online',  load: 92, latency: 22, task: 'Classifying 14 queued alerts' },
+  { id: 'SENTINEL-CORRELATOR',        pillar: 'Intel',     status: 'online',  load: 61, latency: 15, task: 'Tracking campaign ALPHA-7' },
+  { id: 'SENTINEL-LIBRARIAN',         pillar: 'Intel',     status: 'online',  load: 34, latency: 9,  task: 'Indexing 3 new case records' },
+  { id: 'SENTINEL-HUNTER',            pillar: 'Intel',     status: 'online',  load: 88, latency: 35, task: 'APT29 hypothesis backtrack' },
+  { id: 'SENTINEL-LOG-GUARDIAN',      pillar: 'Intel',     status: 'online',  load: 45, latency: 11, task: 'Normalizing Palo Alto logs' },
+  { id: 'SENTINEL-TRAFFIC-SIEVE',     pillar: 'Intel',     status: 'online',  load: 72, latency: 18, task: 'Analyzing /24 netflow burst' },
+  { id: 'SENTINEL-HISTORIAN',         pillar: 'Intel',     status: 'online',  load: 28, latency: 14, task: 'Archiving INC-2026-041 timeline' },
 
   // Response & Operations
-  { id: 'SENTINEL-RESPONDER',    pillar: 'Response', status: 'pending', load: 20, latency: 5,  task: 'Awaiting approval: VLAN block' },
-  { id: 'SENTINEL-GATEKEEPER',   pillar: 'Response', status: 'online',  load: 57, latency: 19, task: 'Rotating 3 NHI credentials' },
-  { id: 'SENTINEL-VANGUARD',     pillar: 'Response', status: 'online',  load: 30, latency: 13, task: 'Checking SBOM for CVE-2026-011' },
-  { id: 'SENTINEL-MIRAGE',       pillar: 'Response', status: 'online',  load: 5,  latency: 3,  task: 'Silent — 3 decoys active' },
-  { id: 'SENTINEL-SCOUT',        pillar: 'Response', status: 'online',  load: 22, latency: 21, task: 'Passive OT sweep subnet /16' },
+  { id: 'SENTINEL-RESPONDER',         pillar: 'Response',  status: 'pending', load: 20, latency: 5,  task: 'Awaiting approval: VLAN block' },
+  { id: 'SENTINEL-GATEKEEPER',        pillar: 'Response',  status: 'online',  load: 57, latency: 19, task: 'Rotating 3 NHI credentials' },
+  { id: 'SENTINEL-VANGUARD',          pillar: 'Response',  status: 'online',  load: 30, latency: 13, task: 'Checking SBOM for CVE-2026-011' },
+  { id: 'SENTINEL-MIRAGE',            pillar: 'Response',  status: 'online',  load: 5,  latency: 3,  task: 'Silent — 3 decoys active' },
+  { id: 'SENTINEL-SCOUT',             pillar: 'Response',  status: 'online',  load: 22, latency: 21, task: 'Passive OT sweep subnet /16' },
+  { id: 'SENTINEL-PATCH-PILOT',       pillar: 'Response',  status: 'idle',    load: 0,  latency: 0,  task: 'Awaiting VANGUARD risk handoff' },
+  { id: 'SENTINEL-TOPOLOGY-MAPPER',   pillar: 'Response',  status: 'online',  load: 41, latency: 16, task: 'Building L3 graph for CORP-VLAN' },
+
+  // Forensics & Analysis
+  { id: 'SENTINEL-FORENSICS',         pillar: 'Forensics', status: 'online',  load: 77, latency: 28, task: 'Analyzing memdump HOST-DX9' },
+  { id: 'SENTINEL-ENDPOINT-ANALYST',  pillar: 'Forensics', status: 'idle',    load: 0,  latency: 0,  task: 'Awaiting EDR telemetry pull' },
+  { id: 'SENTINEL-MALWARE-PATHOLOGIST',pillar: 'Forensics', status: 'idle',   load: 0,  latency: 0,  task: 'Sandbox ready — no samples queued' },
+
   // Governance & Business
-  { id: 'SENTINEL-GOVERNOR',     pillar: 'Gov',      status: 'online',  load: 25, latency: 8,  task: 'Cross-mapping NIST & CMMC controls' },
-  { id: 'SENTINEL-COMMUNICATOR', pillar: 'Gov',      status: 'online',  load: 12, latency: 10, task: 'Drafting board summary report' },
-  { id: 'SENTINEL-WATCHDOG',     pillar: 'Gov',      status: 'online',  load: 8,  latency: 4,  task: 'Heartbeat polling all agents' },
+  { id: 'SENTINEL-GOVERNOR',          pillar: 'Gov',       status: 'online',  load: 25, latency: 8,  task: 'Cross-mapping NIST & CMMC controls' },
+  { id: 'SENTINEL-COMMUNICATOR',      pillar: 'Gov',       status: 'online',  load: 12, latency: 10, task: 'Drafting board summary report' },
+  { id: 'SENTINEL-WATCHDOG',          pillar: 'Gov',       status: 'online',  load: 8,  latency: 4,  task: 'Heartbeat polling all agents' },
+
   // Adversary Simulation
-  { id: 'SENTINEL-RED-TEAM',     pillar: 'Sim',      status: 'idle',    load: 10, latency: 12, task: 'Awaiting Cyber Range parameters' }
+  { id: 'SENTINEL-RED-TEAM',          pillar: 'Sim',       status: 'idle',    load: 10, latency: 12, task: 'Awaiting Cyber Range parameters' },
 ];
 
 const SPECIALIST_ROSTER = [
@@ -47,11 +58,12 @@ const SPECIALIST_ROSTER = [
 ];
 
 const PILLAR_COLORS = {
-  Core:     '#3B6FE3',
-  Intel:    '#D84C7F',
-  Response: '#88C057',
-  Gov:      '#A78BFA',
-  Sim:      '#EF4444'
+  Core:      '#3B6FE3',
+  Intel:     '#D84C7F',
+  Response:  '#88C057',
+  Forensics: '#E5A862',
+  Gov:       '#A78BFA',
+  Sim:       '#EF4444',
 };
 
 const STATUS_CFG = {
@@ -71,11 +83,20 @@ const WS_MESSAGES = [
   "HUNTER >> hypothesis APT29-MFG match: 4 historical events",
   "VANGUARD >> SBOM scan complete: 0 zero-days in batch",
   "MIRAGE >> silent monitoring — decoy PLC-SIEM-01 active",
-  "WATCHDOG >> heartbeat OK — all Primary & Secondary nodes responsive",
+  "WATCHDOG >> heartbeat OK — all 26 hive nodes responsive",
   "GATEKEEPER >> rotated API key for agent SENTINEL-HUNTER",
   "COMMUNICATOR >> board report draft #7 pushed to /reports",
   "GOVERNOR >> NIST 3.14.6 control verified against live topology",
   "GOVERNOR >> CMMC Level 3 compliance checks initiated",
+  "HISTORIAN >> INC-2026-041 timeline archived to /cases/history",
+  "FORENSICS >> Cobalt Strike shellcode confirmed: HOST-DX9 PID 9912",
+  "TOPOLOGY-MAPPER >> L3 graph updated: 3 new nodes in CORP-VLAN",
+  "PATCH-PILOT >> CVE-2026-011 assigned to VANGUARD for SBOM cross-check",
+  "ENDPOINT-ANALYST >> EDR telemetry pull complete: 4 hosts",
+  "MALWARE-PATHOLOGIST >> sandbox ready — detonation queue empty",
+  "TRAFFIC-SIEVE >> exfiltration pattern detected: 192.168.1.105 → 203.0.113.45",
+  "LOG-GUARDIAN >> 98.2% fast-path normalization on last batch (1,440 events)",
+  "SCOUT >> OT discovery complete: 2 new PLCs on subnet 10.0.0.0/16",
 ];
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
@@ -84,6 +105,11 @@ function AgentCard({ agent, onSelect }) {
   const st = STATUS_CFG[agent.status] || STATUS_CFG.idle;
   const pc = PILLAR_COLORS[agent.pillar] || '#6B7280';
   const loadColor = agent.load > 85 ? '#EF4444' : agent.load > 60 ? '#E5A862' : '#88C057';
+  
+  // Model Tiers for Multi-Head Architecture
+  const modelTier = agent.id.includes('TRIAGE') || agent.id.includes('RESPONDER') || agent.id.includes('HUNTER') 
+    ? { label: 'Reasoning', model: 'Llama 3.1 8B', color: '#D84C7F' }
+    : { label: 'Fast',      model: 'Qwen 2.5 3B',  color: '#3B6FE3' };
 
   return (
     <div
@@ -101,13 +127,23 @@ function AgentCard({ agent, onSelect }) {
             className={`flex-shrink-0 w-2 h-2 rounded-full ${st.pulse ? 'animate-blink' : ''}`}
             style={{ background: st.color }}
           />
-          <span className="text-xs font-bold terminal truncate" style={{ color: pc }}>
-            {agent.id.replace('SENTINEL-', 'S-')}
+          <div className="flex flex-col min-w-0">
+            <span className="text-xs font-bold terminal truncate" style={{ color: pc }}>
+              {agent.id.replace('SENTINEL-', 'S-')}
+            </span>
+            <span className="text-[9px] terminal opacity-50" style={{ color: modelTier.color }}>
+              {modelTier.model}
+            </span>
+          </div>
+        </div>
+        <div className="flex flex-col items-end flex-shrink-0">
+          <span className="text-[10px] font-bold terminal" style={{ color: '#4B5563' }}>
+            {modelTier.label}
+          </span>
+          <span className="text-[9px] terminal" style={{ color: '#374151' }}>
+            {agent.latency > 0 ? `${agent.latency}ms` : '—'}
           </span>
         </div>
-        <span className="text-xs terminal flex-shrink-0" style={{ color: '#4B5563' }}>
-          {agent.latency > 0 ? `${agent.latency}ms` : '—'}
-        </span>
       </div>
 
       {/* Load bar */}
@@ -206,7 +242,7 @@ export default function HiveHealth() {
     return () => clearInterval(id);
   }, []);
 
-  const pillars = ['All', 'Core', 'Intel', 'Response', 'Gov', 'Sim'];
+  const pillars = ['All', 'Core', 'Intel', 'Response', 'Forensics', 'Gov', 'Sim'];
   const visible = filter === 'All' ? agents : agents.filter(a => a.pillar === filter);
 
   const onlineCount  = agents.filter(a => a.status === 'online').length + specialists.filter(s => s.status === 'online').length;
@@ -269,7 +305,7 @@ export default function HiveHealth() {
       {/* Body */}
       <div className="flex flex-1 min-h-0">
         {/* LEFT: Agent Matrix */}
-        <div className="flex flex-col" style={{ width: '58%', borderRight: '1px solid #1F2937' }}>
+        <div className="flex flex-col" style={{ flex: '0 0 58%', minWidth: 380, borderRight: '1px solid #1F2937' }}>
           {/* Pillar filter */}
           <div className="flex items-center gap-1.5 px-4 py-2 border-b flex-shrink-0"
             style={{ borderColor: '#1F2937' }}>
@@ -309,6 +345,38 @@ export default function HiveHealth() {
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
               {specialists.map(s => <SpecialistCard key={s.id} specialist={s} />)}
+            </div>
+          </div>
+
+          {/* Hive Learning (MARL) Insights */}
+          <div className="px-4 py-4 border-b flex-shrink-0" style={{ borderColor: '#1F2937' }}>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <TrendingUp size={12} style={{ color: '#88C057' }} />
+                <span className="text-xs terminal font-bold" style={{ color: '#6B7280' }}>HIVE LEARNING (MARL)</span>
+              </div>
+              <span className="text-[10px] terminal uppercase" style={{ color: '#4B5563' }}>Q-Table Convergence: 82%</span>
+            </div>
+            
+            <div className="space-y-3">
+              {[
+                { label: 'Triage Accuracy', reward: +0.12, q: 0.88, color: '#D84C7F' },
+                { label: 'Response Efficiency', reward: +0.05, q: 0.74, color: '#3B6FE3' },
+                { label: 'False Positive Aversion', reward: -0.02, q: 0.91, color: '#88C057' },
+              ].map(stat => (
+                <div key={stat.label} className="space-y-1">
+                  <div className="flex justify-between text-[10px] terminal">
+                    <span style={{ color: '#9CA3AF' }}>{stat.label}</span>
+                    <span style={{ color: stat.reward >= 0 ? '#88C057' : '#EF4444' }}>
+                      {stat.reward >= 0 ? '+' : ''}{stat.reward} RWD
+                    </span>
+                  </div>
+                  <div className="h-1 rounded-full overflow-hidden flex gap-0.5" style={{ background: '#1F2937' }}>
+                    <div className="h-full rounded-full transition-all duration-700" 
+                      style={{ width: `${stat.q * 100}%`, background: stat.color }} />
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 

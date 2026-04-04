@@ -102,6 +102,10 @@ export function SOCProvider({ children }) {
   // Kill switch — single source of truth for both Header and HiveHealth
   const [killSwitch, setKillSwitch] = useState(false);
 
+  // Backend connectivity — driven by /api/v1/health (no auth required)
+  const [backendOnline, setBackendOnline] = useState(true);
+  const [backendVersion, setBackendVersion] = useState(null);
+
   // ── Live event stream ───────────────────────────────────────────────
   useEffect(() => {
     // Inject an event every 6–10 seconds
@@ -134,65 +138,107 @@ export function SOCProvider({ children }) {
         setPending(prev => [...prev, newAction]);
       }
 
-      // Autonomy stats drift
-      setAutonomy(prev => ({
-        ...prev,
-        agentActions: prev.agentActions + 1,
-        level: Math.min(99, prev.level + (Math.random() > 0.7 ? 1 : 0)),
-      }));
+        // Agent tool count tick (Local only for visual flavor)
+        setAgents(prev => prev.map(a =>
+          a.status === 'ACTIVE' && Math.random() > 0.6
+            ? { ...a, tools: (a.tools || 0) + 1 }
+            : a
+        ));
+      };
 
-      // Agent tool count tick
-      setAgents(prev => prev.map(a =>
-        a.status === 'ACTIVE' && Math.random() > 0.6
-          ? { ...a, tools: a.tools + 1 }
-          : a
-      ));
-    };
+      const id = setInterval(tick, 7000);
 
-    const id = setInterval(tick, 7000);
+      // ── Poll All Backend Endpoints ──────────────────────────────────
+      const authHeaders = token ? { 'Authorization': `Bearer ${token}` } : {};
 
-    // ── Poll /pending and /cases every 15s ──────────────────────────
-    const authHeaders = token ? { 'Authorization': `Bearer ${token}` } : {};
+      const fetchAgents = async () => {
+        if (!token) return;
+        try {
+          const res = await fetch('http://localhost:8000/api/agents', { headers: authHeaders });
+          if (res.ok) {
+            const data = await res.json();
+            setAgents(data);
+          }
+        } catch (err) { console.error('[SOCContext] Failed to fetch agents:', err); }
+      };
 
-    const fetchPending = async () => {
-      if (!token) return;
+      const fetchAlerts = async () => {
+        if (!token) return;
+        try {
+          const res = await fetch('http://localhost:8000/alerts', { headers: authHeaders });
+          if (res.ok) {
+            const data = await res.json();
+            setAlerts(data);
+          }
+        } catch (err) { console.error('[SOCContext] Failed to fetch alerts:', err); }
+      };
+
+      const fetchPending = async () => {
+        if (!token) return;
+        try {
+          const res = await fetch('http://localhost:8000/pending', { headers: authHeaders });
+          if (res.ok) {
+            const data = await res.json();
+            // Merge local-only live events (ACT-LIVE-) with server data
+            setPending(prev => {
+              const serverIds = new Set((data || []).map(a => a.id));
+              const localOnly = prev.filter(a => a.id.startsWith('ACT-LIVE-') && !serverIds.has(a.id));
+              return [...(data || []), ...localOnly];
+            });
+          }
+        } catch (err) { console.error('[SOCContext] Failed to fetch pending actions:', err); }
+      };
+
+      const fetchInvestigations = async () => {
+        if (!token) return;
+        try {
+          const res = await fetch('http://localhost:8000/cases', { headers: authHeaders });
+          if (res.ok) {
+            const data = await res.json();
+            setInvestigations(data);
+          }
+        } catch (err) { console.error('[SOCContext] Failed to fetch investigations:', err); }
+      };
+
+      // Initial fetch
+      fetchAgents();
+      fetchAlerts();
+      fetchPending();
+      fetchInvestigations();
+
+      const pollId = setInterval(() => {
+        fetchAgents();
+        fetchAlerts();
+        fetchPending();
+        fetchInvestigations();
+      }, 10000);
+
+    // ── Health watchdog — poll /api/v1/health every 5s (no auth) ────────
+    const checkHealth = async () => {
       try {
-        const res = await fetch('http://localhost:8000/pending', { headers: authHeaders });
+        const res = await fetch('http://localhost:8000/api/v1/health', { signal: AbortSignal.timeout(3000) });
         if (res.ok) {
           const data = await res.json();
-          // Merge live-event actions that aren't in the server response yet
-          // (generated client-side by the event stream before the backend writes them)
-          setPending(prev => {
-            const serverIds = new Set((data || []).map(a => a.id));
-            const localOnly = prev.filter(a => a.id.startsWith('ACT-LIVE-') && !serverIds.has(a.id));
-            return [...(data || []), ...localOnly];
-          });
+          setBackendOnline(true);
+          setBackendVersion(data.version || null);
+          // Sync kill switch from server — handles multi-session state drift
+          if (typeof data.kill_switch === 'boolean') {
+            setKillSwitch(data.kill_switch);
+          }
+        } else {
+          setBackendOnline(false);
         }
-      } catch (err) {
-        console.error('[SOCContext] Failed to fetch pending actions:', err);
+      } catch {
+        setBackendOnline(false);
       }
     };
-
-    const fetchInvestigations = async () => {
-      if (!token) return;
-      try {
-        const res = await fetch('http://localhost:8000/cases', { headers: authHeaders });
-        if (res.ok) {
-          const data = await res.json();
-          setInvestigations(data);
-        }
-      } catch (err) {
-        console.error('[SOCContext] Failed to fetch investigations:', err);
-      }
-    };
-
-    fetchPending();
-    fetchInvestigations();
-    const pollId = setInterval(() => { fetchPending(); fetchInvestigations(); }, 15000);
+    checkHealth(); // immediate first check
+    const healthId = setInterval(checkHealth, 5000);
 
     return () => {
       clearInterval(id);
       clearInterval(pollId);
+      clearInterval(healthId);
     };
   }, []);
 
@@ -229,7 +275,7 @@ export function SOCProvider({ children }) {
   }, []);
 
   // ── Approval / rejection ─────────────────────────────────────────────
-  const approveAction = useCallback(async (actionId) => {
+  const approveAction = useCallback(async (actionId, approvedIndices = null) => {
     // 1. Optimistically remove from UI immediately for snappy feedback
     setPending(prev => prev.filter(a => a.id !== actionId));
     setAutonomy(prev => ({ ...prev, humanApproved: prev.humanApproved + 1 }));
@@ -241,7 +287,7 @@ export function SOCProvider({ children }) {
       const res = await fetch(`http://localhost:8000/approve/${actionId}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ approved_indices: null }),
+        body: JSON.stringify({ approved_indices: approvedIndices }),
       });
       if (!res.ok) {
         console.error(`[SOCContext] Approval API returned ${res.status} for ${actionId}`);
@@ -301,6 +347,8 @@ export function SOCProvider({ children }) {
       investigations,
       // Kill switch
       killSwitch, toggleKillSwitch,
+      // Backend health
+      backendOnline, backendVersion,
     }}>
       {children}
     </SOCContext.Provider>

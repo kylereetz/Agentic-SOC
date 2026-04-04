@@ -28,10 +28,16 @@ function normaliseAlert(raw) {
     title:    raw.title      || raw.name      || raw.description || 'Unnamed Alert',
     severity: raw.severity   || raw.priority  || 'Low',
     source:   raw.source     || raw.log_source || raw.sensor     || 'Unknown',
-    asset:    raw.asset      || raw.host       || raw.src_ip      || raw.device || '—',
+    asset:    raw.asset      || raw.host       || raw.source_ip  || raw.src_ip || raw.device || '—',
     time:     timeLabel,
-    mitre:    raw.mitre      || raw.mitre_technique || raw.technique_id || '',
+    mitre:    raw.mitre      || raw.mitre_technique || raw.technique_id || raw.mitre_ttp || '',
     agent:    raw.agent      || raw.assigned_agent  || raw.triage_agent || 'UNASSIGNED',
+    // Advanced Metadata
+    ftse_metrics: raw.raw_event?.unmapped?.time_series_math || {},
+    description: raw.description || '',
+    semantic_detail: raw.semantic_detail || '',
+    vector_id: raw.vector_id || '',
+    is_correlated: raw.is_correlated || false,
   };
 }
 
@@ -280,20 +286,50 @@ export default function AlertQueue() {
 
       {/* Expanded Alert Actions */}
       {selectedAlert && (
-        <div className="border-t px-4 py-3 flex-shrink-0 flex items-center gap-3 animate-slide-in-up"
+        <div className="border-t px-4 py-3 flex-shrink-0 flex flex-col gap-3 animate-slide-in-up"
           style={{ borderColor: `${(SEVERITY_STYLES[selectedAlert.severity] || SEVERITY_STYLES['Low']).border}55`, background: '#111827' }}>
-          <div className="flex-1 text-xs" style={{ color: '#9CA3AF' }}>
-            <span className="font-bold" style={{ color: '#E2E8F0' }}>{selectedAlert.id}</span>
-            {' — '}{selectedAlert.title}
+          
+          <div className="flex items-center gap-3">
+            <div className="flex-1 text-xs" style={{ color: '#9CA3AF' }}>
+              <span className="font-bold" style={{ color: '#E2E8F0' }}>{selectedAlert.id}</span>
+              {' — '}{selectedAlert.description || selectedAlert.title}
+              {selectedAlert.is_correlated && <span className="ml-2 text-[10px] terminal px-1.5 py-0.5 rounded" style={{ background: '#3B6FE322', color: '#3B6FE3', border: '1px solid #3B6FE344' }}>CORRELATED</span>}
+            </div>
+            <div className="flex gap-2">
+              <button className="text-xs terminal px-3 py-1.5 rounded transition-all hover:brightness-125"
+                style={{ background: '#3B6FE322', color: '#3B6FE3', border: '1px solid #3B6FE344' }}>
+                Assign Agent
+              </button>
+              <button className="text-xs terminal px-3 py-1.5 rounded transition-all hover:brightness-125"
+                style={{ background: '#D84C7F22', color: '#D84C7F', border: '1px solid #D84C7F44' }}>
+                Promote to Investigation
+              </button>
+            </div>
           </div>
-          <button className="text-xs terminal px-3 py-1.5 rounded transition-all hover:brightness-125"
-            style={{ background: '#3B6FE322', color: '#3B6FE3', border: '1px solid #3B6FE344' }}>
-            Assign Agent
-          </button>
-          <button className="text-xs terminal px-3 py-1.5 rounded transition-all hover:brightness-125"
-            style={{ background: '#D84C7F22', color: '#D84C7F', border: '1px solid #D84C7F44' }}>
-            Promote to Investigation
-          </button>
+
+          {/* FTC (Fuzzy Threat Classification) Metrics Grid */}
+          {selectedAlert.ftse_metrics && Object.keys(selectedAlert.ftse_metrics).length > 0 && (
+            <div className="grid grid-cols-4 gap-2 border-t pt-3" style={{ borderColor: '#1F2937' }}>
+              {Object.entries(selectedAlert.ftse_metrics).map(([key, val]) => (
+                <div key={key} className="p-2 rounded" style={{ background: '#0B1117', border: '1px solid #1F2937' }}>
+                  <p className="text-[9px] terminal uppercase opacity-40">{key.replace(/_/g, ' ')}</p>
+                  <p className="text-xs font-bold terminal" style={{ color: val > 2 ? '#EF4444' : '#88C057' }}>
+                    {typeof val === 'number' ? val.toFixed(3) : val}
+                  </p>
+                </div>
+              ))}
+              <div className="p-2 rounded text-[10px] terminal flex items-center justify-center opacity-50 italic">
+                Vector: {selectedAlert.vector_id?.slice(0, 8)}
+              </div>
+            </div>
+          )}
+
+          {selectedAlert.semantic_detail && (
+            <div className="p-2 rounded border" style={{ background: '#080d14', borderColor: '#1F2937' }}>
+              <p className="text-[9px] terminal uppercase opacity-40 mb-1">Semantic Inference (SENTINEL-LOG-GUARDIAN)</p>
+              <p className="text-xs italic" style={{ color: '#9CA3AF' }}>"{selectedAlert.semantic_detail}"</p>
+            </div>
+          )}
         </div>
       )}
     </div>

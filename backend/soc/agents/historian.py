@@ -52,6 +52,9 @@ class HistorianAgent:
         # Initialize SQLite DB
         self._init_db()
 
+        # [IQ] Doctrine Reference: SENTINEL-HISTORIAN
+        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_sentinel_historian.md')}")
+
     def _init_db(self):
         self.conn = ServiceMesh.connect_db(client_identity="historian", db_path=HISTORIAN_DB_PATH, negotiated_cipher="TLS_AES_256_GCM_SHA384")
         self.conn.row_factory = sqlite3.Row

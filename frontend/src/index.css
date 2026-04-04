@@ -35,9 +35,11 @@
     color: #E2E8F0;
     font-family: 'Inter', 'JetBrains Mono', system-ui, sans-serif;
     margin: 0;
-    overflow: hidden;
+    /* Desktop-only app: clamp layout at 1152px floor so smaller laptops scroll rather than clip */
+    min-width: 1152px;
+    overflow-x: auto;
+    overflow-y: hidden;
     height: 100vh;
-    width: 100vw;
     -webkit-font-smoothing: antialiased;
   }
 
@@ -46,6 +48,9 @@
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: #2D3748; border-radius: 2px; }
   ::-webkit-scrollbar-thumb:hover { background: #3B6FE366; }
+
+  /* Pre/code: inherit body stack by default; use .terminal for explicit mono */
+  pre, code { font-family: inherit; }
 }
 
 /* ── Keyframes ─────────────────────────────────────────────────────── */

@@ -15,6 +15,12 @@ export default function BottomDock() {
   const activeAgents = agents.filter(a => a.status === 'ACTIVE').length;
   const firstPending = pendingActions[0];
 
+  // Pick the highest-load online agent as the "featured" active agent
+  const featuredAgent = [...(agents || [])]
+    .filter(a => (a.status === 'ACTIVE' || a.status === 'online') && a.load > 0)
+    .sort((a, b) => (b.load || 0) - (a.load || 0))[0]
+    ?? agents[0];
+
   // Replay window: 2h 45m ending at the real current time.
   const WINDOW_MS = (2 * 60 * 60 + 45 * 60) * 1000;
   const windowEnd   = new Date();
@@ -98,7 +104,9 @@ export default function BottomDock() {
 
         <div className="flex items-center gap-1.5 text-xs terminal" style={{ color: '#D84C7F' }}>
           <Bot size={12} className="animate-pulse" />
-          <span>SENTINEL-ORCHESTRATOR ACTIVE</span>
+          <span className="max-w-[160px] truncate">
+            {featuredAgent ? featuredAgent.id : 'SENTINEL-ORCHESTRATOR'} ACTIVE
+          </span>
         </div>
       </div>
     </div>

@@ -151,3 +151,10 @@
 - **IQ**: Synthetic Anomaly Generation — crafts realistic OT Modbus overwrites, network C2 beacons, and identity sprays.
 - **EQ**: Continuous Efficacy Auditing — constantly measures the blue team's response and detection rate without human prompting.
 - **VQ**: Satisfies NIST 800-171 Rev 3 controls for continuous security control assessment.
+
+### 26. SENTINEL-STRATEGIST ([FictitiousPlaySolver](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/soc/agents/game_theory_solver.py))
+**Role**: Defensive Resource Allocator (Game Theory Solver).
+- **IQ**: Fictitious Play algorithm — calculates MSNE probabilities for Zero-Sum games.
+- **EQ**: Efficient Solver — provides optimized defender strategies without Scipy or heavy dependencies.
+- **SQ**: Resource Optimization — calculates optimal defensive asset allocation under scarcity.
+- **VQ**: Mapping to CMMC Level 3 "Advanced Risk Assessment".

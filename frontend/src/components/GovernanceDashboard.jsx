@@ -175,7 +175,7 @@ export default function GovernanceDashboard() {
 
       <div className="flex flex-1 min-h-0">
         {/* LEFT: Gauges + Control Families */}
-        <div className="flex flex-col overflow-y-auto" style={{ width: '55%', borderRight: '1px solid #1F2937' }}>
+        <div className="flex flex-col overflow-y-auto" style={{ flex: '0 0 55%', minWidth: 360, borderRight: '1px solid #1F2937' }}>
           {/* Compliance Gauges */}
           <div className="p-5 border-b flex-shrink-0" style={{ borderColor: '#1F2937' }}>
             <p className="text-xs terminal mb-4" style={{ color: '#4B5563' }}>COMPLIANCE POSTURE — REAL TIME</p>

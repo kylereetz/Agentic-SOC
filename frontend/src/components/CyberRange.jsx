@@ -75,7 +75,7 @@ export default function CyberRange() {
 
       <div className="flex flex-1 min-h-0">
         {/* LEFT: Scenarios */}
-        <div className="flex flex-col p-6 overflow-y-auto" style={{ width: '35%', borderRight: '1px solid #1F2937' }}>
+        <div className="flex flex-col p-6 overflow-y-auto" style={{ flex: '0 0 35%', minWidth: 280, borderRight: '1px solid #1F2937' }}>
           <p className="text-xs terminal mb-4" style={{ color: '#6B7280' }}>AVAILABLE SCENARIOS</p>
           <div className="space-y-3">
             {SIMULATION_SCENARIOS.map(sim => (
