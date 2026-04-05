@@ -105,7 +105,7 @@ export default function BottomDock() {
         <div className="flex items-center gap-1.5 text-xs terminal" style={{ color: '#D84C7F' }}>
           <Bot size={12} className="animate-pulse" />
           <span className="max-w-[160px] truncate">
-            {featuredAgent ? featuredAgent.id : 'SENTINEL-ORCHESTRATOR'} ACTIVE
+            {featuredAgent ? featuredAgent.id : 'SYRINX-ORCHESTRATOR'} ACTIVE
           </span>
         </div>
       </div>

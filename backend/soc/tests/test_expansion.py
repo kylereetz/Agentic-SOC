@@ -67,7 +67,7 @@ async def test_hive_expansion():
     health_bus = EventBus("agent_metrics")
     health_bus.push({
         "timestamp": datetime.now(timezone.utc).isoformat(),
-        "agent_name": "SENTINEL-TRIAGE",
+        "agent_name": "QUILL-TRIAGE",
         "status": "lagging",
         "metrics": {"latency_ms": 1500}
     })
@@ -75,7 +75,7 @@ async def test_hive_expansion():
     if event: await dog._check_health(event)
     
     alert = triage_bus.pop()
-    if alert and "Agent Health: SENTINEL-TRIAGE" in alert["rule_name"]:
+    if alert and "Agent Health: QUILL-TRIAGE" in alert["rule_name"]:
         print(f"  [PASS] Watchdog flagged lagging Triage agent.")
     else:
         print(f"  [FAIL] Watchdog failed. Alert: {alert}")

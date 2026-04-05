@@ -14,7 +14,7 @@
     "rule_name": "OT MODBUS WRITE + UNKNOWN BINARY",
     "source_ip": "10.0.0.50"
   },
-  "assigned_agent": "SENTINEL-OT",
+  "assigned_agent": "GAGGLE-SCOUT",
   "evidence_ids": [],
   "reasoning_steps": [],
   "actions_taken": [],

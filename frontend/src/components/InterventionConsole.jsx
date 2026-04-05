@@ -33,7 +33,7 @@ export default function InterventionConsole() {
   const [historyIdx, setHistoryIdx] = useState(-1);
   const bottomRef = useRef(null);
 
-  // Game Theory State (derived from SENTINEL-RESPONDER)
+  // Game Theory State (derived from WEDGE-RESPONDER)
   const [payoffMatrix] = useState([
     [5.0,  8.0,  5.0], // Quarantine
     [-2.0, 5.0, 10.0], // Honeypot
@@ -92,7 +92,7 @@ export default function InterventionConsole() {
         <span className="text-xs font-bold tracking-widest" style={{ color: '#E2E8F0' }}>INTERVENTION CONSOLE</span>
         <span className="ml-auto flex items-center gap-1.5 text-xs terminal" style={{ color: '#88C057' }}>
           <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-blink" />
-          CONNECTED: SENTINEL-RESPONDER
+          CONNECTED: WEDGE-RESPONDER
         </span>
       </div>
 

@@ -18,9 +18,9 @@ class OTSecurityAnalyst(InvestigatorAgent):
     """
     def __init__(self, config_path: str = DEFAULT_CONFIG_PATH):
         super().__init__(config_path, routing_topic="topic_ot")
-        self.agent_name = "SENTINEL-OT"
+        self.agent_name = "GAGGLE-SCOUT"
         super().__init__(config_path, routing_topic="topic_ot")
-        self.agent_name = "SENTINEL-OT"
+        self.agent_name = "GAGGLE-SCOUT"
         # [IQ] Dynamic Ethos Loading: Base class now automatically loads ethos_sentinel_ot.md
         self._reinit_model()
 
@@ -31,9 +31,9 @@ class NetworkAnalyst(InvestigatorAgent):
     """
     def __init__(self, config_path: str = DEFAULT_CONFIG_PATH):
         super().__init__(config_path, routing_topic="topic_network")
-        self.agent_name = "SENTINEL-NET"
+        self.agent_name = "GAGGLE-TRAFFIC-SIEVE"
         super().__init__(config_path, routing_topic="topic_network")
-        self.agent_name = "SENTINEL-NET"
+        self.agent_name = "GAGGLE-TRAFFIC-SIEVE"
         # [IQ] Dynamic Ethos Loading: Base class now automatically loads ethos_sentinel_net.md
         self._reinit_model()
 
@@ -43,9 +43,9 @@ class IdentityAnalyst(InvestigatorAgent):
     """
     def __init__(self, config_path: str = DEFAULT_CONFIG_PATH):
         super().__init__(config_path, routing_topic="topic_identity")
-        self.agent_name = "SENTINEL-ID"
+        self.agent_name = "QUILL-GATEKEEPER"
         super().__init__(config_path, routing_topic="topic_identity")
-        self.agent_name = "SENTINEL-ID"
+        self.agent_name = "QUILL-GATEKEEPER"
         # [IQ] Dynamic Ethos Loading: Base class now automatically loads ethos_sentinel_id.md
         self._reinit_model()
 
@@ -56,9 +56,9 @@ class RemediationAnalyst(InvestigatorAgent):
     """
     def __init__(self, config_path: str = DEFAULT_CONFIG_PATH):
         super().__init__(config_path, routing_topic="topic_remediation")
-        self.agent_name = "SENTINEL-FIX"
+        self.agent_name = "WEDGE-RESPONDER"
         super().__init__(config_path, routing_topic="topic_remediation")
-        self.agent_name = "SENTINEL-FIX"
+        self.agent_name = "WEDGE-RESPONDER"
         # [IQ] Dynamic Ethos Loading: Base class now automatically loads ethos_sentinel_fix.md
         self._reinit_model()
 
@@ -69,7 +69,7 @@ class MalwarePathologist(InvestigatorAgent):
     """
     def __init__(self, config_path: str = DEFAULT_CONFIG_PATH):
         super().__init__(config_path, routing_topic="topic_malware")
-        self.agent_name = "SENTINEL-LAB"
+        self.agent_name = "QUILL-MALWARE-PATHOLOGIST"
         self._set_specialized_prompt()
 
     def _set_specialized_prompt(self):
@@ -92,7 +92,7 @@ class ThreatHunter(InvestigatorAgent):
     """
     def __init__(self, config_path: str = DEFAULT_CONFIG_PATH):
         super().__init__(config_path, routing_topic="topic_network")
-        self.agent_name = "SENTINEL-HUNT"
+        self.agent_name = "QUILL-HUNTER"
         self._set_specialized_prompt()
 
     def _set_specialized_prompt(self):

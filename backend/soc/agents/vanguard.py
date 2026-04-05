@@ -1,5 +1,5 @@
 """
-SENTINEL-VANGUARD: Supply Chain & Vendor Risk Specialist.
+QUILL-VANGUARD: Supply Chain & Vendor Risk Specialist.
 Monitors external ecosystem risks and software dependencies.
 
 IQ Capabilities:
@@ -118,8 +118,8 @@ class VanguardAgent:
     async def _alert_supply_chain_threat(self, asset: str, name: str, version: str, 
                                         rule: Dict[str, Any], vuln_info: Dict[str, Any], 
                                         event: Dict[str, Any]):
-        # [IQ] Doctrine Reference: SENTINEL-VANGUARD
-        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_sentinel_vanguard.md')}")
+        # [IQ] Doctrine Reference: QUILL-VANGUARD
+        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_quill_vanguard.md')}")
         logger.warning(f"[IQ] Supply Chain Threat on {asset}: {name}@{version} ({vuln_info['cve']})")
         alert = {
             "timestamp": datetime.now(timezone.utc).isoformat(),

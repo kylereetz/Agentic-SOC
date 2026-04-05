@@ -13,7 +13,7 @@ from soc.bootstrap import get_soc_path
 
 async def test_hunter_intelligence():
     print("="*60)
-    print("  SENTINEL-HUNTER VALIDATION")
+    print("  QUILL-HUNTER VALIDATION")
     print("="*60)
     
     ha = HunterAgent()

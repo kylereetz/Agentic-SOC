@@ -40,7 +40,7 @@ export default function LoginPage() {
           
           <div className="mb-6">
             <h2 className="text-lg font-bold text-[#D84C7F]">IDENTITY AUTHENTICATION</h2>
-            <p className="text-xs terminal text-[#6B7280] mt-1">SENTINEL-GATEKEEPER PROXY ACTIVE</p>
+            <p className="text-xs terminal text-[#6B7280] mt-1">QUILL-GATEKEEPER PROXY ACTIVE</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">

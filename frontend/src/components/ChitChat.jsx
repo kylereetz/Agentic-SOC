@@ -146,7 +146,7 @@ export default function ChitChat({ onClose }) {
       const aiMsg = { 
         role: 'assistant', 
         text: data.response || 'No response from model.', 
-        refs: ['SENTINEL-COMMUNICATOR', 'Local-Ollama']
+        refs: ['FLYWAY-COMMUNICATOR', 'Local-Ollama']
       };
       
       setMessages(prev => {

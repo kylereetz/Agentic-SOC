@@ -51,7 +51,7 @@ class ReasoningStep:
     """A single step in the reasoning chain for UI parity."""
     step_id: str = field(default_factory=lambda: str(uuid.uuid4())[:8])
     investigation_id: str = ""
-    agent: str = "SENTINEL-01"
+    agent: str = "QUILL-INVESTIGATOR"
     type: str = "THOUGHT"  # THOUGHT | ACTION | OBSERVATION | CONCLUSION
     content: str = ""
     tool: Optional[str] = None
@@ -79,7 +79,7 @@ class InvestigatorTools:
 # Investigator Agent
 # ---------------------------------------------------------------------------
 class InvestigatorAgent:
-    def __init__(self, agent_name: str = "SENTINEL-01"):
+    def __init__(self, agent_name: str = "QUILL-INVESTIGATOR"):
         self.agent_name = agent_name
         self.in_bus = EventBus("triage_alerts")
         self.out_bus = EventBus("investigation_reasoning")

@@ -1,0 +1,82 @@
+direction: right
+
+# Global Styles
+*.style: {
+  stroke-width: 2
+  border-radius: 8
+}
+
+"Raw Telemetry": {
+  Sysmon
+  NetFlow
+  Modbus
+}
+
+"In-Memory Layer (RAM)": {
+  style: {
+    stroke: "#1e40af"
+    fill: "#eff6ff"
+  }
+
+  EventBus: High-Speed Async Queue {
+    shape: queue
+  }
+  
+  Triage: QUILL-TRIAGE (The Dam)
+  DLQ: Dead-Letter Queue {
+    shape: queue
+    style: { fill: "#fef2f2"; stroke: "#b91c1c" }
+  }
+  
+  Manager: InvestigationManager
+  Historian: FLYWAY-HISTORIAN
+}
+
+"Physical Storage Layer (SSD NVMe)": {
+  style: {
+    stroke: "#166534"
+    fill: "#f0fdf4"
+  }
+
+  BoundedLogs: Bounded JSON Logs {
+    shape: document
+    description: "e.g., triage_alerts.json (Rolling Max 1000)"
+  }
+  
+  CaseDB: Investigation Databases {
+    shape: sql_table
+    description: "SQLite (WAL Mode) Checkpoints"
+  }
+  
+  EntityMatrix: Historian Entity Matrix {
+    shape: sql_table
+    description: "O(N) Scaling - Scalar Overwrites"
+  }
+}
+
+Void: Permanently Discarded (No Disk Wear) {
+  shape: cloud
+  style: { 
+    stroke-dash: 5
+    opacity: 0.6
+  }
+}
+
+# The Ingestion Pipeline
+"Raw Telemetry".Sysmon -> "In-Memory Layer (RAM)".EventBus: Volume
+"Raw Telemetry".NetFlow -> "In-Memory Layer (RAM)".EventBus: Volume
+"Raw Telemetry".Modbus -> "In-Memory Layer (RAM)".EventBus: Volume
+
+"In-Memory Layer (RAM)".EventBus -> "In-Memory Layer (RAM)".Triage: In-Memory Eval
+"In-Memory Layer (RAM)".EventBus -> "In-Memory Layer (RAM)".Historian: Raw Connections
+
+# Triage Routing
+"In-Memory Layer (RAM)".Triage -> "In-Memory Layer (RAM)".DLQ: INFO/Noise 
+"In-Memory Layer (RAM)".Triage -> "In-Memory Layer (RAM)".Manager: WARNING/CRITICAL
+
+# Persistence to Disk
+"In-Memory Layer (RAM)".Triage -> "Physical Storage Layer (SSD NVMe)".BoundedLogs: File Append
+"In-Memory Layer (RAM)".Manager -> "Physical Storage Layer (SSD NVMe)".CaseDB: Sequential WAL Write
+"In-Memory Layer (RAM)".Historian -> "Physical Storage Layer (SSD NVMe)".EntityMatrix: Scalar State Overwrite
+
+"In-Memory Layer (RAM)".DLQ -> Void: Purged { style: { stroke-dash: 5; stroke: "#ef4444" } }

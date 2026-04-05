@@ -1,5 +1,5 @@
 """
-SENTINEL-GATEKEEPER: Identity & Zero Trust Specialist.
+QUILL-GATEKEEPER: Identity & Zero Trust Specialist.
 Enforces Identity-based security and manages non-human identities (NHI).
 
 IQ Capabilities:
@@ -58,9 +58,9 @@ class GatekeeperAgent:
         self.rules = self._load_rules(rules_path)
         self.incident_history: List[Dict[str, Any]] = []
         
-        # [IQ] Doctrine Reference: SENTINEL-GATEKEEPER
+        # [IQ] Doctrine Reference: QUILL-GATEKEEPER
         from soc.bootstrap import get_soc_path
-        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_sentinel_gatekeeper.md')}")
+        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_quill_gatekeeper.md')}")
         self.user_states: Dict[str, Dict[str, Any]] = {} # user_id -> state
         self.is_running = False
 

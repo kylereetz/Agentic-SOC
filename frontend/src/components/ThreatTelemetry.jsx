@@ -24,31 +24,31 @@ const DECEPTION_ALERTS = [
 const RISK_INCIDENTS = [
   {
     id: 'INC-2026-041', title: 'Active Lateral Movement — COBALT STRIKE',
-    asset: 'DC-01', source: 'SENTINEL-CORRELATOR',
+    asset: 'DC-01', source: 'QUILL-CORRELATOR',
     loss_per_hr: 88400, likelihood: 0.97, severity: 'Critical',
     mitre: 'T1021', time: '22:14:11',
   },
   {
     id: 'INC-2026-039', title: 'Ransomware Precursor — Shadow Copy Delete',
-    asset: 'MFG-PROD-01', source: 'SENTINEL-TRIAGE',
+    asset: 'MFG-PROD-01', source: 'QUILL-TRIAGE',
     loss_per_hr: 62000, likelihood: 0.88, severity: 'Critical',
     mitre: 'T1490', time: '21:58:33',
   },
   {
     id: 'INC-2026-037', title: 'Supply Chain: Log4Shell in MFG Dependency',
-    asset: 'MFG-WS-01', source: 'SENTINEL-VANGUARD',
+    asset: 'MFG-WS-01', source: 'QUILL-VANGUARD',
     loss_per_hr: 31200, likelihood: 0.75, severity: 'High',
     mitre: 'CVE-2021-44228', time: '21:42:55',
   },
   {
     id: 'INC-2026-038', title: 'MFA Fatigue Attack — jdoe Account',
-    asset: 'AD-Controller', source: 'SENTINEL-GATEKEEPER',
+    asset: 'AD-Controller', source: 'QUILL-GATEKEEPER',
     loss_per_hr: 18700, likelihood: 0.82, severity: 'High',
     mitre: 'T1621', time: '21:50:14',
   },
   {
     id: 'INC-2026-035', title: 'DNS Tunneling — Suspicious Beacon',
-    asset: '10.0.0.22', source: 'SENTINEL-TRAFFIC-SIEVE',
+    asset: '10.0.0.22', source: 'GAGGLE-TRAFFIC-SIEVE',
     loss_per_hr: 5200, likelihood: 0.59, severity: 'Medium',
     mitre: 'T1071.004', time: '21:22:30',
   },
@@ -75,7 +75,7 @@ function DeceptionBanner({ alert }) {
         <div className="flex items-center gap-2">
           <Skull size={16} style={{ color: '#D84C7F' }} className="animate-blink" />
           <span className="text-xs font-bold terminal tracking-widest" style={{ color: '#D84C7F' }}>
-            SENTINEL-MIRAGE DECEPTION HIT
+            QUILL-MIRAGE DECEPTION HIT
           </span>
           <span className="text-xs terminal px-2 py-0.5 rounded-full font-bold"
             style={{ background: '#EF444422', color: '#EF4444', border: '1px solid #EF444444' }}>
@@ -278,7 +278,7 @@ export default function ThreatTelemetry() {
             <div className="rounded-lg p-3 mt-1"
               style={{ background: '#111827', border: '1px solid #1F2937' }}>
               <p className="text-xs terminal" style={{ color: '#4B5563', lineHeight: 1.7 }}>
-                SENTINEL-MIRAGE deploys silent decoy assets across the OT environment.
+                QUILL-MIRAGE deploys silent decoy assets across the OT environment.
                 Any interaction with a decoy is a <span style={{ color: '#D84C7F' }}>zero-false-positive</span> signal —
                 legitimate users never touch fake PLCs or honeypot shares.
               </p>

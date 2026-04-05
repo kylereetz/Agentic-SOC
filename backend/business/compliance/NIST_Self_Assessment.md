@@ -14,7 +14,7 @@
 
 ## 3. System and Information Integrity (3.14)
 - **3.14.1 Identify, report, and correct information and system flaws in a timely manner**: Using the integrated `Patch Pilot` and `Responder` agents, the RCA lab continuously remediates newly discovered common vulnerabilities and exposures (CVEs).
-- **3.14.6 Monitor organizational systems including inbound and outbound communications traffic, to detect attacks and indicators of potential attacks**: Conducted continuously via `SENTINEL-SCOUT` passive sniffing and active vulnerability assessments.
+- **3.14.6 Monitor organizational systems including inbound and outbound communications traffic, to detect attacks and indicators of potential attacks**: Conducted continuously via `GAGGLE-SCOUT` passive sniffing and active vulnerability assessments.
 
 ## Conclusion
 The RCA lab currently implements automated controls satisfying key elements of NIST 800-171. Our ongoing continuous monitoring ensures the platform remains aligned with DIB (Defense Industrial Base) security expectations.

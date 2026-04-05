@@ -11,12 +11,12 @@ Within the RCA Agentic SOC, we have integrated these capabilities natively acros
 
 Instead of routing every detection to a human analyst for manual CLI intervention, RCA deploys a suite of specialist "Action" agents that act as the network's white blood cells.
 
-### SENTINEL-RESPONDER (Automated Containment)
-This agent performs machine-speed active defense. By integrating directly into network switches and EDR platforms, `SENTINEL-RESPONDER` dynamically blocks actions based on Risk Scoring Logic. 
-*   **The Dead-Man's Switch**: Recognizing the danger of an AI cutting off critical connectivity by mistake, the Responder features an autonomous self-healing constraint. If the Responder agent loses heartbeat connection with the `SENTINEL-MANAGER` orchestrator, it automatically reverts all recent defensive isolations it performed, prioritizing physical factory uptime over unverified security lockdowns.
+### WEDGE-RESPONDER (Automated Containment)
+This agent performs machine-speed active defense. By integrating directly into network switches and EDR platforms, `WEDGE-RESPONDER` dynamically blocks actions based on Risk Scoring Logic. 
+*   **The Dead-Man's Switch**: Recognizing the danger of an AI cutting off critical connectivity by mistake, the Responder features an autonomous self-healing constraint. If the Responder agent loses heartbeat connection with the `SYRINX-MANAGER` orchestrator, it automatically reverts all recent defensive isolations it performed, prioritizing physical factory uptime over unverified security lockdowns.
 
-### SENTINEL-PATCHPILOT (Vulnerability Remediation)
-A dedicated vulnerability remediation specialist. When weaknesses are found (such as missing patches or misconfigurations during standard `SENTINEL-SCOUT` discovery scans), this agent dynamically context-writes idempotent fix scripts and deployment manifests, prepping the environment to "heal" vulnerabilities autonomously rather than relying on patch cycles.
+### WEDGE-PATCHPILOT (Vulnerability Remediation)
+A dedicated vulnerability remediation specialist. When weaknesses are found (such as missing patches or misconfigurations during standard `GAGGLE-SCOUT` discovery scans), this agent dynamically context-writes idempotent fix scripts and deployment manifests, prepping the environment to "heal" vulnerabilities autonomously rather than relying on patch cycles.
 
 ---
 
@@ -32,11 +32,11 @@ RCA solves this using **Formal Policy Verification**.
 
 ---
 
-## 3. The Self-Healing Hive Mind (`SENTINEL-WATCHDOG`)
+## 3. The Self-Healing Hive Mind (`GAGGLE-WATCHDOG`)
 
 An autonomous immune system must be capable of inspecting its own health. What happens if the AI itself hallucinates or becomes degraded?
 
-*   **Self-Healing Hive**: `SENTINEL-WATCHDOG` operates as the internal heartbeat and sanity monitor. It continuously audits the other 23 agents for systemic lag, hallucination deviations, or token-usage spikes. 
+*   **Self-Healing Hive**: `GAGGLE-WATCHDOG` operates as the internal heartbeat and sanity monitor. It continuously audits the other 23 agents for systemic lag, hallucination deviations, or token-usage spikes. 
 *   **Automatic Quarantine**: If an agent starts producing unverified logic paths or encounters multiple sequential tool errors (triggering the "circuit breaker"), the system will autonomously quarantine the offending logic stream and escalate to human engineering. 
 
 ---

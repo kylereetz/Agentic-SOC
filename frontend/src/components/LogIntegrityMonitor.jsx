@@ -71,7 +71,7 @@ export default function LogIntegrityMonitor() {
           </span>
           <span className="text-xs terminal px-2 py-0.5 rounded-full"
             style={{ background: '#88C05720', color: '#88C057', border: '1px solid #88C05740' }}>
-            SENTINEL-LOG-GUARDIAN
+            GAGGLE-LOG-GUARDIAN
           </span>
         </div>
       </div>

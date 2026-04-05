@@ -1,5 +1,5 @@
 """
-SENTINEL-MIRAGE: Deception & Decoy Operations Specialist.
+QUILL-MIRAGE: Deception & Decoy Operations Specialist.
 Deploys and monitors lightweight honeypots and decoy credentials.
 
 IQ Capabilities:
@@ -45,8 +45,8 @@ class MirageAgent:
 
         self.active_lures: Dict[str, Dict[str, Any]] = {}
         
-        # [IQ] Doctrine Reference: SENTINEL-MIRAGE
-        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_sentinel_mirage.md')}")
+        # [IQ] Doctrine Reference: QUILL-MIRAGE
+        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_quill_mirage.md')}")
 
     def _load_rules(self, path: str) -> Dict[str, Any]:
         try:

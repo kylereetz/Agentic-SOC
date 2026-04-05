@@ -18,7 +18,7 @@ class ModelRegistry:
 
     @staticmethod
     def get_reasoning_model(model_id: str = "llama3.1:8b") -> OpenAIModel:
-        """High-fidelity head for the SENTINEL-INVESTIGATOR."""
+        """High-fidelity head for the QUILL-INVESTIGATOR."""
         logger.info(f"[Registry] Initializing Reasoning Head: {model_id} (num_ctx={NUM_CTX})")
         return OpenAIModel(
             model_name=model_id,

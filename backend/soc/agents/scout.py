@@ -184,8 +184,8 @@ class ScoutAgent:
         self.bus = EventBus("discovery_events")
         
         
-        # [IQ] Doctrine Reference: SENTINEL-SCOUT
-        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_sentinel_scout.md')}")
+        # [IQ] Doctrine Reference: GAGGLE-SCOUT
+        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_gaggle_scout.md')}")
         
         self.previous_inventory: Dict[str, Dict[str, str]] = {}
 

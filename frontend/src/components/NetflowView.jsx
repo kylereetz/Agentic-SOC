@@ -71,7 +71,7 @@ export default function NetflowView() {
           </span>
           <span className="text-xs terminal px-2 py-0.5 rounded-full"
             style={{ background: '#3B6FE320', color: '#3B6FE3', border: '1px solid #3B6FE340' }}>
-            SENTINEL-TRAFFIC-SIEVE
+            GAGGLE-TRAFFIC-SIEVE
           </span>
         </div>
         

@@ -1,5 +1,5 @@
 """
-SENTINEL-CORRELATOR: Intelligent Incident Grouping Engine.
+QUILL-CORRELATOR: Intelligent Incident Grouping Engine.
 Detects multi-stage attack chains across distributed alerts using Graph Mathematics.
 
 Features:

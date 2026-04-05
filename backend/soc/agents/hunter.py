@@ -1,5 +1,5 @@
 """
-SENTINEL-HUNTER: Proactive Threat Hunter.
+QUILL-HUNTER: Proactive Threat Hunter.
 Actively combs through shared RAG memory for hidden APTs.
 
 IQ Capabilities:

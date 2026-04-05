@@ -9,6 +9,7 @@ import logging
 import os
 import re
 import secrets
+import sqlite3
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
@@ -151,20 +152,20 @@ def check_role(allowed_roles: List[str]):
 
 # ── PATHS ───────────────────────────────────────────────────────────────────
 INVENTORY_DIR = get_soc_path("reports", "inventory")
-TRIAGE_LOG = get_soc_path("reports", "triage", "triage_alerts.json")
+TRIAGE_LOG = get_soc_path("reports", "triage", "triage_alerts.db")
 PENDING_ACTIONS = get_soc_path("reports", "incidents", "pending_actions.json")
 CHITCHAT_LOG_DIR = get_soc_path("reports", "chitchat")
 
 # ── AGENT ROSTER ────────────────────────────────────────────────────────────
 AGENT_ROSTER = [
-    { "id": "SENTINEL-ORCHESTRATOR", "role": "Orchestrator",           "color": "#D84C7F", "status": "ACTIVE",  "model_tier": "Reasoning (L3.1 8B)", "task": "Routing pending alerts", "success": 98 },
-    { "id": "SENTINEL-TRIAGE",       "role": "TriageAgent",            "color": "#3B6FE3", "status": "ACTIVE",  "model_tier": "Reasoning (L3.1 8B)", "task": "Classifying anomalies", "success": 92 },
-    { "id": "SENTINEL-CORRELATOR",   "role": "CorrelatorAgent",        "color": "#E5A862", "status": "IDLE",    "model_tier": "Fast (Q2.5 3B)",      "task": "Awaiting linkages", "success": 94 },
-    { "id": "SENTINEL-LIBRARIAN",    "role": "LibrarianAgent",         "color": "#88C057", "status": "ACTIVE",  "model_tier": "Fast (Q2.5 3B)",      "task": "Indexing Vector DB", "success": 100 },
-    { "id": "SENTINEL-HUNTER",       "role": "HunterAgent",            "color": "#D84C7F", "status": "ACTIVE",  "model_tier": "Reasoning (L3.1 8B)", "task": "Executing threat hunt", "success": 87 },
-    { "id": "SENTINEL-RESPONDER",    "role": "ResponderAgent",         "color": "#EF4444", "status": "WAITING", "model_tier": "Reasoning (L3.1 8B)", "task": "Waiting for approval", "success": 100 },
-    { "id": "SENTINEL-GATEKEEPER",   "role": "GatekeeperAgent",        "color": "#E5A862", "status": "ACTIVE",  "model_tier": "Fast (Q2.5 3B)",      "task": "Auditing travel ID", "success": 95 },
-    { "id": "SENTINEL-WATCHDOG",     "role": "WatchdogAgent",          "color": "#EF4444", "status": "ACTIVE",  "model_tier": "Fast (Q2.5 3B)",      "task": "Monitoring hive health", "success": 100 },
+    { "id": "SYRINX-ORCHESTRATOR", "role": "Orchestrator",           "color": "#D84C7F", "status": "ACTIVE",  "model_tier": "Reasoning (L3.1 8B)", "task": "Routing pending alerts", "success": 98 },
+    { "id": "QUILL-TRIAGE",       "role": "TriageAgent",            "color": "#3B6FE3", "status": "ACTIVE",  "model_tier": "Reasoning (L3.1 8B)", "task": "Classifying anomalies", "success": 92 },
+    { "id": "QUILL-CORRELATOR",   "role": "CorrelatorAgent",        "color": "#E5A862", "status": "IDLE",    "model_tier": "Fast (Q2.5 3B)",      "task": "Awaiting linkages", "success": 94 },
+    { "id": "QUILL-LIBRARIAN",    "role": "LibrarianAgent",         "color": "#88C057", "status": "ACTIVE",  "model_tier": "Fast (Q2.5 3B)",      "task": "Indexing Vector DB", "success": 100 },
+    { "id": "QUILL-HUNTER",       "role": "HunterAgent",            "color": "#D84C7F", "status": "ACTIVE",  "model_tier": "Reasoning (L3.1 8B)", "task": "Executing threat hunt", "success": 87 },
+    { "id": "WEDGE-RESPONDER",    "role": "ResponderAgent",         "color": "#EF4444", "status": "WAITING", "model_tier": "Reasoning (L3.1 8B)", "task": "Waiting for approval", "success": 100 },
+    { "id": "QUILL-GATEKEEPER",   "role": "GatekeeperAgent",        "color": "#E5A862", "status": "ACTIVE",  "model_tier": "Fast (Q2.5 3B)",      "task": "Auditing travel ID", "success": 95 },
+    { "id": "GAGGLE-WATCHDOG",     "role": "WatchdogAgent",          "color": "#EF4444", "status": "ACTIVE",  "model_tier": "Fast (Q2.5 3B)",      "task": "Monitoring hive health", "success": 100 },
 ]
 
 # ── ENDPOINTS ───────────────────────────────────────────────────────────────
@@ -228,14 +229,31 @@ async def get_inventory(user: User = Depends(get_current_user)):
 
 @app.get("/alerts")
 async def get_alerts(user: User = Depends(get_current_user)):
-    """Retrieve the cumulative triage alerts log."""
+    """Retrieve the cumulative triage alerts log from SQLite."""
     if not os.path.exists(TRIAGE_LOG):
         return []
     try:
-        with open(TRIAGE_LOG, "r") as fh:
-            return json.load(fh)
+        conn = sqlite3.connect(TRIAGE_LOG)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM alerts ORDER BY timestamp DESC LIMIT 1000")
+        rows = cursor.fetchall()
+        
+        alerts = []
+        for row in rows:
+            d = dict(row)
+            try:
+                d["raw_event"] = json.loads(d.get("raw_event", "{}"))
+            except:
+                d["raw_event"] = {}
+            # Ensure boolean casting
+            d["is_correlated"] = bool(d.get("is_correlated", False))
+            alerts.append(d)
+            
+        conn.close()
+        return alerts
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Error reading alerts: {exc}")
+        raise HTTPException(status_code=500, detail=f"Error reading alerts from DB: {exc}")
 
 @app.get("/pending")
 async def get_pending_actions(user: User = Depends(check_role(["admin", "analyst"]))):
@@ -326,7 +344,7 @@ async def get_topology(current_user: User = Depends(get_current_user)):
 
 @app.get("/api/v1/netflow")
 async def get_netflow(user: User = Depends(get_current_user)):
-    """Retrieve raw netflow telemetry maintained by SENTINEL-TRAFFIC-SIEVE."""
+    """Retrieve raw netflow telemetry maintained by GAGGLE-TRAFFIC-SIEVE."""
     graph_path = get_soc_path("reports", "network_graph.json")
     
     if os.path.exists(graph_path):
@@ -368,7 +386,7 @@ async def get_netflow(user: User = Depends(get_current_user)):
 
 @app.get("/api/v1/log-guardian")
 async def get_log_guardian(user: User = Depends(get_current_user)):
-    """Retrieve realtime LLM parsing stats from SENTINEL-LOG-GUARDIAN."""
+    """Retrieve realtime LLM parsing stats from GAGGLE-LOG-GUARDIAN."""
     stats_path = get_soc_path("reports", "log_guardian_stats.json")
     
     if os.path.exists(stats_path):
@@ -445,7 +463,7 @@ async def chitchat(req: ChitChatRequest, user: User = Depends(get_current_user))
     """[IQ] Route a natural language query to the internal model (ChitChat) with dynamic documentation context."""
     try:
         # 1. Load Agent Ethos (Doctrine)
-        ethos_path = get_soc_path("ethos", "ethos_sentinel_communicator.md")
+        ethos_path = get_soc_path("ethos", "ethos_flyway_communicator.md")
         system_logic = "You are ChitChat (Agentic SOC Communicator). You provide concise, expert SOC analysis and support."
         try:
             if os.path.exists(ethos_path):
@@ -798,7 +816,7 @@ async def get_malware_reports(user: User = Depends(check_role(["admin", "analyst
                 "algorithm":    "SHA-256",
                 "signature":    f"PATH-CERT-{sample_hash[:16].upper()}",
                 "nist_control": "3.14.2",
-                "analyst":      "SENTINEL-MALWARE-PATHOLOGIST",
+                "analyst":      "QUILL-MALWARE-PATHOLOGIST",
                 "seal":         "PATHOLOGY_CERTIFIED",
             },
         }

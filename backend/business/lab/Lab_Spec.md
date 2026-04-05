@@ -10,7 +10,7 @@ The Reetz Cyber Automation (RCA) internal lab network ensures all SOC agents and
   - 3x simulated workstation endpoints for testing brute-force anomalies and malware propagation logic.
 - **VLAN 20 (OT Emulation)**:
   - 2x Siemens S7-1200 or OpenPLC simulated endpoints mapped for Modbus/TCP testing.
-  - Physical or emulated SCADA HMI for validating `SENTINEL-TRAFFIC-SIEVE` behavior alongside safe discovery scanning without PLC jitter.
+  - Physical or emulated SCADA HMI for validating `GAGGLE-TRAFFIC-SIEVE` behavior alongside safe discovery scanning without PLC jitter.
 - **VLAN 30 (RCA Staging)**:
   - Host server for RCA Docker containers.
   - Hosts the underlying file-based secure event bus and API interface.

@@ -44,22 +44,22 @@ const CONTROL_FAMILIES = [
 
 const AUDITOR_FEED = [
   { id: 'AU-001', control: '3.3.1', family: 'AU', status: 'fail',  finding: 'Log retention for OT network does not meet 90-day requirement.', ts: '22:28:11' },
-  { id: 'AU-002', control: '3.14.6', family: 'SI', status: 'pass', finding: 'Continuous monitoring via SENTINEL-TRIAGE verified.', ts: '22:27:44' },
+  { id: 'AU-002', control: '3.14.6', family: 'SI', status: 'pass', finding: 'Continuous monitoring via QUILL-TRIAGE verified.', ts: '22:27:44' },
   { id: 'AU-003', control: '3.1.2',  family: 'AC', status: 'pass', finding: 'Least-privilege enforcement confirmed on AD OU=Manufacturing.', ts: '22:26:59' },
   { id: 'AU-004', control: '3.13.5', family: 'SC', status: 'warn', finding: 'DMZ-to-OT firewall ruleset has 3 overly permissive allow rules.', ts: '22:25:33' },
   { id: 'AU-005', control: '3.7.4',  family: 'MA', status: 'fail', finding: 'Unauthorized maintenance on PLC-PROD-03 — no ticket found.', ts: '22:24:01' },
-  { id: 'AU-006', control: '3.13.1', family: 'SC', status: 'pass', finding: 'Network segmentation between IT/OT verified via SENTINEL-SCOUT.', ts: '22:22:18' },
+  { id: 'AU-006', control: '3.13.1', family: 'SC', status: 'pass', finding: 'Network segmentation between IT/OT verified via GAGGLE-SCOUT.', ts: '22:22:18' },
 ];
 
 const NARRATOR_SUMMARY = `Executive Summary — Week of March 16, 2026
 
 The Security Operations Center has maintained continuous surveillance across all Primary and Secondary AI agents with an overall uptime of 99.6%.
 
-During this reporting period, the most critical incident involves an active COBALT STRIKE intrusion targeting DC-01 (INC-2026-041). SENTINEL-INVESTIGATOR has completed Chain-of-Thought analysis with 95% confidence, attributing the attack to TTPs consistent with APT29. Estimated business risk: $88,400 per hour of dwell time.
+During this reporting period, the most critical incident involves an active COBALT STRIKE intrusion targeting DC-01 (INC-2026-041). QUILL-INVESTIGATOR has completed Chain-of-Thought analysis with 95% confidence, attributing the attack to TTPs consistent with APT29. Estimated business risk: $88,400 per hour of dwell time.
 
 CMMC 2.0 Level 3 compliance stands at 79%, a slight decrease of -1% from last week, primarily driven by new findings in System & Communications Protection (SC). Three corrective actions are recommended (see Governor Control Feed).
 
-Supply chain posture remains GREEN. SENTINEL-VANGUARD has scanned 14 new SBOM submissions this week with zero critical zero-day findings.
+Supply chain posture remains GREEN. QUILL-VANGUARD has scanned 14 new SBOM submissions this week with zero critical zero-day findings.
 
 RECOMMENDED BOARD ACTIONS:
 1. Approve immediate isolation of DC-01 and Switch-04 (HITL pending).
@@ -169,7 +169,7 @@ export default function GovernanceDashboard() {
           GOVERNANCE & COMPLIANCE
         </span>
         <span className="text-xs terminal ml-2" style={{ color: '#6B7280' }}>
-          SENTINEL-GOVERNOR · SENTINEL-COMMUNICATOR
+          FLYWAY-GOVERNOR · FLYWAY-COMMUNICATOR
         </span>
       </div>
 
@@ -247,7 +247,7 @@ export default function GovernanceDashboard() {
               style={{ borderColor: '#1F2937' }}>
               <FileText size={12} style={{ color: '#A78BFA' }} />
               <span className="text-xs terminal font-bold" style={{ color: '#6B7280' }}>
-                SENTINEL-COMMUNICATOR — EXECUTIVE SUMMARY
+                FLYWAY-COMMUNICATOR — EXECUTIVE SUMMARY
               </span>
               <span className="ml-auto text-xs terminal"
                 style={{ color: '#A78BFA' }}>AI-GENERATED</span>

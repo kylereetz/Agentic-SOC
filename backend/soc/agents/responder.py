@@ -51,9 +51,9 @@ class ResponderAgent:
         self.bus = EventBus("triage_alerts")
         self.remediation_history: List[Dict[str, Any]] = []
         
-        # [IQ] Doctrine Reference: SENTINEL-RESPONDER
+        # [IQ] Doctrine Reference: WEDGE-RESPONDER
         from soc.bootstrap import get_soc_path
-        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_sentinel_responder.md')}")
+        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_wedge_responder.md')}")
         # [SQ] Internal Dispatch Queue for non-blocking operations
         self.dispatch_queue: asyncio.Queue = asyncio.Queue()
         self.is_running = False

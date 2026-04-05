@@ -1,0 +1,15 @@
+{
+  "172.18.0.1": {
+    "ip_address": "172.18.0.1",
+    "mac_address": "fa:30:73:08:b5:33",
+    "discovery_method": "passive_sniff",
+    "pqc_vulnerable": false,
+    "legacy_ciphers_used": [],
+    "osint": {
+      "ip_address": "172.18.0.1",
+      "malicious_score": 0,
+      "asn": "AS15169 Google LLC",
+      "safe_summary": "**Summary:**\n\nNo Indicators of Compromise (IOCs) were detected in the provided text.\n\nThe system is operating within normal parameters with no signs of malicious activity."
+    }
+  }
+}

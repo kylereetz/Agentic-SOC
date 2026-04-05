@@ -160,7 +160,7 @@ export default function PermissionsView() {
             PERMISSIONS & IDENTITY
           </span>
           <span className="text-xs terminal ml-1" style={{ color: '#6B7280' }}>
-            SENTINEL-GATEKEEPER · AC / IA NIST 800-171
+            QUILL-GATEKEEPER · AC / IA NIST 800-171
           </span>
         </div>
 
@@ -336,7 +336,7 @@ export default function PermissionsView() {
             </div>
             <p className="text-xs mb-5" style={{ color: '#4B5563', lineHeight: 1.7 }}>
               The following NIST 800-171 / CMMC controls are satisfied or partially satisfied by the
-              SENTINEL-GATEKEEPER agent, this RBAC system, and the JWT authentication layer.
+              QUILL-GATEKEEPER agent, this RBAC system, and the JWT authentication layer.
               Warnings indicate controls that require additional configuration outside this dashboard.
             </p>
 
@@ -412,7 +412,7 @@ export default function PermissionsView() {
                 { label: 'AUTH METHOD',      value: 'JWT / HS256', color: '#3B6FE3' },
                 { label: 'TOKEN LIFETIME',   value: '8 hours (480 min)', color: '#9CA3AF' },
                 { label: 'SESSION EXPIRES',  value: tokenExpiry ? tokenExpiry.toLocaleString() : 'Unknown', color: '#E5A862' },
-                { label: 'IDENTITY BROKER',  value: 'SENTINEL-GATEKEEPER', color: '#D84C7F' },
+                { label: 'IDENTITY BROKER',  value: 'QUILL-GATEKEEPER', color: '#D84C7F' },
                 { label: 'ENCRYPTION',       value: 'TLS (local) · Vault-backed secret key', color: '#88C057' },
               ].map(({ label, value, color }) => (
                 <div key={label} className="flex items-center justify-between px-4 py-3 rounded-lg"
@@ -425,10 +425,10 @@ export default function PermissionsView() {
 
             <div className="mt-6 rounded-lg p-4 neon-border"
               style={{ background: '#D84C7F08', border: '1px solid #D84C7F33' }}>
-              <p className="text-xs terminal font-bold mb-2" style={{ color: '#D84C7F' }}>SENTINEL-GATEKEEPER STATUS</p>
+              <p className="text-xs terminal font-bold mb-2" style={{ color: '#D84C7F' }}>QUILL-GATEKEEPER STATUS</p>
               <p className="text-xs" style={{ color: '#9CA3AF', lineHeight: 1.7 }}>
                 All sessions are cryptographically signed and validated on every API request.
-                SENTINEL-GATEKEEPER monitors for anomalous access patterns, rotates Non-Human
+                QUILL-GATEKEEPER monitors for anomalous access patterns, rotates Non-Human
                 Identity (NHI) credentials, and enforces least-privilege on all agent-to-agent
                 communication within the Service Mesh.
               </p>

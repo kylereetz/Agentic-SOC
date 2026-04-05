@@ -1,5 +1,5 @@
 """
-SENTINEL-TOPOLOGY: The Asset Relationship Graph.
+GAGGLE-TOPOLOGY: The Asset Relationship Graph.
 Tracks User -> Host, Host -> IP, and Host -> Service mappings.
 
 # Satisfies NIST 800-171 Rev 3:
@@ -43,8 +43,8 @@ class TopologyMapper:
         self.lock = asyncio.Lock()
         self.is_running = False
         
-        # [IQ] Doctrine Reference: SENTINEL-TOPOLOGY
-        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_sentinel_topology.md')}")
+        # [IQ] Doctrine Reference: GAGGLE-TOPOLOGY
+        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_gaggle_topology.md')}")
         
         self._load_topology()
 

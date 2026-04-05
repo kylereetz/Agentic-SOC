@@ -189,7 +189,7 @@ export default function HostDrilldownPanel() {
                {isHighRisk && (
                   <button className="w-full flex items-center justify-center gap-2 py-2.5 rounded hover:brightness-125 transition-all text-xs terminal font-bold"
                           style={{ background: '#EF444422', color: '#EF4444', border: '1px solid #EF444433' }}>
-                    Contain Host (SENTINEL-RESPONDER)
+                    Contain Host (WEDGE-RESPONDER)
                   </button>
                )}
             </div>

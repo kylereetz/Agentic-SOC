@@ -267,7 +267,7 @@ export default function CaseHistoryView() {
           </span>
           <span className="text-[10px] terminal px-2 py-0.5 rounded-full"
             style={{ background: '#D84C7F18', color: '#D84C7F', border: '1px solid #D84C7F33' }}>
-            SENTINEL-HISTORIAN
+            FLYWAY-HISTORIAN
           </span>
         </div>
         <button
@@ -371,7 +371,7 @@ export default function CaseHistoryView() {
               <div className="flex items-center justify-center h-48 gap-3">
                 <Loader2 className="animate-spin" size={20} style={{ color: '#D84C7F' }} />
                 <p className="text-xs terminal" style={{ color: '#D84C7F' }}>
-                  Retrieving case archive from SENTINEL-HISTORIAN…
+                  Retrieving case archive from FLYWAY-HISTORIAN…
                 </p>
               </div>
             )}
@@ -426,7 +426,7 @@ export default function CaseHistoryView() {
                 <div className="text-center">
                   <p className="h-title" style={{ color: '#6B7280' }}>No Dormant Entities Detected</p>
                   <p className="h-meta mt-1" style={{ color: '#374151' }}>
-                    SENTINEL-HISTORIAN is monitoring all known entities.<br />
+                    FLYWAY-HISTORIAN is monitoring all known entities.<br />
                     Alerts fire when an entity reappears after {'>'}30 days of silence.
                   </p>
                 </div>

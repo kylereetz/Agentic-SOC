@@ -7,5 +7,5 @@
   "updated_at": "2026-03-18T01:45:00Z",
   "summary": "Detected Cobalt Strike beaconing patterns from Host-DX9 matching Alpha-7 campaign profile.",
   "entities": ["Host-DX9", "192.168.1.105"],
-  "assigned_agent": "SENTINEL-INVESTIGATOR"
+  "assigned_agent": "QUILL-INVESTIGATOR"
 }

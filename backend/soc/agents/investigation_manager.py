@@ -62,7 +62,7 @@ class CaseRecord:
     mitre_ttp: str = "None"
     nist_control: str = ""
     alert_details: Dict[str, Any] = field(default_factory=dict)
-    assigned_agent: str = "SENTINEL-GENERAL"
+    assigned_agent: str = "QUILL-INVESTIGATOR"
     evidence_ids: List[str] = field(default_factory=list)
     reasoning_steps: List[str] = field(default_factory=list)
     actions_taken: List[str] = field(default_factory=list)

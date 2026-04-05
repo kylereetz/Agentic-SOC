@@ -145,7 +145,7 @@ def patch(
     pilot = PatchPilotAgent()
 
     # Draft from triage alerts
-    alerts_path = alerts or os.path.join("soc", "reports", "triage_alerts.json")
+    alerts_path = alerts or os.path.join("soc", "reports", "triage", "triage_alerts.db")
     if os.path.exists(alerts_path):
         pilot.draft_from_alerts(alerts_path)
 

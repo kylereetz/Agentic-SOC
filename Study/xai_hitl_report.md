@@ -12,7 +12,7 @@ At Reetz Cyber Automation (RCA), we recognize that autonomous defense cannot suc
 While traditional XAI features like LIME and SHAP are useful for standard machine learning, the RCA SOC implements XAI directly into the cognitive processing of its Large Language Models. 
 
 ### Native Chain-of-Thought (CoT) Telemetry
-The core of RCA's explainability is the **ReAct (Reason → Act → Observe) Loop**, executed primarily by the `SENTINEL-INVESTIGATOR` agent. 
+The core of RCA's explainability is the **ReAct (Reason → Act → Observe) Loop**, executed primarily by the `QUILL-INVESTIGATOR` agent. 
 
 *   **Transparent Reasoning Iterations:** Instead of merely outputting a "malicious" flag, the Investigator agent evaluates alerts in a step-by-step fashion. Every THOUGHT, ACTION, and OBSERVATION is packaged as a distinct JSON object and serialized to the `investigation_reasoning` event bus. 
 *   **The CoT Explorer:** The Aegis Dashboard features a dedicated **CoT (Chain-of-Thought) Explorer Tab**. Human analysts can literally watch the AI's "thought process" in real-time, including which internal tools it called (e.g., `query_siem`, `analyse_process`), the exact data it retrieved, and the logical leaps it made to arrive at a conclusion.
@@ -30,12 +30,12 @@ The RCA SOC uses a "Cost-Function Weighted Policy Logic" combined with Epistemic
 
 ### "The Human Apex" (Rule of Zero)
 The foundational rule of the RCA hive mind is that the AI does not have unilateral authority to disrupt the business. 
-*   **Action Gating:** High severity containment actions (such as isolating a PLC/HMI or shutting down a switch port) bypass automated execution. Instead, agents like the `SENTINEL-RESPONDER` issue a `draft_containment` state marked as **PENDING_APPROVAL**. 
+*   **Action Gating:** High severity containment actions (such as isolating a PLC/HMI or shutting down a switch port) bypass automated execution. Instead, agents like the `WEDGE-RESPONDER` issue a `draft_containment` state marked as **PENDING_APPROVAL**. 
 *   **The HITL Queue:** In the GUI, these actions fall into the **HITL Queue Tab**. The security operator is presented with the drafted remediation script, a Blast Radius Risk Assessment (e.g., "Safety Warning: This will disconnect the Primary Domain Controller"), and a simple Approve/Reject toggle.
 
 ### Multi-Agent Consensus and Epistemic Doubt
 Before a human is even bothered, the SOC employs **Multi-Agent Consensus**. 
-*   A critical finding requires two distinct specialist personas (e.g., `SENTINEL-NETWORK` and `SENTINEL-ENDPOINT-ANALYST`) to mathematically agree on the threat vector. 
+*   A critical finding requires two distinct specialist personas (e.g., `SENTINEL-NETWORK` and `QUILL-ENDPOINT-ANALYST`) to mathematically agree on the threat vector. 
 *   If the AI encounters ambiguity—such as conflicting telemetry or an inability to corroborate a single source (known internally as `[PENDING_SOURCE_CORROBORATION]`)—the system explicitly refuses to guess. 
 
 ### Hallucination Protection / Deadlock Prevention

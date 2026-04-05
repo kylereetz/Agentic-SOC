@@ -369,7 +369,7 @@ export default function ForensicsPanel() {
           </span>
           <span className="text-[10px] terminal px-2 py-0.5 rounded-full"
                 style={{ background: '#D84C7F18', color: '#D84C7F', border: '1px solid #D84C7F33' }}>
-            SENTINEL-FORENSICS
+            QUILL-FORENSICS
           </span>
           {isMock && (
             <span className="text-[10px] terminal px-2 py-0.5 rounded-full"
@@ -434,7 +434,7 @@ export default function ForensicsPanel() {
         <div className="flex-1 flex items-center justify-center gap-3">
           <Loader2 className="animate-spin" size={20} style={{ color: '#D84C7F' }} />
           <p className="text-xs terminal" style={{ color: '#D84C7F' }}>
-            Retrieving forensic artifacts from SENTINEL-FORENSICS…
+            Retrieving forensic artifacts from QUILL-FORENSICS…
           </p>
         </div>
       ) : (

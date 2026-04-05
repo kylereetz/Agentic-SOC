@@ -1,5 +1,5 @@
 """
-SENTINEL-LOG-GUARDIAN: Pydantic AI Edition.
+GAGGLE-LOG-GUARDIAN: Pydantic AI Edition.
 
 This agent acts as the 'Syntactic Head' for log normalization. It uses 
 NLP-driven guidance to fix "broken" logs and map them to OCSF schemas.

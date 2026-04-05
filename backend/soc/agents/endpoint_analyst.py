@@ -1,5 +1,5 @@
 """
-SENTINEL-ENDPOINT-ANALYST
+QUILL-ENDPOINT-ANALYST
 Dedicated agent for real-time host execution monitoring (Sysmon EID 1, EID 8, etc).
 """
 import asyncio
@@ -28,7 +28,7 @@ class EndpointAnalystAgent:
         self.in_bus = EventBus("endpoint_telemetry")
         self.out_bus = EventBus("triage_alerts")
         self.is_running = False
-        self.agent_id = "SENTINEL-ENDPOINT-ANALYST"
+        self.agent_id = "QUILL-ENDPOINT-ANALYST"
         
         self.llm_client = LLMClient()
         

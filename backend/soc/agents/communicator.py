@@ -1,5 +1,5 @@
 """
-SENTINEL-COMMUNICATOR: Pydantic AI Edition.
+FLYWAY-COMMUNICATOR: Pydantic AI Edition.
 
 This agent acts as the 'Syntactic Head' of the SOC. It transforms technical
 investigation conclusions into structured executive reports (Tri-Factor Report).
@@ -44,7 +44,7 @@ class CommunicatorDeps:
 # ---------------------------------------------------------------------------
 class CommunicatorAgent:
     def __init__(self):
-        self.agent_id = "SENTINEL-COMMUNICATOR"
+        self.agent_id = "FLYWAY-COMMUNICATOR"
         self.in_bus = EventBus("investigation_reasoning")
         self.out_bus = EventBus("executive_reports")
         self.is_running = False
@@ -63,13 +63,13 @@ class CommunicatorAgent:
         self._load_ethos()
 
     def _load_ethos(self):
-        ethos_path = get_soc_path("ethos", "ethos_sentinel_communicator.md")
+        ethos_path = get_soc_path("ethos", "ethos_flyway_communicator.md")
         try:
             with open(ethos_path, "r") as f:
                 self.ethos_content = f.read().strip()
                 logger.info(f"Loaded doctrine from {ethos_path}")
         except Exception:
-            self.ethos_content = "You are SENTINEL-COMMUNICATOR. You handle executive reporting and risk quantification."
+            self.ethos_content = "You are FLYWAY-COMMUNICATOR. You handle executive reporting and risk quantification."
             logger.warning(f"Ethos not found at {ethos_path}. Using default.")
 
     async def _process_event(self, event: Dict[str, Any]):

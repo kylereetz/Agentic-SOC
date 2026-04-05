@@ -1,5 +1,5 @@
 """
-SENTINEL-TRAFFIC-SIEVE: Netflow Analysis & Graph-based Exfiltration Detection.
+GAGGLE-TRAFFIC-SIEVE: Netflow Analysis & Graph-based Exfiltration Detection.
 Identifies anomalous paths and deviations in structural edge formations.
 
 IQ Capabilities:

@@ -1,5 +1,5 @@
 """
-SENTINEL-RED: Agent-on-Agent Auditing & Adversary Simulation.
+QUILL-RED: Agent-on-Agent Auditing & Adversary Simulation.
 Continuously attempts to subvert or evade the Blue Team pipeline.
 
 IQ Capabilities:
@@ -38,8 +38,8 @@ class RedTeamAgent:
         self.injection_bus = EventBus("discovery_events")
         self.is_running = False
         
-        # [IQ] Doctrine Reference: SENTINEL-RED
-        logger.warning(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_sentinel_red.md')}")
+        # [IQ] Doctrine Reference: QUILL-RED
+        logger.warning(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_quill_red.md')}")
         
         # Test Networks - Guaranteed not to intersect with production OT routing
         self.test_subnets = ["192.0.2.100", "198.51.100.55", "203.0.113.88"]
@@ -95,7 +95,7 @@ class RedTeamAgent:
     async def run(self):
         """Main evaluation loop."""
         self.is_running = True
-        logger.warning("[EQ] SENTINEL-RED Team Auditor online. Commencing continuous evaluation operations.")
+        logger.warning("[EQ] QUILL-RED Team Auditor online. Commencing continuous evaluation operations.")
         
         while self.is_running:
             # Wait between 30 to 120 seconds between simulated attacks

@@ -147,7 +147,7 @@ class OrchestratorAgent:
                 await asyncio.sleep(1)
 
     async def _hand_off_to_remediation(self, case_id: str, alert: Dict[str, Any], memory):
-        """[VQ] Final collective hand-off to SENTINEL-FIX."""
+        """[VQ] Final collective hand-off to WEDGE-RESPONDER."""
         logger.info(f"[{case_id}] [SYNC] Consensus reached. Routing to topic_remediation...")
         
         # Merge finding context

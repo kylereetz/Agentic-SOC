@@ -22,27 +22,32 @@ The Reetz Cyber Automation (RCA) Agentic SOC architecture circumvents this via a
 The primary defense mechanism for SSD longevity in the Sentinel framework is the **EventBus** abstraction limit.
 
 * **The EventBus:** Raw telemetry (incoming SIEM logs, EDR feeds) does not write directly to disk. It flows into high-speed, asynchronous memory queues. 
-* **The Dam (`SENTINEL-TRIAGE`):** The Triage Agent acts as the first line of defense. It evaluates events in-memory. If an event is classified as benign "INFO" noise, it is routed to a Dead-Letter Queue (DLQ) and permanently discarded.
+* **The Dam (`QUILL-TRIAGE`):** The Triage Agent acts as the first line of defense. It evaluates events in-memory. If an event is classified as benign "INFO" noise, it is routed to a Dead-Letter Queue (DLQ) and permanently discarded.
 * **The Result:** Only high-fidelity `WARNING` and `CRITICAL` findings—events deemed legitimate security concerns—actually reach the NVMe/SSD physical storage layer via the `InvestigationManager`. You drop gigabytes of noise before it ever touches flash memory.
 
 ---
 
-## 3. Bounded JSON Logging
+## 3. The End of JSON Flat Files: SQLite Telemetry
 
-Even with Triage dropping noise, storing alerts as raw JSON on disk can lead to unbounded growth. The RCA architecture guards against log-bloat using bounded rolling files.
+Storing raw JSON alerts on disk guarantees unbounded growth, massive SSD write amplification, and incredibly poor query performance for intelligence agents like `Quill`. 
 
-For example, the primary localized log for the Triage engine `triage_alerts.json` is explicitly capped at a rolling threshold of **1,000 alerts**. When alert 1,001 arrives, the oldest is silently purged. This ensures the footprint of standard JSON logs remains statically bounded rather than growing exponentially over the span of weeks.
+To solve this, the Syrinx framework **deprecates flat JSON logging**. Instead of dumping alerts to `triage_alerts.json`, all telemetry explicitly writes directly into structured SQLite databases. This transition ensures compliance with NIST 800-171 by retaining millions of long-term forensic logs without breaking the hardware.
+
+### The In-Memory Batching Rule
+To prevent hardware wear while guaranteeing crash-resilience, the `Gaggle` agents rely on an asynchronous Time/Count buffer explicitly mimicking enterprise SIEM logical forwarders. Events are batched in motherboard RAM and flushed to the SQLite disk only when:
+1. **10,000 alerts accumulate directly in memory**, or
+2. **60 seconds have elapsed** since the last commit.
 
 ---
 
 ## 4. SQLite "WAL Mode" and Mitigation of Write Wear
 
-The RCA architecture uses SQLite to manage the local states of investigations (via the `InvestigationManager`) and the vector embeddings for cross-case semantic retrieval (via `SENTINEL-LIBRARIAN`).
+The Syrinx architecture uses SQLite not just for telemetry logging, but also to manage the local states of investigations (via the `InvestigationManager`) and the vector embeddings for cross-case semantic retrieval (via `QUILL-LIBRARIAN`).
 
-To prevent the SSD wear described in Section 1, SQLite is explicitly instantiated using `PRAGMA journal_mode=WAL` (Write-Ahead-Log).
+To physically prevent the SSD wear described in Section 1, every SQLite instance is explicitly instantiated using `PRAGMA journal_mode=WAL` (Write-Ahead-Log).
 
 * **Standard Rollback Journals:** Write data, wait, fail, revert, overwrite. Extremely harsh on flash life.
-* **WAL Mode:** Appends transactions sequentially to a `.wal` file. Operations are later check-pointed heavily in memory. SSD flash controllers heavily favor sequential writes, allowing them to intelligently batch data and drastically reduce the baseline wear on the NAND flash.
+* **WAL Mode:** Appends transactions sequentially to a tiny `.wal` file. Operations are later check-pointed heavily in memory. SSD flash controllers mathematically favor large sequential writes, naturally allowing the SSD hardware to batched data and drastically reduce baseline NAND layer degradation.
 
 ---
 
@@ -50,7 +55,7 @@ To prevent the SSD wear described in Section 1, SQLite is explicitly instantiate
 
 One of the stealthiest threats to an environment is the Long-Dwell APT (an adversary that compromises a machine and remains silent for months). Tracking this requires long-term memory. 
 
-If the SOC logged every single event (`E`) to track connections, storage would fill instantly. The `SENTINEL-HISTORIAN` agent solves this memory problem natively by decoupling Events from Entities.
+If the SOC logged every single event (`E`) to track connections, storage would fill instantly. The `FLYWAY-HISTORIAN` agent solves this memory problem natively by decoupling Events from Entities.
 
 * **The Matrix:** The Historian SQLite database only tracks unique entities (`N`). It stores exactly four fields: `(entity_id, type, first_seen, last_seen)`. 
 * **The Footprint:** If an IP address communicates 10,000 times, the database size does not increase. It simply overwrites the scalar value of the `last_seen` timestamp. You can track hundreds of thousands of unique local and external entities, and the database footprint will remain in the single-digit megabytes.

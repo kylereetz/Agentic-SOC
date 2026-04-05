@@ -1,5 +1,5 @@
 """
-SENTINEL-GOVERNOR
+FLYWAY-GOVERNOR
 Consolidation of the Agentic Governance Pool (Auditor + Policy-Architect).
 """
 import asyncio
@@ -32,17 +32,17 @@ class GovernorAgent:
         self.in_bus = EventBus("investigation_reasoning")
         self.out_bus = EventBus("governance_metrics")
         self.is_running = False
-        self.agent_id = "SENTINEL-GOVERNOR"
+        self.agent_id = "FLYWAY-GOVERNOR"
         self._processed_cases = set()
         
         # [IQ] Dynamic Ethos Loading
-        ethos_path = get_soc_path("ethos", "ethos_sentinel_governor.md")
+        ethos_path = get_soc_path("ethos", "ethos_flyway_governor.md")
         try:
             with open(ethos_path, "r") as f:
                 self.ethos_content = f.read().strip()
                 logger.info(f"Loaded doctrine from {ethos_path}")
         except Exception:
-            self.ethos_content = "You are SENTINEL-GOVERNOR. You merge compliance mapping and continuous triage tuning into one step."
+            self.ethos_content = "You are FLYWAY-GOVERNOR. You merge compliance mapping and continuous triage tuning into one step."
             logger.warning(f"Ethos not found at {ethos_path}. Using default.")
 
         self.llm_client = LLMClient()

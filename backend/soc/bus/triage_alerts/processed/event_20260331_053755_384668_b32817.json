@@ -20,7 +20,7 @@
       "source_ip": "10.0.0.99"
     },
     "confidence": 0.95,
-    "agent_id": "SENTINEL-ENDPOINT-ANALYST",
+    "agent_id": "QUILL-ENDPOINT-ANALYST",
     "evidence_array": [
       "62891cf59cc8108a5d54b97bb8344f331a0b275494ab81737ef40dafa872b935"
     ],

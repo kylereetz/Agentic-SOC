@@ -263,9 +263,9 @@ class PatchPilotAgent:
         os.makedirs(_DRAFTS_DIR, exist_ok=True)
         self.drafts: List[PatchDraft] = []
         
-        # [IQ] Doctrine Reference: SENTINEL-PATCHPILOT
+        # [IQ] Doctrine Reference: WEDGE-PATCHPILOT
         from soc.bootstrap import get_soc_path
-        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_sentinel_patchpilot.md')}")
+        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_wedge_patchpilot.md')}")
 
     def draft_from_alerts(
         self, alerts_path: Optional[str] = None
@@ -275,13 +275,20 @@ class PatchPilotAgent:
         actionable findings.
         """
         if alerts_path is None:
-            alerts_path = os.path.join(_REPORT_DIR, "triage_alerts.json")
+            alerts_path = os.path.join(_REPORT_DIR, "triage", "triage_alerts.db")
 
+        alerts = []
         try:
-            with open(alerts_path, "r") as fh:
-                alerts = json.load(fh)
-        except FileNotFoundError:
-            logger.warning(f"No alerts file at {alerts_path}")
+            import sqlite3
+            conn = sqlite3.connect(alerts_path)
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM alerts")
+            for row in cursor.fetchall():
+                alerts.append(dict(row))
+            conn.close()
+        except Exception as e:
+            logger.warning(f"Could not read alerts DB at {alerts_path}: {e}")
             return []
 
         for alert in alerts:

@@ -19,7 +19,7 @@ export default function CyberRange() {
     setLogs([
       `[SYS] Initializing Cyber Range Environment...`,
       `[SYS] Allocating ephemeral target nodes...`,
-      `[SYS] Instantiating SENTINEL-RED-TEAM...`,
+      `[SYS] Instantiating QUILL-RED-TEAM...`,
       `[RED] Loaded objective profile: ${sim.name}`,
     ]);
   };
@@ -58,7 +58,7 @@ export default function CyberRange() {
           </span>
           <span className="terminal text-xs px-2 py-0.5 rounded-full"
             style={{ background: '#EF444420', color: '#EF4444', border: '1px solid #EF444444' }}>
-            SENTINEL-RED-TEAM
+            QUILL-RED-TEAM
           </span>
         </div>
         

@@ -1,5 +1,5 @@
 """
-SENTINEL-WATCHDOG: Heartbeat-Monitor & Agent Health.
+GAGGLE-WATCHDOG: Heartbeat-Monitor & Agent Health.
 Monitors other agents for hallucinations, lag, or downtime.
 
 # Satisfies NIST 800-171 Rev 3:
@@ -31,9 +31,9 @@ class WatchdogAgent:
         self.health_bus = EventBus("agent_metrics")
         self.out_bus = EventBus("triage_alerts")
         
-        # [IQ] Doctrine Reference: SENTINEL-WATCHDOG
+        # [IQ] Doctrine Reference: GAGGLE-WATCHDOG
         from soc.bootstrap import get_soc_path
-        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_sentinel_watchdog.md')}")
+        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_gaggle_watchdog.md')}")
  # Or dispatch directly?
         self.is_running = False
 

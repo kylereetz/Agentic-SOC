@@ -13,38 +13,38 @@ import AgentDetailDrawer from './AgentDetailDrawer';
 // ── Agent Roster (synced with backend/soc/agents/ — 26 agents) ───────────────
 const AGENT_ROSTER = [
   // Core Orchestration
-  { id: 'SENTINEL-ORCHESTRATOR',      pillar: 'Core',      status: 'online',  load: 55, latency: 8,  task: 'Routing 6 pending alerts' },
+  { id: 'SYRINX-ORCHESTRATOR',      pillar: 'Core',      status: 'online',  load: 55, latency: 8,  task: 'Routing 6 pending alerts' },
 
   // Detection & Intelligence
-  { id: 'SENTINEL-TRIAGE',            pillar: 'Intel',     status: 'online',  load: 92, latency: 22, task: 'Classifying 14 queued alerts' },
-  { id: 'SENTINEL-CORRELATOR',        pillar: 'Intel',     status: 'online',  load: 61, latency: 15, task: 'Tracking campaign ALPHA-7' },
-  { id: 'SENTINEL-LIBRARIAN',         pillar: 'Intel',     status: 'online',  load: 34, latency: 9,  task: 'Indexing 3 new case records' },
-  { id: 'SENTINEL-HUNTER',            pillar: 'Intel',     status: 'online',  load: 88, latency: 35, task: 'APT29 hypothesis backtrack' },
-  { id: 'SENTINEL-LOG-GUARDIAN',      pillar: 'Intel',     status: 'online',  load: 45, latency: 11, task: 'Normalizing Palo Alto logs' },
-  { id: 'SENTINEL-TRAFFIC-SIEVE',     pillar: 'Intel',     status: 'online',  load: 72, latency: 18, task: 'Analyzing /24 netflow burst' },
-  { id: 'SENTINEL-HISTORIAN',         pillar: 'Intel',     status: 'online',  load: 28, latency: 14, task: 'Archiving INC-2026-041 timeline' },
+  { id: 'QUILL-TRIAGE',            pillar: 'Intel',     status: 'online',  load: 92, latency: 22, task: 'Classifying 14 queued alerts' },
+  { id: 'QUILL-CORRELATOR',        pillar: 'Intel',     status: 'online',  load: 61, latency: 15, task: 'Tracking campaign ALPHA-7' },
+  { id: 'QUILL-LIBRARIAN',         pillar: 'Intel',     status: 'online',  load: 34, latency: 9,  task: 'Indexing 3 new case records' },
+  { id: 'QUILL-HUNTER',            pillar: 'Intel',     status: 'online',  load: 88, latency: 35, task: 'APT29 hypothesis backtrack' },
+  { id: 'GAGGLE-LOG-GUARDIAN',      pillar: 'Intel',     status: 'online',  load: 45, latency: 11, task: 'Normalizing Palo Alto logs' },
+  { id: 'GAGGLE-TRAFFIC-SIEVE',     pillar: 'Intel',     status: 'online',  load: 72, latency: 18, task: 'Analyzing /24 netflow burst' },
+  { id: 'FLYWAY-HISTORIAN',         pillar: 'Intel',     status: 'online',  load: 28, latency: 14, task: 'Archiving INC-2026-041 timeline' },
 
   // Response & Operations
-  { id: 'SENTINEL-RESPONDER',         pillar: 'Response',  status: 'pending', load: 20, latency: 5,  task: 'Awaiting approval: VLAN block' },
-  { id: 'SENTINEL-GATEKEEPER',        pillar: 'Response',  status: 'online',  load: 57, latency: 19, task: 'Rotating 3 NHI credentials' },
-  { id: 'SENTINEL-VANGUARD',          pillar: 'Response',  status: 'online',  load: 30, latency: 13, task: 'Checking SBOM for CVE-2026-011' },
-  { id: 'SENTINEL-MIRAGE',            pillar: 'Response',  status: 'online',  load: 5,  latency: 3,  task: 'Silent — 3 decoys active' },
-  { id: 'SENTINEL-SCOUT',             pillar: 'Response',  status: 'online',  load: 22, latency: 21, task: 'Passive OT sweep subnet /16' },
+  { id: 'WEDGE-RESPONDER',         pillar: 'Response',  status: 'pending', load: 20, latency: 5,  task: 'Awaiting approval: VLAN block' },
+  { id: 'QUILL-GATEKEEPER',        pillar: 'Response',  status: 'online',  load: 57, latency: 19, task: 'Rotating 3 NHI credentials' },
+  { id: 'QUILL-VANGUARD',          pillar: 'Response',  status: 'online',  load: 30, latency: 13, task: 'Checking SBOM for CVE-2026-011' },
+  { id: 'QUILL-MIRAGE',            pillar: 'Response',  status: 'online',  load: 5,  latency: 3,  task: 'Silent — 3 decoys active' },
+  { id: 'GAGGLE-SCOUT',             pillar: 'Response',  status: 'online',  load: 22, latency: 21, task: 'Passive OT sweep subnet /16' },
   { id: 'SENTINEL-PATCH-PILOT',       pillar: 'Response',  status: 'idle',    load: 0,  latency: 0,  task: 'Awaiting VANGUARD risk handoff' },
-  { id: 'SENTINEL-TOPOLOGY-MAPPER',   pillar: 'Response',  status: 'online',  load: 41, latency: 16, task: 'Building L3 graph for CORP-VLAN' },
+  { id: 'GAGGLE-TOPOLOGY-MAPPER',   pillar: 'Response',  status: 'online',  load: 41, latency: 16, task: 'Building L3 graph for CORP-VLAN' },
 
   // Forensics & Analysis
-  { id: 'SENTINEL-FORENSICS',         pillar: 'Forensics', status: 'online',  load: 77, latency: 28, task: 'Analyzing memdump HOST-DX9' },
-  { id: 'SENTINEL-ENDPOINT-ANALYST',  pillar: 'Forensics', status: 'idle',    load: 0,  latency: 0,  task: 'Awaiting EDR telemetry pull' },
-  { id: 'SENTINEL-MALWARE-PATHOLOGIST',pillar: 'Forensics', status: 'idle',   load: 0,  latency: 0,  task: 'Sandbox ready — no samples queued' },
+  { id: 'QUILL-FORENSICS',         pillar: 'Forensics', status: 'online',  load: 77, latency: 28, task: 'Analyzing memdump HOST-DX9' },
+  { id: 'QUILL-ENDPOINT-ANALYST',  pillar: 'Forensics', status: 'idle',    load: 0,  latency: 0,  task: 'Awaiting EDR telemetry pull' },
+  { id: 'QUILL-MALWARE-PATHOLOGIST',pillar: 'Forensics', status: 'idle',   load: 0,  latency: 0,  task: 'Sandbox ready — no samples queued' },
 
   // Governance & Business
-  { id: 'SENTINEL-GOVERNOR',          pillar: 'Gov',       status: 'online',  load: 25, latency: 8,  task: 'Cross-mapping NIST & CMMC controls' },
-  { id: 'SENTINEL-COMMUNICATOR',      pillar: 'Gov',       status: 'online',  load: 12, latency: 10, task: 'Drafting board summary report' },
-  { id: 'SENTINEL-WATCHDOG',          pillar: 'Gov',       status: 'online',  load: 8,  latency: 4,  task: 'Heartbeat polling all agents' },
+  { id: 'FLYWAY-GOVERNOR',          pillar: 'Gov',       status: 'online',  load: 25, latency: 8,  task: 'Cross-mapping NIST & CMMC controls' },
+  { id: 'FLYWAY-COMMUNICATOR',      pillar: 'Gov',       status: 'online',  load: 12, latency: 10, task: 'Drafting board summary report' },
+  { id: 'GAGGLE-WATCHDOG',          pillar: 'Gov',       status: 'online',  load: 8,  latency: 4,  task: 'Heartbeat polling all agents' },
 
   // Adversary Simulation
-  { id: 'SENTINEL-RED-TEAM',          pillar: 'Sim',       status: 'idle',    load: 10, latency: 12, task: 'Awaiting Cyber Range parameters' },
+  { id: 'QUILL-RED-TEAM',          pillar: 'Sim',       status: 'idle',    load: 10, latency: 12, task: 'Awaiting Cyber Range parameters' },
 ];
 
 const SPECIALIST_ROSTER = [
@@ -74,7 +74,7 @@ const STATUS_CFG = {
 };
 
 const WS_MESSAGES = [
-  "ORCHESTRATOR >> routing ALRT-882 to SENTINEL-TRIAGE",
+  "ORCHESTRATOR >> routing ALRT-882 to QUILL-TRIAGE",
   "TRIAGE >> classified ALRT-882 as HIGH (Kerberoasting)",
   "ORCHESTRATOR >> case INC-2026-041 state OPEN → ACTIVE",
   "RED-TEAM >> deploying lateral movement payloads in Cyber Range",
@@ -84,7 +84,7 @@ const WS_MESSAGES = [
   "VANGUARD >> SBOM scan complete: 0 zero-days in batch",
   "MIRAGE >> silent monitoring — decoy PLC-SIEM-01 active",
   "WATCHDOG >> heartbeat OK — all 26 hive nodes responsive",
-  "GATEKEEPER >> rotated API key for agent SENTINEL-HUNTER",
+  "GATEKEEPER >> rotated API key for agent QUILL-HUNTER",
   "COMMUNICATOR >> board report draft #7 pushed to /reports",
   "GOVERNOR >> NIST 3.14.6 control verified against live topology",
   "GOVERNOR >> CMMC Level 3 compliance checks initiated",

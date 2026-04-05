@@ -1,5 +1,5 @@
 """
-SENTINEL-HISTORIAN: The Long-Term Dormancy Tracker (Rare Event Model)
+FLYWAY-HISTORIAN: The Long-Term Dormancy Tracker (Rare Event Model)
 Detects entities (IPs, Users, MACs) that awaken after a long period of silence.
 
 Score 9.5 Features:
@@ -52,8 +52,8 @@ class HistorianAgent:
         # Initialize SQLite DB
         self._init_db()
 
-        # [IQ] Doctrine Reference: SENTINEL-HISTORIAN
-        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_sentinel_historian.md')}")
+        # [IQ] Doctrine Reference: FLYWAY-HISTORIAN
+        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_flyway_historian.md')}")
 
     def _init_db(self):
         self.conn = ServiceMesh.connect_db(client_identity="historian", db_path=HISTORIAN_DB_PATH, negotiated_cipher="TLS_AES_256_GCM_SHA384")
@@ -71,7 +71,7 @@ class HistorianAgent:
 
     async def run(self):
         self.is_running = True
-        logger.info(f"[SQ] SENTINEL-HISTORIAN awakened. Silence Threshold set to: {THRESHOLD_SECONDS} seconds.")
+        logger.info(f"[SQ] FLYWAY-HISTORIAN awakened. Silence Threshold set to: {THRESHOLD_SECONDS} seconds.")
         
         while self.is_running:
             event = await asyncio.to_thread(self.in_bus.pop)

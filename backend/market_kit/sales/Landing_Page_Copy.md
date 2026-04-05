@@ -15,13 +15,14 @@
 
 ---
 
-## 3. Our Solution: The Agentic SOC
-**Headline**: Your world-class Security Operations Center—powered by layers of AI-in-Depth, managed by experts.
-**Copy**: Instead of expensive human analysts or dumb signature tools, we deploy our **AI-in-Depth Architecture**. Our hardened appliance uses a continuous dual-track system:
-- **The Specialists (Supervised ML)**: Specialized local LLM agents that have memorized the "wanted posters" of the digital world, capable of instantly stopping known threats like ransomware at sub-second speeds.
-- **The Detectives (Unsupervised ML)**: Advanced anomaly hunters (like `TRAFFIC-SIEVE` and `ENDPOINT-ANALYST`) that automatically learn the mathematical distribution of your specific factory floor. They don't look for known viruses; they look for the single entity deviating from your baseline to catch Zero-Day supply chain exploits.
+## 3. Our Solution: The Syrinx Architecture
+**Headline**: Your world-class Security Operations Center—powered by a highly coordinated, multi-agent AI flock.
+**Copy**: Instead of expensive human analysts or dumb signature tools, we deploy **The Syrinx Framework**. Our hardened appliance uses a structurally flawless, 5-Pillar Avian Taxonomy to secure your floor:
+- **The Gaggle (Ground Truth)**: Ground-level observability. Agents like `GAGGLE-SCOUT` continuously map your factory floor without injecting dangerous probes into legacy hardware.
+- **The Quill (Intelligence)**: Deep forensic memory. Our analytical agents automatically learn the mathematical distribution of your specific factory floor, locating the single behavioral anomaly to catch Zero-Day supply chain exploits.
+- **The Wedge (Action)**: Precision containment. Fast, targeted momentum cutting through threats to isolate compromises in sub-second speeds.
 
-Together, these 24 integrated agents map your assets directly to NIST 800-171 controls in real-time.
+Together, this highly coordinated 24-agent flock maps your assets directly to NIST 800-171 controls via our **Flyway (Business)** agents in real-time.
 
 ---
 

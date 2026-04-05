@@ -13,7 +13,7 @@ from soc.bootstrap import get_soc_path
 
 async def test_gatekeeper_intelligence():
     print("="*60)
-    print("  SENTINEL-GATEKEEPER VALIDATION")
+    print("  QUILL-GATEKEEPER VALIDATION")
     print("="*60)
     
     gk = GatekeeperAgent()

@@ -56,7 +56,7 @@ High-fidelity alert management.
 The "Digital Hive Mind" management console.
 
 *   **Health Dashboard**:
-    *   **Global Kill Switch**: (Admin-only) Force-pause the `SENTINEL-RESPONDER` agent.
+    *   **Global Kill Switch**: (Admin-only) Force-pause the `WEDGE-RESPONDER` agent.
     *   **Health Metrics**: Real-time Avg Latency, HITL counts, and API Cost Rate ($/s).
 *   **Agent Matrix**:
     *   **Pillar Filtering**: Filter the 24 agents by Core, Intel, Invest, Response, or Gov.
@@ -75,7 +75,7 @@ Intelligence-led risk prioritization.
     *   **Loss Magnitude Ranking**: Incidents sorted by financial impact ($/hr).
     *   **Likelihood Analysis**: Percentage calculation of attack success.
     *   **Exposure Meter**: Global indicator of total business risk per hour.
-*   **SENTINEL-MIRAGE DeceptionHits**:
+*   **QUILL-MIRAGE DeceptionHits**:
     *   **Zero-False-Positive Alerts**: magenta-themed banners for honeytoken/honeypot interactions.
     *   **Immediate Isolation**: Bypass buttons to isolate source IPs instantly upon decoy hit.
 
@@ -116,6 +116,6 @@ The cyber-range sandbox.
 ---
 
 ## 9. Identity & Access ([LoginPage](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/dashboard/src/components/LoginPage.jsx#5-117))
-*   **SENTINEL-GATEKEEPER Auth**: Secure entry point for operators.
+*   **QUILL-GATEKEEPER Auth**: Secure entry point for operators.
 *   **MFA Proxy Status**: Visual confirmation of encrypted tunnel establishment.
 *   **Role Identification**: Categorizes access into Admin vs. Guest paths.

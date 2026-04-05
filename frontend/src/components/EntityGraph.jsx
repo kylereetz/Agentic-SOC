@@ -29,7 +29,7 @@ function EmptyTopology({ onRefresh }) {
       <div className="text-center">
         <p className="h-title" style={{ color: '#6B7280' }}>No Topology Data</p>
         <p className="h-meta mt-1">
-          SENTINEL-SCOUT and SENTINEL-TOPOLOGY-MAPPER<br />
+          GAGGLE-SCOUT and GAGGLE-TOPOLOGY-MAPPER<br />
           haven't indexed any assets yet.
         </p>
       </div>

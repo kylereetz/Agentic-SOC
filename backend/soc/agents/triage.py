@@ -24,6 +24,8 @@ import os
 import asyncio
 import hashlib
 import random
+import sqlite3
+import time
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
@@ -457,11 +459,42 @@ class TriageAgent:
         self.intel_bus = EventBus("intel_feedback")
         self.marl_bus = EventBus("marl_rewards")
         
-        # [IQ] Doctrine Reference: SENTINEL-TRIAGE
-        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_sentinel_triage.md')}")
+        # [IQ] Doctrine Reference: QUILL-TRIAGE
+        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_quill_triage.md')}")
         
-        self.report_path = get_soc_path("reports", "triage", "triage_alerts.json")
+        self.report_path = get_soc_path("reports", "triage", "triage_alerts.db")
+        self.alert_buffer = []
+        self.last_flush = time.time()
         self.is_running = False
+        self._init_db()
+
+    def _init_db(self):
+        """Initialise SQLite database in WAL mode."""
+        os.makedirs(os.path.dirname(self.report_path), exist_ok=True)
+        conn = sqlite3.connect(self.report_path)
+        conn.execute("PRAGMA journal_mode=WAL;")
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS alerts (
+                timestamp TEXT,
+                rule_id TEXT,
+                rule_name TEXT,
+                severity TEXT,
+                classification TEXT,
+                source_ip TEXT,
+                description TEXT,
+                nist_control TEXT,
+                mitre_ttp TEXT,
+                confidence REAL,
+                semantic_detail TEXT,
+                vector_id TEXT,
+                is_correlated BOOLEAN,
+                suppression_status TEXT,
+                raw_event TEXT
+            )
+        ''')
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_timestamp ON alerts (timestamp DESC);")
+        conn.commit()
+        conn.close()
 
     async def run(self):
         """Async main loop for Triage."""
@@ -470,9 +503,56 @@ class TriageAgent:
         
         tasks = [
             asyncio.create_task(self._process_events()),
-            asyncio.create_task(self._marl_worker())
+            asyncio.create_task(self._marl_worker()),
+            asyncio.create_task(self._db_flush_worker())
         ]
         await asyncio.gather(*tasks)
+
+    async def _db_flush_worker(self):
+        """[SQ] Periodically flushes accumulated alerts to SQLite."""
+        while self.is_running:
+            await asyncio.sleep(1)
+            now = time.time()
+            if self.alert_buffer:
+                if len(self.alert_buffer) >= 10000 or (now - self.last_flush) >= 60.0:
+                    self._flush_buffer()
+                    self.last_flush = time.time()
+
+    def _flush_buffer(self):
+        if not self.alert_buffer:
+            return
+        
+        batch = self.alert_buffer[:]
+        self.alert_buffer.clear()
+        
+        try:
+            conn = sqlite3.connect(self.report_path)
+            cursor = conn.cursor()
+            rows = []
+            for a in batch:
+                s = self._serialise_alert(a)
+                raw_e = json.dumps(a.raw_event) if hasattr(a, "raw_event") else "{}"
+                rows.append((
+                    s["timestamp"], s["rule_id"], s["rule_name"], s["severity"],
+                    s["classification"], s["source_ip"], s["description"], s["nist_control"],
+                    s["mitre_ttp"], s["confidence"], s["semantic_detail"], s["vector_id"],
+                    s["is_correlated"], s["suppression_status"], raw_e
+                ))
+            
+            cursor.executemany('''
+                INSERT INTO alerts (
+                    timestamp, rule_id, rule_name, severity, classification, source_ip, 
+                    description, nist_control, mitre_ttp, confidence, semantic_detail, 
+                    vector_id, is_correlated, suppression_status, raw_event
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', rows)
+            
+            conn.commit()
+            conn.close()
+            self._update_heatmap_feed(batch)
+            logger.debug(f"[SQ] Flushed {len(batch)} alerts to SQLite.")
+        except Exception as e:
+            logger.error(f"Failed to flush triage database: {e}")
 
     async def _marl_worker(self):
         """Asynchronously updates the Hive Mind Q-Table based on downstream rewards."""
@@ -574,30 +654,8 @@ class TriageAgent:
         }
 
     def _update_persistent_log(self, new_alerts: List[TriageAlert]) -> None:
-        """Maintain a cumulative JSON log of alerts in soc/reports/triage/."""
-        existing = []
-        if os.path.exists(self.report_path):
-            try:
-                with open(self.report_path, "r") as fh:
-                    existing = json.load(fh)
-            except Exception:
-                existing = []
-
-        serialised_new = [self._serialise_alert(a) for a in new_alerts]
-        existing.extend(serialised_new)
-        
-        # Keep only last 1000 alerts
-        if len(existing) > 1000:
-            # Rebuild list from tail to avoid slice type errors
-            keep_start = len(existing) - 1000
-            existing = [existing[i] for i in range(keep_start, len(existing))]
-
-        with open(self.report_path, "w") as fh:
-            json.dump(existing, fh, indent=2)
-        
-        # [VQ] Update Heatmap metadata (Subnet-level risk)
-        self._update_heatmap_feed(new_alerts)
-        logger.debug(f"Updated triage log at {self.report_path}")
+        """Add alerts to the memory buffer to be batched and saved to SQLite."""
+        self.alert_buffer.extend(new_alerts)
 
     def _update_heatmap_feed(self, new_alerts: List[TriageAlert]) -> None:
         """[VQ] Maintain soc/reports/triage/triage_heatmap.json for Dashboard."""

@@ -5,6 +5,9 @@ without requiring hefty third-party Linear Programming dependencies like SciPy.
 """
 
 import logging
+import random
+from typing import List
+
 from soc.bootstrap import get_soc_path
 
 logger = logging.getLogger("RCA-Strategist")
@@ -12,15 +15,15 @@ logger.setLevel(logging.INFO)
 
 class FictitiousPlaySolver:
     """
-    SENTINEL-STRATEGIST: Defensive Resource Allocator.
+    FLYWAY-STRATEGIST: Defensive Resource Allocator.
     Solves for the Mixed Strategy Nash Equilibrium (MSNE) using Fictitious Play.
     """
     def __init__(self, iterations: int = 1500):
         self.iterations = iterations
-        self.agent_name = "SENTINEL-STRATEGIST"
+        self.agent_name = "FLYWAY-STRATEGIST"
         
-        # [IQ] Doctrine Reference: SENTINEL-STRATEGIST
-        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_sentinel_strategist.md')}")
+        # [IQ] Doctrine Reference: FLYWAY-STRATEGIST
+        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_flyway_strategist.md')}")
 
     def solve(self, utility_matrix: List[List[float]]) -> List[float]:
         """

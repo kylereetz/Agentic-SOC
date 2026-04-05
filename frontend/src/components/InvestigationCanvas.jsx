@@ -53,13 +53,13 @@ const INITIAL_EDGES = [
 
 const COT_STEPS = [
   {
-    id: 'step-1', step: 1, agent: 'SENTINEL-INVESTIGATOR',
+    id: 'step-1', step: 1, agent: 'QUILL-INVESTIGATOR',
     action: 'Tool: inspect_process(pid=4892, host="Host-DX9")',
     finding: 'Process powershell.exe (PID 4892) spawned by winword.exe. Unusual parent-child relationship.',
     confidence: 91, mitre: 'T1059.001',
   },
   {
-    id: 'step-2', step: 2, agent: 'SENTINEL-INVESTIGATOR',
+    id: 'step-2', step: 2, agent: 'QUILL-INVESTIGATOR',
     action: 'Tool: audit_ad_privileges(entity_id="CORP\\\\jdoe")',
     finding: 'User jdoe has unexpected membership in Domain Admins added 02:14:33 ago. Change not in change log.',
     confidence: 97, mitre: 'T1078',
@@ -71,13 +71,13 @@ const COT_STEPS = [
     confidence: 99, mitre: 'T1003',
   },
   {
-    id: 'step-4', step: 4, agent: 'SENTINEL-CORRELATOR',
+    id: 'step-4', step: 4, agent: 'QUILL-CORRELATOR',
     action: 'RAG Query: similar credential-dump + lateral-movement patterns',
     finding: 'Pattern matches COBALT STRIKE campaign blueprint seen 3 weeks ago (INC-2025-887). Confidence: HIGH.',
     confidence: 88, mitre: 'T1021',
   },
   {
-    id: 'step-5', step: 5, agent: 'SENTINEL-INVESTIGATOR',
+    id: 'step-5', step: 5, agent: 'QUILL-INVESTIGATOR',
     action: 'Synthesis: Generating final conclusion',
     finding: 'CONCLUSION: Active hands-on intrusion by threat actor targeting DC-01. Immediate isolation recommended.',
     confidence: 95, mitre: null,
@@ -87,17 +87,17 @@ const COT_STEPS = [
 const HITL_QUEUE = [
   {
     id: 'hitl-1', severity: 'CRITICAL', asset: 'Switch-04', action: 'VLAN Isolation',
-    agent: 'SENTINEL-RESPONDER', risk: 'HIGH — may disrupt 12 connected endpoints.',
+    agent: 'WEDGE-RESPONDER', risk: 'HIGH — may disrupt 12 connected endpoints.',
     timestamp: '22:31:44',
   },
   {
     id: 'hitl-2', severity: 'HIGH', asset: 'Host-DX9', action: 'Process Kill: PID 4892',
-    agent: 'SENTINEL-RESPONDER', risk: 'LOW — process confirmed malicious.',
+    agent: 'WEDGE-RESPONDER', risk: 'LOW — process confirmed malicious.',
     timestamp: '22:32:11',
   },
   {
     id: 'hitl-3', severity: 'MEDIUM', asset: 'CORP\\\\jdoe', action: 'Account Disable',
-    agent: 'SENTINEL-GATEKEEPER', risk: 'MEDIUM — account may be used by legitimate user concurrently.',
+    agent: 'QUILL-GATEKEEPER', risk: 'MEDIUM — account may be used by legitimate user concurrently.',
     timestamp: '22:33:05',
   },
 ];
@@ -312,7 +312,7 @@ export default function InvestigationCanvas() {
           <div className="h-full flex flex-col">
             <div className="px-4 pt-3 pb-2 border-b flex-shrink-0" style={{ borderColor: '#1F2937' }}>
               <p className="text-xs terminal" style={{ color: '#6B7280' }}>
-                SENTINEL-INVESTIGATOR chain-of-thought for{' '}
+                QUILL-INVESTIGATOR chain-of-thought for{' '}
                 <span style={{ color: '#D84C7F' }}>INC-2026-041 / ALT-004</span>
               </p>
             </div>

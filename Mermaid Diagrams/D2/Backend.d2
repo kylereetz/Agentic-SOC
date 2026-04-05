@@ -1,0 +1,142 @@
+direction: right
+
+# Global Styles
+*.style: {
+  stroke-width: 2
+  border-radius: 8
+}
+
+"External Infrastructure": {
+  style: {
+    stroke: "#334155"
+    fill: "#f8fafc"
+  }
+  
+  LB: Load Balancer {
+    shape: person
+  }
+  API: API Gateway {
+    shape: hexagon
+  }
+  Auth: Authentication Layer {
+    description: "OAuth2 / JWT"
+  }
+}
+
+"Compute Cluster": {
+  style: {
+    stroke: "#1e40af"
+    fill: "#eff6ff"
+  }
+
+  Orchestrator: {
+    shape: circle
+  }
+  Scaling: Scaling Manager
+  Queue: Task Queue {
+    shape: queue
+    description: "RabbitMQ / Redis"
+  }
+  Workers: Task-specific Workers {
+    description: "e.g., Scout, Triage, Investigator"
+  }
+}
+
+"Data Tier": {
+  style: {
+    stroke: "#166534"
+    fill: "#f0fdf4"
+  }
+
+  PrimaryDB: Primary Database {
+    shape: sql_table
+    description: "PostgreSQL / MongoDB"
+  }
+  VectorDB: Vector Database {
+    shape: sql_table
+    description: "Pinecone / Milvus"
+  }
+  Cache: Cache Layer {
+    shape: sql_table
+    description: "Redis"
+  }
+}
+
+"External Integrations (Mocked/Local)": {
+  style: {
+    stroke: "#92400e"
+    fill: "#fffbeb"
+  }
+
+  ExternalAPI: Third-party APIs {
+    description: "Threat Intel (Mocked Local Sandbox)"
+  }
+}
+
+Observability: {
+  style: {
+    stroke: "#6b21a8"
+    fill: "#faf5ff"
+  }
+
+  Monitor: Monitoring Stack {
+    description: "Prometheus / Grafana"
+  }
+  Log: Centralized Logging {
+    description: "ELK / Loki"
+  }
+}
+
+# Flows
+"External Infrastructure".LB -> "External Infrastructure".API: HTTPS
+"External Infrastructure".API <-> "External Infrastructure".Auth: REST / gRPC
+"External Infrastructure".API -> "Compute Cluster".Orchestrator: REST / WebSockets
+
+"Compute Cluster".Orchestrator -> "Compute Cluster".Scaling: gRPC / REST API
+"Compute Cluster".Scaling -> "Compute Cluster".Workers: Control Plane Metrics
+"Compute Cluster".Orchestrator -> "Compute Cluster".Queue: AMQP Topic Exchange
+
+"Compute Cluster".Queue -> "Compute Cluster".Workers: Subscribed Topic {
+  style: {
+    stroke-dash: 5
+  }
+}
+
+"Compute Cluster".Workers -> "Compute Cluster".Queue: Callbacks {
+  style: {
+    stroke-dash: 5
+  }
+}
+
+"Compute Cluster".Queue -> "Compute Cluster".Orchestrator: Monitor Loop {
+  style: {
+    stroke-dash: 5
+  }
+}
+
+# Data Connections
+"Compute Cluster".Orchestrator -> "Data Tier".PrimaryDB: mTLS / SQL
+"Compute Cluster".Workers -> "Data Tier".PrimaryDB: mTLS / SQL
+"Compute Cluster".Workers -> "Librarian Cluster": mTLS RAG Query {
+  style: {
+    stroke-dash: 5
+  }
+}
+
+"Librarian Cluster" -> "Data Tier".VectorDB: mTLS / gRPC
+"Compute Cluster".Workers -> "Data Tier".Cache: mTLS / Redis RESP
+"Compute Cluster".Orchestrator -> "Data Tier".Cache: mTLS / Redis RESP
+
+# External Systems (Mocked/Local)
+"Compute Cluster".Workers -> "External Integrations (Mocked/Local)".ExternalAPI: Local Function Call
+
+# Observability (Non-blocking)
+"External Infrastructure".API -> Observability.Log: Logs { style: { stroke-dash: 3 } }
+"Compute Cluster".Orchestrator -> Observability.Log: Logs { style: { stroke-dash: 3 } }
+"Compute Cluster".Workers -> Observability.Log: Logs { style: { stroke-dash: 3 } }
+"Compute Cluster".Queue -> Observability.Log: Logs { style: { stroke-dash: 3 } }
+
+"Compute Cluster".Orchestrator -> Observability.Monitor: Prometheus Scrape { style: { stroke-dash: 3 } }
+"Compute Cluster".Workers -> Observability.Monitor: Prometheus Scrape { style: { stroke-dash: 3 } }
+"Compute Cluster".Scaling -> Observability.Monitor: Prometheus Scrape { style: { stroke-dash: 3 } }
+"Data Tier".PrimaryDB -> Observability.Monitor: Prometheus Scrape { style: { stroke-dash: 3 } }

@@ -11,7 +11,7 @@ from soc.bus.event_queue import EventBus
 
 async def test_vanguard_intelligence():
     print("="*60)
-    print("  SENTINEL-VANGUARD VALIDATION")
+    print("  QUILL-VANGUARD VALIDATION")
     print("="*60)
     
     vg = VanguardAgent()

@@ -11,7 +11,7 @@ from soc.bus.event_queue import EventBus
 
 async def test_mirage_intelligence():
     print("="*60)
-    print("  SENTINEL-MIRAGE VALIDATION")
+    print("  QUILL-MIRAGE VALIDATION")
     print("="*60)
     
     ma = MirageAgent()

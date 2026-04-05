@@ -5,7 +5,7 @@
   "num_ctx": 16384,
   "temperature": 0.2,
   "max_steps_per_investigation": 10,
-  "agent_name": "SENTINEL-01",
+  "agent_name": "QUILL-INVESTIGATOR",
   "min_severity": "WARNING",
   "poll_interval_seconds": 15,
   "save_investigations": true,

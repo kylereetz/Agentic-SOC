@@ -237,7 +237,7 @@ export default function AlertQueue() {
             </p>
             <p className="text-xs terminal" style={{ color: '#4B5563' }}>
               {alerts.length === 0
-                ? 'SENTINEL-TRIAGE has not generated any alerts yet.'
+                ? 'QUILL-TRIAGE has not generated any alerts yet.'
                 : 'Try adjusting the severity or source filters.'}
             </p>
           </div>
@@ -326,7 +326,7 @@ export default function AlertQueue() {
 
           {selectedAlert.semantic_detail && (
             <div className="p-2 rounded border" style={{ background: '#080d14', borderColor: '#1F2937' }}>
-              <p className="text-[9px] terminal uppercase opacity-40 mb-1">Semantic Inference (SENTINEL-LOG-GUARDIAN)</p>
+              <p className="text-[9px] terminal uppercase opacity-40 mb-1">Semantic Inference (GAGGLE-LOG-GUARDIAN)</p>
               <p className="text-xs italic" style={{ color: '#9CA3AF' }}>"{selectedAlert.semantic_detail}"</p>
             </div>
           )}

@@ -1,0 +1,146 @@
+direction: right
+
+# Global Styles
+*.style: {
+  stroke-width: 2
+  border-radius: 12
+}
+
+"External Infrastructure": {
+  LB: Load Balancer
+  API: API Gateway { shape: hexagon }
+  Auth: Authentication Layer { description: "OAuth2 / JWT" }
+}
+
+"Data Tier": {
+  PrimaryDB: Primary Database { shape: sql_table }
+  VectorDB: Vector Database { shape: sql_table }
+  Cache: Cache Layer { shape: sql_table }
+}
+
+"External Integrations (Mocked/Local)": {
+  ExternalAPI: Third-party APIs { description: "Threat Intel (Mocked Local Sandbox)" }
+}
+
+"Observation & Logging": {
+  Monitor: Monitoring Stack { description: "Prometheus / Grafana" }
+  Log: Centralized Logging { description: "ELK / Loki" }
+}
+
+"Agent Pool": {
+  style: {
+    stroke: "#1e40af"
+    fill: "#eff6ff"
+  }
+  
+  Queue: Task Queue { shape: queue }
+  Scaling: Scaling Manager
+
+  "Core Orchestration": {
+    A_Manager: SYRINX-MANAGER { shape: diamond }
+    A_Orches: SYRINX-ORCHESTRATOR { shape: hexagon }
+  }
+
+  "Detection & Intelligence": {
+    style: { fill: "#f0fdf4" }
+    A_Triage: QUILL-TRIAGE
+    A_Corre: QUILL-CORRELATOR
+    A_Lib: QUILL-LIBRARIAN POOL
+    A_Hunter: QUILL-HUNTER
+    A_Log: GAGGLE-LOG-GUARDIAN
+    A_Traffic: GAGGLE-TRAFFIC-SIEVE
+    A_Endpt: QUILL-ENDPOINT-ANALYST
+    A_Hist: FLYWAY-HISTORIAN
+  }
+
+  "Investigation & Engineering": {
+    style: { fill: "#fffbeb" }
+    A_Invest: QUILL-INVESTIGATOR
+    A_Foren: QUILL-FORENSICS
+    A_Malw: QUILL-MALWARE-PATHOLOGIST
+    A_Topo: GAGGLE-TOPOLOGY
+  }
+
+  "Response & Operations": {
+    style: { fill: "#fef2f2" }
+    A_Resp: WEDGE-RESPONDER
+    A_Patch: WEDGE-PATCHPILOT
+    A_Gate: QUILL-GATEKEEPER
+    A_Van: QUILL-VANGUARD
+    A_Mir: QUILL-MIRAGE
+    A_Scout: GAGGLE-SCOUT
+  }
+
+  "Business & Governance": {
+    style: { fill: "#faf5ff" }
+    A_Gov: FLYWAY-GOVERNOR
+    A_Comm: FLYWAY-COMMUNICATOR
+    A_Watch: GAGGLE-WATCHDOG
+    A_Red: QUILL-RED
+    A_Strat: FLYWAY-STRATEGIST
+  }
+}
+
+# Flows
+"External Infrastructure".LB -> "External Infrastructure".API: HTTPS
+"External Infrastructure".API <-> "External Infrastructure".Auth: REST / gRPC
+"External Infrastructure".API -> "Agent Pool"."Core Orchestration".A_Orches: REST / WebSockets
+
+"Agent Pool"."Core Orchestration".A_Orches <-> "Agent Pool"."Core Orchestration".A_Manager: gRPC Sync
+"Agent Pool"."Core Orchestration".A_Orches -> "Agent Pool".Queue: AMQP / PubSub
+"Agent Pool"."Core Orchestration".A_Orches -> "Agent Pool".Scaling: gRPC Provisioning
+
+# Task Dispatches
+"Agent Pool".Queue -> "Agent Pool"."Detection & Intelligence".A_Triage: Raw Events { style: { stroke-width: 4 } }
+"Agent Pool"."Detection & Intelligence".A_Triage -> "Agent Pool".Queue: triage_alerts { style: { stroke-width: 4 } }
+
+"Agent Pool".Queue -> "Agent Pool"."Core Orchestration".A_Orches: triage_alerts { style: { stroke-width: 4 } }
+"Agent Pool"."Core Orchestration".A_Orches -> "Agent Pool".Queue: target topic_* { style: { stroke-width: 4 } }
+
+# Worker Polling
+"Agent Pool".Queue -> "Agent Pool"."Detection & Intelligence".A_Endpt: topic_network { style: { stroke-dash: 5 } }
+"Agent Pool".Queue -> "Agent Pool"."Detection & Intelligence".A_Traffic: topic_network { style: { stroke-dash: 5 } }
+"Agent Pool".Queue -> "Agent Pool"."Investigation & Engineering".A_Invest: topic_network { style: { stroke-dash: 5 } }
+
+"Agent Pool".Queue -> "Agent Pool"."Investigation & Engineering".A_Foren: topic_identity { style: { stroke-dash: 5 } }
+
+"Agent Pool".Queue -> "Agent Pool"."Investigation & Engineering".A_Malw: topic_malware { style: { stroke-dash: 5 } }
+"Agent Pool".Queue -> "Agent Pool"."Detection & Intelligence".A_Hunter: topic_malware { style: { stroke-dash: 5 } }
+
+"Agent Pool".Queue -> "Agent Pool"."Response & Operations".A_Resp: topic_remediation { style: { stroke-dash: 5 } }
+"Agent Pool".Queue -> "Agent Pool"."Response & Operations".A_Patch: topic_remediation { style: { stroke-dash: 5 } }
+
+# Hive Consensus Callbacks
+"Agent Pool"."Detection & Intelligence".A_Endpt -> "Agent Pool".Queue: orchestrator_callbacks { style: { stroke-dash: 3 } }
+"Agent Pool"."Investigation & Engineering".A_Malw -> "Agent Pool".Queue: orchestrator_callbacks { style: { stroke-dash: 3 } }
+"Agent Pool"."Detection & Intelligence".A_Hunter -> "Agent Pool".Queue: orchestrator_callbacks { style: { stroke-dash: 3 } }
+"Agent Pool"."Investigation & Engineering".A_Invest -> "Agent Pool".Queue: orchestrator_callbacks { style: { stroke-dash: 3 } }
+
+"Agent Pool".Queue -> "Agent Pool"."Core Orchestration".A_Orches: monitors callbacks { style: { stroke-dash: 3 } }
+
+# Data Tier
+"Agent Pool"."Core Orchestration".A_Manager -> "Data Tier".PrimaryDB: mTLS / SQL
+"Agent Pool"."Core Orchestration".A_Orches -> "Data Tier".PrimaryDB: mTLS / SQL
+"Agent Pool".Queue -> "Data Tier".Cache: mTLS / State Backup
+"Agent Pool"."Core Orchestration".A_Manager -> "Data Tier".Cache: mTLS / Redis Protocol
+
+# RAG
+"Agent Pool"."Detection & Intelligence".A_Lib <-> "Data Tier".VectorDB: mTLS / gRPC
+"Agent Pool"."Investigation & Engineering".A_Invest -> "Agent Pool"."Detection & Intelligence".A_Lib: mTLS Query { style: { stroke-dash: 5 } }
+"Agent Pool"."Detection & Intelligence".A_Hunter -> "Agent Pool"."Detection & Intelligence".A_Lib: mTLS Query { style: { stroke-dash: 5 } }
+
+# External
+"Agent Pool"."Detection & Intelligence".A_Triage -> "External Integrations (Mocked/Local)".ExternalAPI: Mocked REST call
+"Agent Pool"."Response & Operations".A_Van -> "External Integrations (Mocked/Local)".ExternalAPI: Local SBOM Parsing
+"Agent Pool"."Business & Governance".A_Comm -> "External Integrations (Mocked/Local)".ExternalAPI: Local Bus (Disabled Webhooks)
+
+# Observability/Ops
+"Agent Pool"."Business & Governance".A_Watch -> "Observation & Logging".Monitor: Scrape / PromQL
+"Agent Pool"."Business & Governance".A_Watch -> "Agent Pool".Scaling: Heartbeat Ping { style: { stroke-dash: 5 } }
+"Agent Pool".Scaling -> "Observation & Logging".Monitor: Worker Metrics
+
+"Agent Pool"."Business & Governance".A_Red -> "Agent Pool".Queue: Injects Synthetic Threats { style: { stroke-dash: 3 } }
+
+"Agent Pool"."Detection & Intelligence".A_Log -> "Observation & Logging".Log: Norm.JSON Push
+"Agent Pool"."Core Orchestration".A_Manager -> "Observation & Logging".Log: Audit Trails { style: { stroke-dash: 3 } }
+"Agent Pool"."Core Orchestration".A_Orches -> "Observation & Logging".Log: Syslog { style: { stroke-dash: 3 } }

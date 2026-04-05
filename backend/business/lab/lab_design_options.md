@@ -18,7 +18,7 @@
 ### Roles & Virtualization
 * **Personal PC (The SOC Brain - VLAN 30)**:
   * Runs Docker Desktop / WSL2 (or VMware Workstation).
-  * Hosts the `Ollama` inference engine natively using your 4080 Super. Your agents (`SENTINEL-GOVERNOR`, `SENTINEL-COMMUNICATOR`, etc.) will respond in milliseconds.
+  * Hosts the `Ollama` inference engine natively using your 4080 Super. Your agents (`FLYWAY-GOVERNOR`, `FLYWAY-COMMUNICATOR`, etc.) will respond in milliseconds.
   * Plugs into the lab switch to passively mirror and analyze traffic without putting the PC in the direct line of fire of the lab malware.
 * **Old Windows Machine (The IT Victim - VLAN 10)**:
   * Reprovisioned with Proxmox VE or Hyper-V Server.

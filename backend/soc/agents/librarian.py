@@ -1,5 +1,5 @@
 """
-SENTINEL-LIBRARIAN: The Collective Memory of the SOC.
+QUILL-LIBRARIAN: The Collective Memory of the SOC.
 A Shared RAG service that indexes incident history and reasoning.
 
 Score 9.5 Features:
@@ -48,8 +48,8 @@ class LibrarianAgent:
         self.is_running = False
         self.conn = None
         
-        # [IQ] Doctrine Reference: SENTINEL-LIBRARIAN
-        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_sentinel_librarian.md')}")
+        # [IQ] Doctrine Reference: QUILL-LIBRARIAN
+        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_quill_librarian.md')}")
         
         # [IQ] Configure Local LLM Client for Embeddings
         self.llm_client = LLMClient()
