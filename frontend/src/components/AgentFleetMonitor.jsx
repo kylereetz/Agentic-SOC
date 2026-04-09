@@ -17,7 +17,7 @@ const AGENT_DEFS = [
   { id: 'PATHOLOGIST-01',   role: 'MalwarePathologistAgent',color: '#EF4444', status: 'IDLE',    task: 'Awaiting binary extraction for sandbox analysis', runtime: '00:00', success: 95, tools: 0 },
 
   { id: 'RESPONDER-01',     role: 'ResponderAgent',         color: '#EF4444', status: 'WAITING', task: 'Waiting for analyst approval — block_firewall', runtime: '02:11', success: 100, tools: 5 },
-  { id: 'PATCHPILOT-01',    role: 'PatchPilot',             color: '#88C057', status: 'IDLE',    task: 'Awaiting remediation vulnerability assignments', runtime: '00:00', success: 99, tools: 0 },
+  { id: 'PATCHADVISOR-01',    role: 'PatchAdvisor',             color: '#88C057', status: 'IDLE',    task: 'Awaiting remediation vulnerability assignments', runtime: '00:00', success: 99, tools: 0 },
   { id: 'GATEKEEPER-01',    role: 'GatekeeperAgent',        color: '#E5A862', status: 'ACTIVE',  task: 'Auditing impossible travel ID anomalies', runtime: '33:10', success: 95, tools: 201 },
   { id: 'VANGUARD-01',      role: 'VanguardAgent',          color: '#3B6FE3', status: 'IDLE',    task: 'Awaiting SBOM composition updates', runtime: '00:00', success: 100, tools: 0 },
   { id: 'MIRAGE-01',        role: 'MirageAgent',            color: '#D84C7F', status: 'ACTIVE',  task: 'Monitoring deception honeypot beacons', runtime: '100:10', success: 100, tools: 50 },

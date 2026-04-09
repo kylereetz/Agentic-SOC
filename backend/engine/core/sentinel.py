@@ -85,27 +85,20 @@ class SentinelEngine:
                     "ip_address": src_ip,
                     "mac_address": src_mac,
                     "discovery_method": "passive_sniff",
-                    "pqc_vulnerable": False,
-                    "legacy_ciphers_used": []
+                    "shadow_it": False,
+                    "unpatched_legacy": False,
+                    "default_credentials_exposed": False
                 }
                 self.inventory[src_ip] = asset
                 logger.info(f"[Passive] New asset: {src_ip} ({src_mac})")
                 
-            # [PQC] Post-Quantum Passive Cryptography Sniffer
-            if packet.haslayer("TLSServerHello"):
-                try:
-                    # Passively extract the cipher suite the Server is aggressively choosing.
-                    cipher = packet["TLSServerHello"].cipher
-                    cipher_str = str(cipher)
-                    
-                    # If it's performing legacy Public Key exchanges (RSA/ECC), flag it for the Board
-                    if "RSA" in cipher_str or "ECDHE" in cipher_str or "DHE" in cipher_str:
-                        self.inventory[src_ip]["pqc_vulnerable"] = True
-                        if cipher_str not in self.inventory[src_ip]["legacy_ciphers_used"]:
-                            self.inventory[src_ip]["legacy_ciphers_used"].append(cipher_str)
-                            logger.warning(f"[PQC Audit] Discovered legacy cryptographic cipher on {src_ip}: {cipher_str}")
-                except Exception as e:
-                    pass
+            # Passive detection of default PLC credentials and unauthenticated Modbus
+            if packet.haslayer("TCP") and packet["TCP"].dport == 502:
+                # Flagging unauthenticated cleartext industrial protocols
+                self.inventory[src_ip]["shadow_it"] = True
+                # Mock logic for default credential exposure via cleartext
+                self.inventory[src_ip]["default_credentials_exposed"] = True
+                logger.warning(f"[Scout Audit] Discovered unauthenticated Modbus stream on {src_ip}")
 
     # ------------------------------------------------------------------
     # 2. Active ARP Scan (Layer 2)
@@ -204,6 +197,8 @@ class SentinelEngine:
             combined = str(findings).lower()
             if "windows" in combined or "microsoft" in combined:
                 self.inventory[ip]["os_label"] = "Windows"
+                if "windows 7" in combined or "xp" in combined or "2008" in combined:
+                    self.inventory[ip]["unpatched_legacy"] = True
             elif "linux" in combined or "ubuntu" in combined or "debian" in combined:
                 self.inventory[ip]["os_label"] = "Linux"
             elif "ssh-2.0-openssh" in combined:
@@ -225,7 +220,7 @@ class SentinelEngine:
             return None
 
     def _get_tls_metadata(self, ip: str, port: int, timeout: int = 3) -> Optional[Dict[str, Any]]:
-        """Extract TLS version and assess PQC cryptographic risk."""
+        """Extract TLS version metadata."""
         context = ssl.create_default_context()
         context.check_hostname = False
         context.verify_mode = ssl.CERT_NONE
@@ -239,16 +234,10 @@ class SentinelEngine:
                     
                     cipher_info = ssock.cipher()
                     cipher_name = cipher_info[0] if cipher_info else "UNKNOWN"
-                    
-                    # [PQC] Quantum Vulnerability Evaluation
-                    pqc_vulnerable = False
-                    if "RSA" in cipher_name or "ECDHE" in cipher_name or "DHE" in cipher_name:
-                        pqc_vulnerable = True
 
                     return {
                         "version": ssock.version(),
                         "cipher": cipher_name,
-                        "pqc_vulnerable": pqc_vulnerable,
                         "active": True
                     }
         except Exception:

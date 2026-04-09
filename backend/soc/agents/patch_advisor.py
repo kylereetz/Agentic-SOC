@@ -1,5 +1,5 @@
 """
-RCA Patch Pilot: Remediation Script Drafter.
+RCA Patch Advisor: Remediation Script Drafter.
 Consumes Triage alerts and Auditor gap data, then drafts targeted
 PowerShell (Windows) or Bash (Rocky 9 / Linux) remediation scripts.
 
@@ -58,7 +58,7 @@ class PatchDraft:
 # Script templates
 # ---------------------------------------------------------------------------
 _PS_TEMPLATE = '''# ===========================================================================
-# RCA Patch Pilot — Remediation Script (PowerShell)
+# RCA Patch Advisor — Remediation Script (PowerShell)
 # ===========================================================================
 # Patch ID   : {patch_id}
 # Title      : {title}
@@ -81,26 +81,26 @@ Write-Host "[RCA_EVENT] {{ 'task': 'verify', 'status': 'executing' }}"
 {verify_commands}
 
 Write-Host "[RCA_EVENT] {{ 'task': 'complete', 'status': 'success' }}"
-Write-Host "[RCA Patch Pilot] Remediation complete. Please verify manually."
+Write-Host "[RCA Patch Advisor] Remediation complete. Please verify manually."
 '''
 
 _PS_ROLLBACK_TEMPLATE = '''# ===========================================================================
-# RCA Patch Pilot — ROLLBACK Script (PowerShell)
+# RCA Patch Advisor — ROLLBACK Script (PowerShell)
 # ===========================================================================
 # Patch ID   : {patch_id}
 # Title      : ROLLBACK — {title}
 # ===========================================================================
 
-Write-Host "[RCA Patch Pilot] Rolling back: {title}"
+Write-Host "[RCA Patch Advisor] Rolling back: {title}"
 
 {rollback_commands}
 
-Write-Host "[RCA Patch Pilot] Rollback complete."
+Write-Host "[RCA Patch Advisor] Rollback complete."
 '''
 
 _BASH_TEMPLATE = '''#!/bin/bash
 # ===========================================================================
-# RCA Patch Pilot — Remediation Script (Bash)
+# RCA Patch Advisor — Remediation Script (Bash)
 # ===========================================================================
 # Patch ID   : {patch_id}
 # Title      : {title}
@@ -124,12 +124,12 @@ echo "[RCA_EVENT] {{ \\"task\\": \\"verify\\", \\"status\\": \\"executing\\" }}"
 {verify_commands}
 
 echo "[RCA_EVENT] {{ \\"task\\": \\"complete\\", \\"status\\": \\"success\\" }}"
-echo "[RCA Patch Pilot] Remediation complete. Please verify manually."
+echo "[RCA Patch Advisor] Remediation complete. Please verify manually."
 '''
 
 _BASH_ROLLBACK_TEMPLATE = '''#!/bin/bash
 # ===========================================================================
-# RCA Patch Pilot — ROLLBACK Script (Bash)
+# RCA Patch Advisor — ROLLBACK Script (Bash)
 # ===========================================================================
 # Patch ID   : {patch_id}
 # Title      : ROLLBACK — {title}
@@ -249,9 +249,9 @@ REMEDIATION_LIBRARY: Dict[str, Dict[str, Any]] = {
 
 
 # ---------------------------------------------------------------------------
-# Patch Pilot Agent
+# Patch Advisor Agent
 # ---------------------------------------------------------------------------
-class PatchPilotAgent:
+class PatchAdvisorAgent:
     """
     Drafts remediation scripts based on Triage alerts and Detector findings.
     NEVER auto-executes — all scripts require human approval.
@@ -263,9 +263,9 @@ class PatchPilotAgent:
         os.makedirs(_DRAFTS_DIR, exist_ok=True)
         self.drafts: List[PatchDraft] = []
         
-        # [IQ] Doctrine Reference: WEDGE-PATCHPILOT
+        # [IQ] Doctrine Reference: WEDGE-PATCHADVISOR
         from soc.bootstrap import get_soc_path
-        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_wedge_patchpilot.md')}")
+        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_wedge_patchadvisor.md')}")
 
     def draft_from_alerts(
         self, alerts_path: Optional[str] = None
@@ -472,5 +472,5 @@ class PatchPilotAgent:
 
 
 if __name__ == "__main__":
-    pilot = PatchPilotAgent()
-    print("Patch Pilot loaded. Feed it alerts or hardening results to draft scripts.")
+    advisor = PatchAdvisorAgent()
+    print("Patch Advisor loaded. Feed it alerts or hardening results to draft scripts.")

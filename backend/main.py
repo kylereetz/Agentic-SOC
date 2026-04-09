@@ -139,15 +139,15 @@ def patch(
     include_hardening: bool = typer.Option(False, help="Also draft scripts for local hardening failures")
 ):
     """Draft remediation scripts from alerts or hardening findings."""
-    from soc.agents.patch_pilot import PatchPilotAgent
+    from soc.agents.patch_advisor import PatchAdvisorAgent
     from engine.core.detector import run_local_hardening
 
-    pilot = PatchPilotAgent()
+    advisor = PatchAdvisorAgent()
 
     # Draft from triage alerts
     alerts_path = alerts or os.path.join("soc", "reports", "triage", "triage_alerts.db")
     if os.path.exists(alerts_path):
-        pilot.draft_from_alerts(alerts_path)
+        advisor.draft_from_alerts(alerts_path)
 
     # Draft from local hardening failures
     if include_hardening:
@@ -162,11 +162,11 @@ def patch(
             }
             for r in report_data.results
         ]
-        pilot.draft_from_hardening(results)
+        advisor.draft_from_hardening(results)
 
-    manifest = pilot.write_manifest()
-    pending = pilot.list_pending()
-    console.print("\n[bold yellow]Patch Pilot — Drafted Scripts[/bold yellow]")
+    manifest = advisor.write_manifest()
+    pending = advisor.list_pending()
+    console.print("\n[bold yellow]Patch Advisor — Drafted Scripts[/bold yellow]")
     for d in pending:
         console.print(f"  [{d.status}] {d.patch_id} — {d.title}")
         console.print(f"             {d.filepath}")

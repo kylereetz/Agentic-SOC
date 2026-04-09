@@ -24,7 +24,7 @@ import HostDrilldownPanel from './components/HostDrilldownPanel';
 import LogIntegrityMonitor from './components/LogIntegrityMonitor';
 import EntityGraph from './components/EntityGraph';
 import CaseHistoryView from './components/CaseHistoryView';
-import PatchPilotView from './components/PatchPilotView';
+import PatchAdvisorView from './components/PatchAdvisorView';
 import ForensicsPanel from './components/ForensicsPanel';
 import MalwarePathologistView from './components/MalwarePathologistView';
 import HeatmapView from './components/HeatmapView';
@@ -125,7 +125,7 @@ function DashboardInner() {
       case 'Netflow / Traffic': return <NetflowView />;
       case 'Topology':         return <EntityGraph />;
       case 'Case History':     return <CaseHistoryView />;
-      case 'Patch Pilot':      return <PatchPilotView />;
+      case 'Patch Advisor':    return <PatchAdvisorView />;
       case 'Forensics':         return <ForensicsPanel />;
       case 'Malware Lab':       return <MalwarePathologistView />;
       case 'Risk Heatmap':      return <HeatmapView />;

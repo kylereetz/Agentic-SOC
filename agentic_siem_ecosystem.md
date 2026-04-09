@@ -21,7 +21,7 @@ Below is the exhaustive list of specialized agents categorized by our 4-Pillar s
 
 | Agent Name | Specialization | Key Capability |
 | :--- | :--- | :--- |
-| **GAGGLE-SCOUT** | Asset Discovery | Performs agentless discovery, diffing, and Post-Quantum Cryptography (PQC) Vulnerability Tracking for IT/OT assets. |
+| **GAGGLE-SCOUT** | Asset Discovery | Performs agentless discovery, diffing, and tracking of shadow IT, unpatched legacy systems, and default PLC credentials for IT/OT assets. |
 | **GAGGLE-TOPOLOGY** | Network Mapping | Maintains an active relationship graph mapping Users to Hosts to Services. |
 | **GAGGLE-LOG-GUARDIAN** | Normalization | Fixes "broken" logs from legacy systems using NLP-guided schemas. |
 | **GAGGLE-TRAFFIC-SIEVE** | Netflow Analysis | Identifies anomalous data exfiltration patterns in netflow/PCAPs. |
@@ -45,7 +45,6 @@ Below is the exhaustive list of specialized agents categorized by our 4-Pillar s
 | **QUILL-GATEKEEPER** | Identity & Access | Detects MFA fatigue, impossible travel, and NHI (Non-Human Identity) risk. |
 | **QUILL-VANGUARD** | Supply Chain Risk | Ingests SBOMs to instantly flag zero-day impacts on nested libraries. |
 | **QUILL-MIRAGE** | Deception Operations | Deploys and monitors lightweight honeypots (PLCs, CAD shares) and canaries. |
-| **QUILL-RED** | Adversary Simulation | Injects synthetic OT/Network threats to continuously audit SOC true-positive detection efficacy. |
 
 ---
 
@@ -54,7 +53,7 @@ Below is the exhaustive list of specialized agents categorized by our 4-Pillar s
 
 | Agent Name | Specialization | Key Capability |
 | :--- | :--- | :--- |
-| **WEDGE-PATCHPILOT** | Vulnerability Patching | Drafts context-aware fix scripts for vulnerabilities and hardening failures. |
+| **WEDGE-PATCHADVISOR** | Advisory Patching | Drafts context-aware fix scripts for human review; NEVER auto-executes. |
 | **WEDGE-RESPONDER** | Automated Containment | Performs process kills and network isolation with a built-in dead-man's switch. |
 
 ---
@@ -70,5 +69,28 @@ Below is the exhaustive list of specialized agents categorized by our 4-Pillar s
 
 ---
 
+## 5. Multi-Head LLM Infrastructure & Model Allocation
+*To maximize efficiency on edge/local hardware (e.g., 16/24GB VRAM limits), the SOC distributes LLM workloads across specialized "Heads."*
+
+### Hardware & Engine Setup
+- **Framework**: Pydantic AI for type-safe, structured JSON agent returns.
+- **Context Window**: 16,384 tokens (`num_ctx`) to handle deep incident context.
+- **OLLAMA Tuning**:
+  - `OLLAMA_MAX_VRAM=16GB`
+  - `OLLAMA_NUM_PARALLEL=4` (Enables concurrent multi-agent executions)
+  - `OLLAMA_KEEP_ALIVE=-1` (Forces persistence in VRAM, preventing "thumping")
+
+### Model Mapping
+
+| Model Head | Primary Model | VRAM Used | Dedicated Agents |
+| :--- | :--- | :--- | :--- |
+| **Reasoning Head** | `llama3.1:8b` (4-bit) | ~7.0 GB | **QUILL-INVESTIGATOR**, **FLYWAY-GOVERNOR**, **GAGGLE-LOG-GUARDIAN**, **WEDGE-PATCHADVISOR** |
+| **Syntactic Head** | `qwen2.5:3b` (4-bit) | ~2.5 GB | **FLYWAY-COMMUNICATOR** |
+| **Embedding Head** | `nomic-embed-text` | ~1.5 GB | **QUILL-LIBRARIAN** (RAG Memory) |
+
+*Note: Total Cumulative Load floats around ~12.5 GB, providing a safety buffer for the host OS and parallel processing bursts.*
+
+---
+
 > [!IMPORTANT]
-> **Scaling the Hive**: A true "Score 9.0" Orchestrator doesn't treat these agents as static scripts. It uses **Multi-Agent Consensus**—where *QUILL-MALWARE-PATHOLOGIST* and *QUILL-GATEKEEPER* must both agree before *WEDGE-RESPONDER* is allowed to isolate a high-value CEO laptop.
+> **Scaling the Hive**: A true Orchestrator uses **Multi-Agent Consensus**—where *QUILL-MALWARE-PATHOLOGIST* and *QUILL-GATEKEEPER* must both agree before *WEDGE-RESPONDER* is allowed to isolate a high-value CEO laptop.

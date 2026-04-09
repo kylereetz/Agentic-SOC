@@ -165,7 +165,7 @@ function EmptyState({ onRefresh }) {
       <div className="text-center">
         <p className="h-title" style={{ color: '#6B7280' }}>No Patch Drafts</p>
         <p className="h-meta mt-1 max-w-xs" style={{ color: '#374151' }}>
-          SENTINEL-PATCH-PILOT generates remediation scripts when triage alerts<br />
+          WEDGE-PATCHADVISOR generates remediation scripts when triage alerts<br />
           match known NIST hardening gaps. No drafts pending approval yet.
         </p>
       </div>
@@ -204,7 +204,7 @@ const MOCK_DRAFTS = [
     created_at: new Date(Date.now() - 3600000).toISOString(),
     script_content: `#!/bin/bash
 # ===========================================================================
-# RCA Patch Pilot — Remediation Script (Bash)
+# RCA Patch Advisor — Remediation Script (Bash)
 # ===========================================================================
 # Patch ID   : RCA-DEMO-353
 # Title      : Configure PAM TOTP (Google Authenticator)
@@ -228,10 +228,10 @@ echo "[RCA_EVENT] { \\"task\\": \\"verify\\", \\"status\\": \\"executing\\" }"
 grep 'pam_google_authenticator' /etc/pam.d/sshd
 
 echo "[RCA_EVENT] { \\"task\\": \\"complete\\", \\"status\\": \\"success\\" }"
-echo "[RCA Patch Pilot] Remediation complete. Please verify manually."`,
+echo "[RCA Patch Advisor] Remediation complete. Please verify manually."`,
     rollback_content: `#!/bin/bash
 # ===========================================================================
-# RCA Patch Pilot — ROLLBACK Script (Bash)
+# RCA Patch Advisor — ROLLBACK Script (Bash)
 # ===========================================================================
 # Patch ID   : RCA-DEMO-353
 # Title      : ROLLBACK — Configure PAM TOTP
@@ -252,7 +252,7 @@ echo "[RCA_EVENT] { \\"task\\": \\"rollback\\", \\"status\\": \\"success\\" }"`,
     status: 'PENDING_APPROVAL',
     created_at: new Date(Date.now() - 7200000).toISOString(),
     script_content: `# ===========================================================================
-# RCA Patch Pilot — Remediation Script (PowerShell)
+# RCA Patch Advisor — Remediation Script (PowerShell)
 # ===========================================================================
 # Patch ID   : RCA-DEMO-311
 # Title      : Disable Guest Account
@@ -277,22 +277,22 @@ Write-Host "[RCA_EVENT] { 'task': 'verify', 'status': 'executing' }"
 Get-LocalUser -Name 'Guest' | Select-Object Name, Enabled
 
 Write-Host "[RCA_EVENT] { 'task': 'complete', 'status': 'success' }"
-Write-Host "[RCA Patch Pilot] Remediation complete. Please verify manually."`,
+Write-Host "[RCA Patch Advisor] Remediation complete. Please verify manually."`,
     rollback_content: `# ===========================================================================
-# RCA Patch Pilot — ROLLBACK Script (PowerShell)
+# RCA Patch Advisor — ROLLBACK Script (PowerShell)
 # ===========================================================================
 # Patch ID   : RCA-DEMO-311
 # Title      : ROLLBACK — Disable Guest Account
 # ===========================================================================
 
-Write-Host "[RCA Patch Pilot] Rolling back: Disable Guest Account"
+Write-Host "[RCA Patch Advisor] Rolling back: Disable Guest Account"
 Enable-LocalUser -Name 'Guest'
-Write-Host "[RCA Patch Pilot] Rollback complete."`,
+Write-Host "[RCA Patch Advisor] Rollback complete."`,
   },
 ];
 
 // ── Main View ─────────────────────────────────────────────────────────────────
-export default function PatchPilotView() {
+export default function PatchAdvisorView() {
   const { authenticatedFetch } = useAuth();
 
   const [drafts, setDrafts]       = useState([]);
@@ -350,7 +350,7 @@ export default function PatchPilotView() {
         <div className="flex items-center gap-3">
           <Wrench size={14} style={{ color: '#88C057' }} />
           <span className="text-xs font-bold tracking-widest" style={{ color: '#E2E8F0' }}>
-            PATCH PILOT — REMEDIATION WORKBENCH
+            PATCH ADVISOR — REMEDIATION WORKBENCH
           </span>
           {isMock && (
             <span className="text-[10px] terminal px-2 py-0.5 rounded-full"
@@ -397,7 +397,7 @@ export default function PatchPilotView() {
         <div className="flex-1 flex items-center justify-center gap-3">
           <Loader2 className="animate-spin" size={20} style={{ color: '#88C057' }} />
           <p className="text-xs terminal" style={{ color: '#88C057' }}>
-            Fetching patch drafts from SENTINEL-PATCH-PILOT…
+            Fetching patch drafts from WEDGE-PATCHADVISOR…
           </p>
         </div>
       ) : drafts.length === 0 ? (

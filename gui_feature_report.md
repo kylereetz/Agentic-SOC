@@ -1,6 +1,6 @@
 # Agentic SOC GUI: Exhaustive Feature Report
 
-This report provides a comprehensive breakdown of all features, tabs, and interactive elements across the **Aegis Agent** Dashboard (v1.0 MVP).
+This report provides a comprehensive breakdown of all features, tabs, and interactive elements across the **Branta Agent** Dashboard (v1.0 MVP).
 
 ---
 

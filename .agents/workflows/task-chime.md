@@ -7,5 +7,5 @@ When you have fully completed the requested task and require no further action, 
 
 // turbo-all
 ```powershell
-$file = Get-ChildItem 'C:\Users\kyler\Music\Model Complete Sounds' | Get-Random; if ($file) { (New-Object System.Media.SoundPlayer $file.FullName).PlaySync() }
+$file = Get-ChildItem 'C:\Users\kyler\Documents\GitHub\Agentic SOC\Model Complete Sounds' | Get-Random; if ($file) { (New-Object System.Media.SoundPlayer $file.FullName).PlaySync() }
 ```

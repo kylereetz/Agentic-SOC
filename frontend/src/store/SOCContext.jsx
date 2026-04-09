@@ -38,7 +38,6 @@ export const mockAPI = {
     { id: 'FLYWAY-GOVERNOR',     role: 'GovernorAgent',          color: '#E5A862', status: 'ACTIVE',  task: 'Cross-mapping NIST & CMMC controls', runtime: '00:00', success: 98, tools: 0 },
     { id: 'FLYWAY-COMMUNICATOR', role: 'CommunicatorAgent',      color: '#3B6FE3', status: 'ACTIVE',  task: 'Synthesizing executive report', runtime: '01:22', success: 99, tools: 4 },
     { id: 'GAGGLE-WATCHDOG',     role: 'WatchdogAgent',          color: '#EF4444', status: 'ACTIVE',  task: 'Monitoring hive telemetry health & latency', runtime: '124:00', success: 100, tools: 888 },
-    { id: 'QUILL-RED-TEAM',     role: 'RedTeamAgent',           color: '#EF4444', status: 'IDLE',    task: 'Awaiting cyber range deployment', runtime: '00:00', success: 100, tools: 15 },
   ],
   '/api/evidence': [
     { id: 'EVD-001', source: 'EDR',   timestamp: '14:02:11', agent: 'MANAGER-01', sha256: 'e3b0c44...b855', type: 'Memory Dump',   name: 'HOST-DX9-memdump.dmp', size: '3.2 GB' },

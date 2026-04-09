@@ -14,7 +14,7 @@ const NAV_ITEMS = [
   { icon: Wifi,         label: 'Netflow / Traffic',              color: '#3B6FE3' },
   { icon: GitMerge,     label: 'Topology',                       color: '#3B6FE3' },
   { icon: History,      label: 'Case History',                    color: '#D84C7F' },
-  { icon: Wrench,       label: 'Patch Pilot',                     color: '#88C057' },
+  { icon: Wrench,       label: 'Patch Advisor',                   color: '#88C057' },
   { icon: Microscope,   label: 'Forensics',                       color: '#D84C7F' },
   { icon: Bug,          label: 'Malware Lab',                     color: '#EF4444' },
   { icon: Bot,          label: 'Agents',             badge: '26', color: '#D84C7F' },

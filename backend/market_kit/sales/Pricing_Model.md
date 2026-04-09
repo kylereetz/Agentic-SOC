@@ -28,15 +28,15 @@ Reetz Cyber Automation (RCA) offers three engagement tiers designed to scale wit
 
 ---
 
-## Tier 3: Syrinx-SOC (Hardware Pro)
+## Tier 3: Branta-SOC (Hardware Pro)
 *Best for: Full autonomous defense, dark network isolation, and sub-hour mitigation requirements.*
 
-- **Scope**: Flagship RCA "Pro" Hardware Appliance (High-compute for local LLM inference). Unlocks the full **24-Agent Syrinx Flock**, engaging **The Wedge** for precision-targeted automated containment and the full **Syrinx** core for orchestration. 
+- **Scope**: Flagship RCA "Pro" Hardware Appliance (High-compute for local LLM inference). Unlocks the full **24-Agent Branta Flock**, engaging **The Wedge** for precision-targeted automated containment and the full **Branta** core for orchestration. 
 - **Deliverables**: High-Performance Appliance, Full Autonomous SOC Access, Sub-Second Mitigation, Priority CMMC Audit Evidence Packages.
-- **Service Type**: Premium Annual Syrinx License + Pro Hardware.
+- **Service Type**: Premium Annual Branta License + Pro Hardware.
 - **Target Price**:
     - **One-time Hardware/Setup**: $12,000+
-    - **Annual Syrinx License**: **$45,000 - $75,000/yr**
+    - **Annual Branta License**: **$45,000 - $75,000/yr**
 
 ---
 

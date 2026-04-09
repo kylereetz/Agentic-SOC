@@ -19,8 +19,8 @@ export default function CyberRange() {
     setLogs([
       `[SYS] Initializing Cyber Range Environment...`,
       `[SYS] Allocating ephemeral target nodes...`,
-      `[SYS] Instantiating QUILL-RED-TEAM...`,
-      `[RED] Loaded objective profile: ${sim.name}`,
+      `[SYS] Instantiating synthetic simulation engine...`,
+      `[SIM] Loaded objective profile: ${sim.name}`,
     ]);
   };
 
@@ -34,11 +34,11 @@ export default function CyberRange() {
     if (!activeSim) return;
     const t = setInterval(() => {
       const msgs = [
-        `[RED] Executing reconnaissance (nmap -sn 10.100.0.0/24)...`,
-        `[RED] Found vulnerable service: SMBv1 on 10.100.0.45`,
-        `[RED] Attempting credential dumping via LSASS memory...`,
-        `[RED] Lateral movement successful to DC-02`,
-        `[RED] Deploying staging payload...`,
+        `[SIM] Executing reconnaissance (nmap -sn 10.100.0.0/24)...`,
+        `[SIM] Found vulnerable service: SMBv1 on 10.100.0.45`,
+        `[SIM] Attempting credential dumping via LSASS memory...`,
+        `[SIM] Lateral movement successful to DC-02`,
+        `[SIM] Deploying staging payload...`,
         `[SYS] Blue Team (TRIAGE) logged anomaly detection`
       ];
       setLogs(prev => [...prev.slice(-40), `[${new Date().toLocaleTimeString()}] ${msgs[Math.floor(Math.random() * msgs.length)]}`]);
@@ -57,8 +57,8 @@ export default function CyberRange() {
             ADVERSARY SIMULATION: CYBER RANGE
           </span>
           <span className="terminal text-xs px-2 py-0.5 rounded-full"
-            style={{ background: '#EF444420', color: '#EF4444', border: '1px solid #EF444444' }}>
-            QUILL-RED-TEAM
+            style={{ background: '#6B728020', color: '#6B7280', border: '1px solid #6B728044' }}>
+            SIMULATION-ENGINE
           </span>
         </div>
         
@@ -108,7 +108,7 @@ export default function CyberRange() {
           <div className="flex items-center justify-between mb-3 flex-shrink-0">
             <div className="flex items-center gap-2">
               <Terminal size={12} style={{ color: '#EF4444' }} />
-              <span className="text-xs terminal font-bold" style={{ color: '#6B7280' }}>RED TEAM EXFILTRATION FEED</span>
+              <span className="text-xs terminal font-bold" style={{ color: '#6B7280' }}>SIMULATOR EXFILTRATION FEED</span>
             </div>
             {activeSim && <span className="text-xs terminal animate-pulse" style={{ color: '#EF4444' }}>LIVE ENGAGEMENT: {activeSim.name}</span>}
           </div>
@@ -124,7 +124,7 @@ export default function CyberRange() {
               logs.map((log, i) => (
                 <div key={i} className="mb-1 leading-relaxed animate-slide-in-up">
                   <span style={{ 
-                    color: log.includes('RED]') ? '#EF4444' : 
+                    color: log.includes('SIM]') ? '#E5A862' : 
                           log.includes('SYS]') ? '#6B7280' : '#E5A862'
                   }}>
                     {log}

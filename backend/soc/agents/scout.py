@@ -129,17 +129,35 @@ class InventoryDiff:
             if before.get("os_label") != after.get("os_label"):
                 changed_fields.append(f"OS: {before.get('os_label')} -> {after.get('os_label')}")
             
-            # [PQC] Quantum Readiness Audit Feature
-            pqc_val = after.get("pqc_vulnerable", False)
-            if pqc_val and not before.get("pqc_vulnerable", False):
+            # [OT Tracking] Shadow IT, Legacy, and PLC defaults
+            if after.get("shadow_it", False) and not before.get("shadow_it", False):
                 events.append({
                     "timestamp": ts,
-                    "event_type": "asset_pqc_vulnerable",
+                    "event_type": "asset_shadow_it_detected",
+                    "severity": "CRITICAL",
+                    "ip": ip,
+                    "detail": "Asset identified as unauthorized or Shadow IT operating within industrial zones",
+                    "semantic_detail": f"SHADOW IT: Unauthorized device or protocol detected at {ip}."
+                })
+                
+            if after.get("unpatched_legacy", False) and not before.get("unpatched_legacy", False):
+                events.append({
+                    "timestamp": ts,
+                    "event_type": "asset_unpatched_legacy",
                     "severity": "WARNING",
                     "ip": ip,
-                    "legacy_ciphers": after.get("legacy_ciphers_used", []),
-                    "detail": "Asset is utilizing legacy RSA/ECC ciphers vulnerable to Post-Quantum Cryptanalysis",
-                    "semantic_detail": f"QUANTUM RISK: {ip} is using legacy cryptographic suites."
+                    "detail": "Asset is running an unpatched legacy OS (e.g., Windows 7/XP)",
+                    "semantic_detail": f"LEGACY OS: {ip} is running an unsupported operating system."
+                })
+                
+            if after.get("default_credentials_exposed", False) and not before.get("default_credentials_exposed", False):
+                events.append({
+                    "timestamp": ts,
+                    "event_type": "asset_default_credentials",
+                    "severity": "CRITICAL",
+                    "ip": ip,
+                    "detail": "Asset is exposing default credentials or unauthenticated PLC industrial protocols",
+                    "semantic_detail": f"PLC CREDENTIALS EXPOSED: Unauthenticated/default protocol stream at {ip}."
                 })
 
             summary = ", ".join(changed_fields) if changed_fields else "Attributes updated"

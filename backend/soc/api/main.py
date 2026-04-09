@@ -548,7 +548,7 @@ async def get_patch_drafts(user: User = Depends(check_role(["admin", "analyst"])
     if not os.path.exists(_DRAFTS_DIR):
         return []
 
-    # Try manifest.json first (written by PatchPilotAgent.write_manifest)
+    # Try manifest.json first (written by PatchAdvisorAgent.write_manifest)
     manifest_path = os.path.join(_DRAFTS_DIR, "manifest.json")
     grouped: Dict[str, Any] = {}
     if os.path.exists(manifest_path):

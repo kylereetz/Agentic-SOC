@@ -1,11 +1,11 @@
-# Syrinx-RCA — Capability Brief
+# Branta-RCA — Capability Brief
 **Autonomous Multi-Agent SOC for NIST 800-171 & CMMC 2.0 Compliance**
 
 ## The Challenge: CMMC Deadline Urgency
 Defense Industrial Base (DIB) contractors face a critical mandate to enforce NIST 800-171 controls under CMMC 2.0. Traditional security tools fail to address the complexity of **Operational Technology (OT)** environments, leading to compliance gaps, audit friction, and unmitigated risk.
 
-## The Solution: The Syrinx "SOC-in-a-Box"
-RCA provides a "Zero-Phone-Home" security ecosystem powered by a **24-agent Syrinx Flock**. Deployed as a self-contained, air-gapped hardware appliance, our SOC employs autonomous LLM-driven specialized agents that operate strictly on-premise for absolute data sovereignty.
+## The Solution: The Branta "SOC-in-a-Box"
+RCA provides a "Zero-Phone-Home" security ecosystem powered by a **24-agent Branta Flock**. Deployed as a self-contained, air-gapped hardware appliance, our SOC employs autonomous LLM-driven specialized agents that operate strictly on-premise for absolute data sovereignty.
 
 ### Core Technology: The Engine
 - **Zero-Impact Discovery**: Passive & active non-intrusive asset identification via `GAGGLE-SCOUT`, including **Quantum Vulnerability Asset Mapping** to passively fingerprint legacy RSA/ECC ciphers without firing active probes.
@@ -22,7 +22,7 @@ Our SOC is explicitly structured like a highly coordinated migrating flock, orga
 1. **The Orchestration Layer (Syrinx)**: The authoritative core. Agents like `SYRINX-MANAGER` root the platform, managing all tasking and ensuring no agent operates in a silo.
 2. **The Operations Pillar (Gaggle)**: Ground-level observability. Agents like `GAGGLE-SCOUT` maintain real-time asset inventory and `GAGGLE-TRAFFIC-SIEVE` identifies structural network shifts using continuous Time Series analytics without disrupting factory operations.
 3. **The Intelligence Pillar (Quill)**: The deep forensic memory. `QUILL-ENDPOINT-ANALYST` executes high-speed Peer Group Deviation monitoring, writing detailed hypotheses and serving as the local institutional intellect.
-4. **The Action Pillar (Wedge)**: Precision defensive strikes. Mimicking the aerodynamic V-formation, `WEDGE-RESPONDER` executes fast, targeted isolation with a dead-man's switch, while `WEDGE-PATCHPILOT` drafts idempotent remediation scripts cutting through threats with pinpoint accuracy.
+4. **The Action Pillar (Wedge)**: Precision defensive strikes. Mimicking the aerodynamic V-formation, `WEDGE-RESPONDER` executes fast, targeted isolation with a dead-man's switch, while `WEDGE-PATCHADVISOR` drafts idempotent remediation scripts cutting through threats with pinpoint accuracy.
 5. **The Business Pillar (Flyway)**: Strategic governance. `FLYWAY-GOVERNOR` and `FLYWAY-HISTORIAN` serve as the long-term migration strategy, automatically mapping findings to NIST controls, tuning security rules, and translating technical risk into executive metrics.
 
 ---
@@ -42,12 +42,12 @@ The Agentic SOC is continuously engineered against stringent KPIs to mathematica
 |---|---|---|
 | **Tier 1: Strategic Audit** | Baseline Compliance | Portable Rig Deployment of the Gaggle & Flyway |
 | **Tier 2: Continuous Monitor** | Visibility & Intelligence | Ruggedized Appliance + The Quill Addition for Active Hunting |
-| **Tier 3: The Full Syrinx SOC**| Autonomous Defense | High-Performance Appliance unlocking the Wedge (Automated Response) |
+| **Tier 3: The Full Branta SOC**| Autonomous Defense | High-Performance Appliance unlocking the Wedge (Automated Response) |
 
-## Why Syrinx-RCA?
+## Why Branta-RCA?
 - **OT-First DNA**: Built specifically for manufacturing and industrial environments where uptime is critical.
 - **AI-Driven Reasoning**: Our agents use Chain-of-Thought reasoning to explain *why* a threat was flagged.
-- **Multi-Agent Consensus**: Multiple specialists (e.g., Forensics + Malware) must agree before isolation is recommended.
+- **Multi-Agent Consensus (The Hallucination Safety Switch)**: A single AI agent cannot arbitrarily take down your network. Multiple specialized models (e.g., Forensics and Malware Pathologists) must mathematically agree before isolation is requested, acting as a hard algorithmic safety switch against LLM hallucinations.
 - **CMMC Native**: Every action is logged, hashed, and mapped to a specific NIST control for frictionless audits.
 
 ---

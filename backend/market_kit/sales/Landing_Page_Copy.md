@@ -15,9 +15,9 @@
 
 ---
 
-## 3. Our Solution: The Syrinx Architecture
+## 3. Our Solution: The Branta Architecture
 **Headline**: Your world-class Security Operations Center—powered by a highly coordinated, multi-agent AI flock.
-**Copy**: Instead of expensive human analysts or dumb signature tools, we deploy **The Syrinx Framework**. Our hardened appliance uses a structurally flawless, 5-Pillar Avian Taxonomy to secure your floor:
+**Copy**: Instead of expensive human analysts or dumb signature tools, we deploy **The Branta Framework**. Our hardened appliance uses a structurally sound, 5-Pillar Avian Taxonomy to secure your floor:
 - **The Gaggle (Ground Truth)**: Ground-level observability. Agents like `GAGGLE-SCOUT` continuously map your factory floor without injecting dangerous probes into legacy hardware.
 - **The Quill (Intelligence)**: Deep forensic memory. Our analytical agents automatically learn the mathematical distribution of your specific factory floor, locating the single behavioral anomaly to catch Zero-Day supply chain exploits.
 - **The Wedge (Action)**: Precision containment. Fast, targeted momentum cutting through threats to isolate compromises in sub-second speeds.
@@ -29,7 +29,8 @@ Together, this highly coordinated 24-agent flock maps your assets directly to NI
 ## 4. Why Wisconsin Manufacturers Trust RCA
 - **Shop Floor First**: We speak your language—Modbus, S7, Ethernet/IP.
 - **Air-Gapped Lab**: Every agent update is stress-tested on real industrial hardware before deployment.
-- **Post-Quantum Cryptography (PQC) Ready**: Proactively map your legacy cryptographic attack surface today without injecting a single dangerous probe into your factory.
+- **Multi-Agent Consensus (Algorithm Safety)**: We combat AI "hallucinations" mathematically. Multiple specialized models must strictly agree on a threat before any isolation is requested, creating a hard algorithmic safety switch to protect your factory uptime.
+- **Shadow IT & Legacy System Discovery**: Proactively map unpatched Windows endpoints and default PLC credentials today without injecting a single dangerous active probe into your factory.
 - **Contract Insurance**: We turn the chaos of NIST 800-171 into a predictable path to 100% compliance.
 
 ---

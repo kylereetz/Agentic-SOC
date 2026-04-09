@@ -1,20 +1,20 @@
-# Technical Brief: The Agentic SOC for Industrial Environments
+# Technical Brief: Branta: The Agentic SOC for Industrial Environments
 **Reetz Cyber Automation — Special Report**
 
 ## Executive Summary
 Traditional Security Operations Centers (SOCs) are built for the office, not the factory floor. They rely on high-bandwidth traffic mirroring and intrusive scanning that risks legacy OT hardware. 
 
-**Reetz Cyber Automation (RCA)** introduces the **24-Agent Syrinx Architecture**: a hardened, autonomous SOC architecture built on a 5-Pillar Avian Taxonomy (Orchestration, Operations, Intelligence, Action, and Business). It provides continuous NIST 800-171/CMMC 2.0 compliance without the human overhead.
+**Reetz Cyber Automation (RCA)** introduces the **24-Agent Syrinx Architecture**: a hardened, autonomous SOC architecture built on a 5-Pillar Taxonomy (Orchestration, Operations, Intelligence, Action, and Business). It provides continuous NIST 800-171/CMMC 2.0 compliance without the human overhead.
 
 ---
 
-## 1. The Core Innovation: 5-Pillar Avian Taxonomy
+## 1. The Core Innovation: 5-Pillar Taxonomy
 Instead of monolithic scanners, RCA deploys **24 task-specific Agents** organized into a highly coordinated formation:
 
 - **Orchestration Pillar (Syrinx)**: `SYRINX-MANAGER` and `SYRINX-ORCHESTRATOR` function as the Autonomous Policy Engine, ensuring no agent operates in a silo and managing the precise transition from detection to automated action.
 - **Operations Pillar (Gaggle)**: The ground-truth observers. `GAGGLE-TRAFFIC-SIEVE` tracks Volumetric Data Spikes via Welford Variance, while `GAGGLE-SCOUT` manages continuous real-time inventory without knocking over legacy machinery. 
 - **Intelligence Pillar (Quill)**: The deep memory. `QUILL-ENDPOINT-ANALYST` computes autonomous Jaccard clusters for UEBA modeling, and `QUILL-CORRELATOR` fights alert fatigue using **GraphML Intelligent Incident Grouping** (linking disparate alerts via Property Similarity and Temporal Proximity).
-- **Action Pillar (Wedge)**: Aerodynamic momentum. `WEDGE-RESPONDER` and `WEDGE-PATCHPILOT` execute precision containment and remediation, slicing through resistance with extreme target accuracy.
+- **Action Pillar (Wedge)**: Aerodynamic momentum. `WEDGE-RESPONDER` and `WEDGE-PATCHADVISOR` execute precision containment and remediation, slicing through resistance with extreme target accuracy.
 - **Business Pillar (Flyway)**: Macro-level strategy. `FLYWAY-COMMUNICATOR` synthesizes technical telemetry into executive board reports and financial risk quantifications.
 
 ---
@@ -24,13 +24,14 @@ The primary fear in industrial security is "The Ping of Death" or an autonomous 
 
 1.  **"Zero-Phone-Home" Air-Gap**: The entire 24-agent flock operates on a dedicated hardware appliance. No data ever leaves the client's network, meeting the strictest "Dark Network" requirements for critical infrastructure.
 2.  **Deep Evidential Clustering (DEC)**: To resolve the "black box" limitations of traditional AI, the framework incorporates DEC using Dirichlet distributions to model epistemic uncertainty. By explicitly quantifying the mathematical confidence of its findings, the AI distinguishes between "high-confidence threats" (which are automatically isolated) and "ambiguous behaviors" (which are queued for human review). This achieves a 38% reduction in false positives compared to standard anomaly metrics.
-3.  **Rule of Zero (Human Apex)**: All destructive actions or Critical severity containment require a validated **Human Approval Verdict** via the local console.
-4.  **OT-First Prioritization**: Operational Safety takes precedence over IT data integrity in all emergency automated decisions.
-5.  **Protocol-First Defense**: Passive, agnostic support for **Modbus, EtherNet/IP, and PROFINET**, covering >80% of the industrial market without intrusive "brand plugins."
-6.  **Zero-Config UEBA Framework**: "The Agentic SOC doesn't need to know who your Finance team is. By observing daily telemetry, the Quill automatically clusters entities with highly similar behavioral footprints. If a workstation assigned to 'Cluster A' suddenly executes a tactic common in 'Cluster B', the system mathematically recognizes a Peer Group Deviation and triggers instantly."
-7.  **Zero-Impact Probing**: Uses "Polite Probing" (e.g., EtherNet/IP ListIdentity) to satisfy NIST 800-171 inventory requirements without risking the "Ping of Death" on legacy OT hardware.
-8.  **Quantum Vulnerability Mapping**: Anticipating the post-quantum horizon, `GAGGLE-SCOUT` passively extracts TLS `ServerHello` metadata from organic network traffic. It automatically structures a granular **PQC Inventory** of all hardware reliant on legacy RSA/ECC ciphers without emitting a single dangerous active probe.
-9.  **Crypto-Agility & Zero Trust Mesh**: The SOC’s internal communication grid is governed by an automated proxy. By utilizing X25519 elliptic curves, this explicit "Hybrid Deployment" naturally enforces `HIGH_ASSURANCE` cipher suites, immediately preventing internal lateral movement or payload injection from compromised endpoints.
+3.  **Multi-Agent Consensus (The Hallucination Safety Switch)**: To explicitly prevent LLM hallucinations from causing destructive physical downtime, no single agent is authorized to conduct network isolation. Multiple specialists (e.g., Forensics and Malware Pathologists) must reach algorithmic consensus on the threat severity before a recommendation reaches the `WEDGE-RESPONDER`. It acts as a hard mathematical safety switch against AI unpredictability.
+4.  **Rule of Zero (Human Apex)**: All destructive actions or Critical severity containment require a validated **Human Approval Verdict** via the local console.
+5.  **OT-First Prioritization**: Operational Safety takes precedence over IT data integrity in all emergency automated decisions.
+6.  **Protocol-First Defense**: Passive, agnostic support for **Modbus, EtherNet/IP, and PROFINET**, covering >80% of the industrial market without intrusive "brand plugins."
+7.  **Zero-Config UEBA Framework**: "The Agentic SOC doesn't need to know who your Finance team is. By observing daily telemetry, the Quill automatically clusters entities with highly similar behavioral footprints. If a workstation assigned to 'Cluster A' suddenly executes a tactic common in 'Cluster B', the system mathematically recognizes a Peer Group Deviation and triggers instantly."
+8.  **Zero-Impact Probing**: Uses "Polite Probing" (e.g., EtherNet/IP ListIdentity) to satisfy NIST 800-171 inventory requirements without risking the "Ping of Death" on legacy OT hardware.
+9.  **Shadow IT & Legacy System Discovery**: Anticipating the realities of industrial networks, `GAGGLE-SCOUT` passively monitors organic network traffic to map unpatched endpoints (e.g., Windows 7/XP) and unauthenticated protocols (e.g., Modbus/TCP) exposing default credentials. It automatically structures a granular **Shadow IT Inventory** without emitting a single dangerous active probe.
+10. **Crypto-Agility & Zero Trust Mesh**: The SOC’s internal communication grid is governed by an automated proxy. By utilizing X25519 elliptic curves, this explicit "Hybrid Deployment" naturally enforces `HIGH_ASSURANCE` cipher suites, immediately preventing internal lateral movement or payload injection from compromised endpoints.
 
 ---
 

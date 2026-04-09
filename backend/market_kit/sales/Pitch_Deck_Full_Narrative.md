@@ -19,12 +19,12 @@
 *   **Narrative**: "Your IT guy is great at laptops and email. But does he know what a Modbus packet looks like? Does he know why pinging a 1995 Allen-Bradley PLC might crash your entire assembly line? Most cyber companies treat your shop floor like an office. We treat it like the mission-critical environment it is."
 *   **Message**: OT security requires specialized, 'polite' tools.
 
-## Slide 4: The Syrinx "SOC-in-a-Box"
+## Slide 4: The Branta "SOC-in-a-Box"
 *   **Visual**: A photo of a ruggedized, industrial-grade small form factor PC with the RCA logo.
-*   **Narrative**: "We don't just send auditors in suits to give you a 200-page list of problems. We deploy a **self-contained, air-gapped brain**. Because our Data Processor employs proprietary JSON structuring, we achieve 2 magnitudes of data reduction, drastically cutting hardware costs. This hardened appliance lives on your network and runs a 24-agent **Syrinx Flock** that finds your assets, maps them to NIST controls, and watches for threats—without ever needing an internet connection. And because the internal network runs on a **Crypto-Agile Service Mesh**, the SOC is fundamentally secured against Post-Quantum decryption."
+*   **Narrative**: "We don't just send auditors in suits to give you a 200-page list of problems. We deploy a **self-contained, air-gapped brain**. Because our Data Processor employs proprietary JSON structuring, we achieve 2 magnitudes of data reduction, drastically cutting hardware costs. This hardened appliance lives on your network and runs a 24-agent **Branta Flock** that finds your assets, maps them to NIST controls, and watches for threats—without ever needing an internet connection. And because the internal network runs on a **Crypto-Agile Service Mesh**, the SOC is fundamentally secured against Post-Quantum decryption."
 *   **Message**: An autonomous SOC that respects your data sovereignty.
 
-## Slide 5: The Syrinx Engine (The Avian Core)
+## Slide 5: The Branta Engine (The Avian Core)
 *   **Visual**: A stylized visual of a V-formation flock soaring above a digital grid.
 *   **Narrative**: "We designed our SOC using the aerodynamic principles of a migrating flock—a structurally flawless, self-correcting 5-Pillar formation:
     *   **The Gaggle (Ground Truth)**: Continuous discovery without knocking over PLCs. They actively map devices and passively strip TLS metadata to build a complete vulnerability inventory.
@@ -56,4 +56,4 @@
 ## Slide 11: Your First-Run Audit Starts Today
 *   **Visual**: Close-up of a laptop screen running the RCA CLI.
 *   **Call to Action**: "Let's perform a 'First-Run Audit' this week. We'll show you exactly where you stand against NIST 800-171 in 48 hours."
-*   **Contact**: Kyler Reetz | kyler@reetzcyber.com | [reetzcyber.com](http://reetzcyber.com)
+*   **Contact**: Kyle Reetz | [EMAIL_ADDRESS] | [website]

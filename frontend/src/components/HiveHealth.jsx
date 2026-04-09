@@ -30,7 +30,7 @@ const AGENT_ROSTER = [
   { id: 'QUILL-VANGUARD',          pillar: 'Response',  status: 'online',  load: 30, latency: 13, task: 'Checking SBOM for CVE-2026-011' },
   { id: 'QUILL-MIRAGE',            pillar: 'Response',  status: 'online',  load: 5,  latency: 3,  task: 'Silent — 3 decoys active' },
   { id: 'GAGGLE-SCOUT',             pillar: 'Response',  status: 'online',  load: 22, latency: 21, task: 'Passive OT sweep subnet /16' },
-  { id: 'SENTINEL-PATCH-PILOT',       pillar: 'Response',  status: 'idle',    load: 0,  latency: 0,  task: 'Awaiting VANGUARD risk handoff' },
+  { id: 'WEDGE-PATCHADVISOR',       pillar: 'Response',  status: 'idle',    load: 0,  latency: 0,  task: 'Awaiting VANGUARD risk handoff' },
   { id: 'GAGGLE-TOPOLOGY-MAPPER',   pillar: 'Response',  status: 'online',  load: 41, latency: 16, task: 'Building L3 graph for CORP-VLAN' },
 
   // Forensics & Analysis
@@ -43,8 +43,6 @@ const AGENT_ROSTER = [
   { id: 'FLYWAY-COMMUNICATOR',      pillar: 'Gov',       status: 'online',  load: 12, latency: 10, task: 'Drafting board summary report' },
   { id: 'GAGGLE-WATCHDOG',          pillar: 'Gov',       status: 'online',  load: 8,  latency: 4,  task: 'Heartbeat polling all agents' },
 
-  // Adversary Simulation
-  { id: 'QUILL-RED-TEAM',          pillar: 'Sim',       status: 'idle',    load: 10, latency: 12, task: 'Awaiting Cyber Range parameters' },
 ];
 
 const SPECIALIST_ROSTER = [
@@ -91,7 +89,7 @@ const WS_MESSAGES = [
   "HISTORIAN >> INC-2026-041 timeline archived to /cases/history",
   "FORENSICS >> Cobalt Strike shellcode confirmed: HOST-DX9 PID 9912",
   "TOPOLOGY-MAPPER >> L3 graph updated: 3 new nodes in CORP-VLAN",
-  "PATCH-PILOT >> CVE-2026-011 assigned to VANGUARD for SBOM cross-check",
+  "PATCH-ADVISOR >> CVE-2026-011 assigned to VANGUARD for SBOM cross-check",
   "ENDPOINT-ANALYST >> EDR telemetry pull complete: 4 hosts",
   "MALWARE-PATHOLOGIST >> sandbox ready — detonation queue empty",
   "TRAFFIC-SIEVE >> exfiltration pattern detected: 192.168.1.105 → 203.0.113.45",
