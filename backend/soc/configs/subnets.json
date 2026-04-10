@@ -1,0 +1,10 @@
+{
+  "10.0.10.0/24": {
+    "type": "Server",
+    "label": "Static"
+  },
+  "10.0.50.0/24": {
+    "type": "EndUser",
+    "label": "Dynamic"
+  }
+}

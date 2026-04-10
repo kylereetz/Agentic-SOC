@@ -7,9 +7,12 @@ Tracks User -> Host, Host -> IP, and Host -> Service mappings.
 """
 
 import asyncio
+import ipaddress
 import json
 import logging
 import os
+import sqlite3
+from collections import defaultdict
 from datetime import datetime, timezone
 from typing import Dict, List, Any, Set
 
@@ -23,6 +26,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 TOPOLOGY_PATH = get_soc_path("reports", "topology.json")
+SUBNETS_PATH = get_soc_path("configs", "subnets.json")
+TOKENS_DB_PATH = get_soc_path("reports", "topology_tokens.db")
 
 class TopologyMapper:
     """
@@ -33,6 +38,7 @@ class TopologyMapper:
         self.discovery_bus = EventBus("discovery_events")
         self.identity_bus = EventBus("identity_events")
         self.network_bus = EventBus("network_telemetry")
+        self.dhcp_bus = EventBus("dhcp_logs")
         
         # Graph Structure: nodes and edges
         # nodes: { id: { type, label, metadata } }
@@ -43,10 +49,65 @@ class TopologyMapper:
         self.lock = asyncio.Lock()
         self.is_running = False
         
+        # Protocol Heuristic Tracking
+        self.port_counters = defaultdict(lambda: defaultdict(int))
+        
+        # Load Subnets Config
+        self.subnets = self._load_subnets()
+        
+        # Initialize SQLite Token Database
+        self._init_token_db()
+        
         # [IQ] Doctrine Reference: GAGGLE-TOPOLOGY
         logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_gaggle_topology.md')}")
         
         self._load_topology()
+
+    def _load_subnets(self):
+        if os.path.exists(SUBNETS_PATH):
+            try:
+                with open(SUBNETS_PATH, "r") as f:
+                    return json.load(f)
+            except Exception as e:
+                logger.error(f"Failed to load subnets: {e}")
+        return {}
+
+    def _init_token_db(self):
+        try:
+            with sqlite3.connect(TOKENS_DB_PATH) as conn:
+                conn.execute('''
+                    CREATE TABLE IF NOT EXISTS tokens (
+                        ip TEXT PRIMARY KEY,
+                        type TEXT,
+                        label TEXT,
+                        updated_at TEXT
+                    )
+                ''')
+        except Exception as e:
+            logger.error(f"Failed to initialize token database: {e}")
+
+    def _get_token(self, ip: str) -> Dict[str, str]:
+        try:
+            with sqlite3.connect(TOKENS_DB_PATH) as conn:
+                conn.row_factory = sqlite3.Row
+                cursor = conn.cursor()
+                cursor.execute("SELECT type, label FROM tokens WHERE ip = ?", (ip,))
+                row = cursor.fetchone()
+                if row:
+                    return {"type": row["type"], "label": row["label"]}
+        except Exception as e:
+            logger.error(f"Failed to retrieve token for {ip}: {e}")
+        return None
+
+    def _save_token(self, ip: str, type: str, label: str):
+        try:
+            with sqlite3.connect(TOKENS_DB_PATH) as conn:
+                conn.execute('''
+                    INSERT OR REPLACE INTO tokens (ip, type, label, updated_at)
+                    VALUES (?, ?, ?, ?)
+                ''', (ip, type, label, datetime.now(timezone.utc).isoformat()))
+        except Exception as e:
+            logger.error(f"Failed to save token for {ip}: {e}")
 
     def _load_topology(self):
         """Load existing graph from disk."""
@@ -80,7 +141,8 @@ class TopologyMapper:
         tasks = [
             asyncio.create_task(self._monitor_discovery()),
             asyncio.create_task(self._monitor_identity()),
-            asyncio.create_task(self._monitor_network())
+            asyncio.create_task(self._monitor_network()),
+            asyncio.create_task(self._monitor_dhcp())
         ]
         await asyncio.gather(*tasks)
 
@@ -115,6 +177,28 @@ class TopologyMapper:
             else:
                 await asyncio.sleep(0.1)
 
+    async def _monitor_dhcp(self):
+        """Ingest DHCP logs to dynamically tag moving assets."""
+        while self.is_running:
+            event = await asyncio.to_thread(self.dhcp_bus.pop)
+            if event and event.get("event") == "DHCPACK":
+                ip = event.get("ip")
+                mac = event.get("mac")
+                if ip:
+                    async with self.lock:
+                        token = self._get_token(ip)
+                        if not token: # Only tag Dynamic if it's not explicitly locked via token
+                            if ip in self.nodes:
+                                self.nodes[ip]["type"] = "EndUser"
+                                self.nodes[ip]["label"] = "Dynamic"
+                                self.nodes[ip]["metadata"]["mac"] = mac
+                            else:
+                                self._add_node(ip, "EndUser", "Dynamic", {"mac": mac})
+                    self._save_topology()
+                    logger.info(f"Topology: DHCPACK received, marked {ip} as Dynamic")
+            else:
+                await asyncio.sleep(0.1)
+
     async def _monitor_network(self):
         """Ingest Host-to-Host communication mappings."""
         while self.is_running:
@@ -128,12 +212,50 @@ class TopologyMapper:
                         self._add_node(src, "Host", src)
                         self._add_node(dst, "Host", dst)
                         self._add_edge(src, dst, f"COMMUNICATED_{proto}")
+                        
+                        # Protocol heuristics on destination
+                        if proto in ["TCP/389", "TCP/88", "TCP/53"]:
+                            self.port_counters[dst][proto] += 1
+                            # Threshold logic: 50 packets/flows on all 3 critical ports
+                            if (self.port_counters[dst].get("TCP/389", 0) > 50 and 
+                                self.port_counters[dst].get("TCP/88", 0) > 50 and 
+                                self.port_counters[dst].get("TCP/53", 0) > 50):
+                                
+                                token = self._get_token(dst)
+                                if not token or token["label"] != "Static: Domain Controller":
+                                    self._save_token(dst, "Server", "Static: Domain Controller")
+                                    if dst in self.nodes:
+                                        self.nodes[dst]["type"] = "Server"
+                                        self.nodes[dst]["label"] = "Static: Domain Controller"
+                                    logger.info(f"Topology [Heuristic]: Upgraded {dst} to Static: Domain Controller")
                     self._save_topology()
             else:
                 await asyncio.sleep(0.5)
 
     def _add_node(self, node_id: str, type: str, label: str, metadata: Dict = None):
         if node_id not in self.nodes:
+            # Apply initial heuristics for new IPs
+            try:
+                ip_obj = ipaddress.ip_address(node_id)
+                # 1. Check SQLite Token Database
+                token = self._get_token(node_id)
+                if token:
+                    type = token.get("type", type)
+                    label = token.get("label", label)
+                else:
+                    # 2. CIDR Block Pre-Classification
+                    matched = False
+                    for subnet_str, props in self.subnets.items():
+                        if ip_obj in ipaddress.ip_network(subnet_str):
+                            type = props.get("type", type)
+                            label = props.get("label", label)
+                            matched = True
+                            break
+                    if not matched and not ip_obj.is_private:
+                        label = "External"
+            except ValueError:
+                pass # Not an IP address, proceed with passed values
+
             self.nodes[node_id] = {
                 "id": node_id,
                 "type": type,
@@ -141,6 +263,9 @@ class TopologyMapper:
                 "metadata": metadata or {},
                 "first_seen": datetime.now(timezone.utc).isoformat()
             }
+        else:
+            if metadata:
+                self.nodes[node_id]["metadata"].update(metadata)
 
     def _add_edge(self, source: str, target: str, edge_type: str):
         edge_id = f"{source}->{target}:{edge_type}"

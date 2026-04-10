@@ -107,7 +107,7 @@ function AgentCard({ agent, onSelect }) {
   // Model Tiers for Multi-Head Architecture
   const modelTier = agent.id.includes('TRIAGE') || agent.id.includes('RESPONDER') || agent.id.includes('HUNTER') 
     ? { label: 'Reasoning', model: 'Llama 3.1 8B', color: '#D84C7F' }
-    : { label: 'Fast',      model: 'Qwen 2.5 3B',  color: '#3B6FE3' };
+    : { label: 'Fast',      model: 'Gemma 4 E4B',  color: '#3B6FE3' };
 
   return (
     <div

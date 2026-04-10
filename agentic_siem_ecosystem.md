@@ -85,7 +85,7 @@ Below is the exhaustive list of specialized agents categorized by our 4-Pillar s
 | Model Head | Primary Model | VRAM Used | Dedicated Agents |
 | :--- | :--- | :--- | :--- |
 | **Reasoning Head** | `llama3.1:8b` (4-bit) | ~7.0 GB | **QUILL-INVESTIGATOR**, **FLYWAY-GOVERNOR**, **GAGGLE-LOG-GUARDIAN**, **WEDGE-PATCHADVISOR** |
-| **Syntactic Head** | `qwen2.5:3b` (4-bit) | ~2.5 GB | **FLYWAY-COMMUNICATOR** |
+| **Syntactic Head** | `gemma4:e4b` (4-bit) | ~2.5 GB | **FLYWAY-COMMUNICATOR** |
 | **Embedding Head** | `nomic-embed-text` | ~1.5 GB | **QUILL-LIBRARIAN** (RAG Memory) |
 
 *Note: Total Cumulative Load floats around ~12.5 GB, providing a safety buffer for the host OS and parallel processing bursts.*

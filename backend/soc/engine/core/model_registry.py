@@ -13,7 +13,7 @@ NUM_CTX = 16384  # Enforce 16k context window for all heads
 class ModelRegistry:
     """
     Centralized factory for the Agentic SOC's Multi-Head Model Design.
-    Distributes tasks between Llama 3.1 (Reasoning) and Qwen 2.5 (Syntactic).
+    Distributes tasks between Llama 3.1 (Reasoning) and Gemma 4 (Syntactic).
     """
 
     @staticmethod
@@ -27,7 +27,7 @@ class ModelRegistry:
         )
 
     @staticmethod
-    def get_syntactic_model(model_id: str = "qwen2.5:3b") -> OpenAIModel:
+    def get_syntactic_model(model_id: str = "gemma4:e4b") -> OpenAIModel:
         """High-speed header for Log-Guardian and Communicator tasks."""
         logger.info(f"[Registry] Initializing Syntactic Head: {model_id} (num_ctx={NUM_CTX})")
         return OpenAIModel(

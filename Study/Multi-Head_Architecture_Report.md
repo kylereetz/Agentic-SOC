@@ -8,7 +8,7 @@ To optimize the Agentic SOC for a 16GB VRAM environment (RTX 4080) by distributi
 | Model Head | Primary Model | VRAM Used | Dedicated Agents |
 | :--- | :--- | :--- | :--- |
 | **Reasoning Head** | `llama3.1:8b` (4-bit) | ~7.0 GB | Investigator, Governor, Log-Guardian, Patch-Advisor |
-| **Syntactic Head** | `qwen2.5:3b` (4-bit) | ~2.5 GB | Communicator |
+| **Syntactic Head** | `gemma4:e4b` (4-bit) | ~2.5 GB | Communicator |
 | **Embedding Head** | `nomic-embed-text` | ~1.5 GB | Librarian (RAG Memory) |
 
 **Total Cumulative Load**: ~12.5 GB (Leaving 3.5GB of "Safe Buffer" for the Host OS and Parallel bursts).

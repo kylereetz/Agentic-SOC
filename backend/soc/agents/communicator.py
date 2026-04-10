@@ -4,7 +4,7 @@ FLYWAY-COMMUNICATOR: Pydantic AI Edition.
 This agent acts as the 'Syntactic Head' of the SOC. It transforms technical
 investigation conclusions into structured executive reports (Tri-Factor Report).
 
-Utilizes Qwen 2.5 3B via the ModelRegistry for high-fidelity JSON mapping.
+Utilizes Gemma 4 E4B via the ModelRegistry for high-fidelity JSON mapping.
 """
 
 import asyncio
@@ -49,7 +49,7 @@ class CommunicatorAgent:
         self.out_bus = EventBus("executive_reports")
         self.is_running = False
         
-        # Initialize Syntactic Model (Qwen 2.5 3B)
+        # Initialize Syntactic Model (Gemma 4 E4B)
         self.model = ModelRegistry.get_syntactic_model()
         
         # Pydantic AI Agent
@@ -78,7 +78,7 @@ class CommunicatorAgent:
             return
             
         case_id = event.get("investigation_id", "UNKNOWN")
-        logger.info(f"[{case_id}] Generating Tri-Factor Report via Qwen 2.5...")
+        logger.info(f"[{case_id}] Generating Tri-Factor Report via Gemma 4 E4B...")
         
         prompt = f"""
         INVESTIGATION_CONCLUSION:
