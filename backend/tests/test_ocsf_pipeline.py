@@ -7,8 +7,8 @@ import os
 # Append project root to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from soc.agents.log_guardian import LogGuardianAgent
-from soc.agents.triage import TriageEngine
+from soc.agents.operations.log_guardian import LogGuardianAgent
+from soc.agents.intelligence.triage import TriageEngine
 from soc.security.ocsf_schema import OCSFProprietaryOT, OCSFMetadata, OCSFEndpoint
 
 logging.basicConfig(level=logging.INFO)

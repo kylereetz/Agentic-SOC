@@ -24,8 +24,8 @@ from soc.bootstrap import get_soc_path
 from soc.bus.event_queue import EventBus
 from soc.security.vault import Vault
 from soc.security.crypto_cat import sign_action
-from soc.agents.responder import ResponderAgent
-from soc.agents.topology_mapper import TopologyMapper
+from soc.agents.action.responder import ResponderAgent
+from soc.agents.operations.topology_mapper import TopologyMapper
 from engine.core.llm_client import LLMClient
 
 # ── CONFIG ──────────────────────────────────────────────────────────────────

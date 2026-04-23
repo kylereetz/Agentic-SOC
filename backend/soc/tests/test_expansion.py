@@ -8,9 +8,9 @@ from datetime import datetime, timezone
 sys.path.append(os.getcwd())
 
 from soc.bus.event_queue import EventBus
-from soc.agents.log_guardian import LogGuardianAgent
-from soc.agents.traffic_sieve import TrafficSieveAgent
-from soc.agents.watchdog import WatchdogAgent
+from soc.agents.operations.log_guardian import LogGuardianAgent
+from soc.agents.operations.traffic_sieve import TrafficSieveAgent
+from soc.agents.operations.watchdog import WatchdogAgent
 from soc.cemetery.risk_quantifier import RiskQuantifierAgent
 
 async def test_hive_expansion():

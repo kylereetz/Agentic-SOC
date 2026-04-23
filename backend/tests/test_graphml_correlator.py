@@ -7,7 +7,7 @@ import time
 # Append project root to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from soc.agents.correlator import CorrelatorAgent, GRAPHML_OUTPUT_PATH
+from soc.agents.intelligence.correlator import CorrelatorAgent, GRAPHML_OUTPUT_PATH
 from soc.bus.event_queue import EventBus
 
 logging.basicConfig(level=logging.INFO)

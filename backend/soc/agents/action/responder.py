@@ -26,7 +26,7 @@ from typing import Any, Dict, List, Optional
 
 from soc.bootstrap import get_soc_path
 from soc.bus.event_queue import EventBus
-from soc.agents.game_theory_solver import FictitiousPlaySolver
+from soc.agents.business.game_theory_solver import FictitiousPlaySolver
 from soc.security.vault import Vault
 from soc.security.crypto_cat import verify_cat
 from soc.utils.audio import play_action_completed

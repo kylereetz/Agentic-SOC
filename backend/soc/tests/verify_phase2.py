@@ -10,8 +10,8 @@ project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(_
 if project_root not in sys.path:
     sys.path.append(project_root)
 
-from soc.agents.librarian import LibrarianAgent
-from soc.agents.topology_mapper import TopologyMapper
+from soc.agents.intelligence.librarian import LibrarianAgent
+from soc.agents.operations.topology_mapper import TopologyMapper
 
 class TestPhase2Components(unittest.IsolatedAsyncioTestCase):
 

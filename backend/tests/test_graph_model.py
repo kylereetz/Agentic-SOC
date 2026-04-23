@@ -13,7 +13,7 @@ from soc.bootstrap import get_soc_path
 # Force learning mode to 0 seconds so we can test detection instantly
 os.environ["SIEVE_LEARNING_PERIOD"] = "0"
 
-from soc.agents.traffic_sieve import TrafficSieveAgent
+from soc.agents.operations.traffic_sieve import TrafficSieveAgent
 from soc.bus.event_queue import EventBus
 from soc.security.graph_persistence import GRAPH_FILE
 

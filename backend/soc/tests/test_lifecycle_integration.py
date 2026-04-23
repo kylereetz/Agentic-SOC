@@ -3,8 +3,8 @@ import json
 import uuid
 from datetime import datetime, timezone
 from soc.bus.event_queue import EventBus
-from soc.agents.investigation_manager import InvestigationManager
-from soc.agents.investigator import InvestigatorAgent
+from soc.agents.orchestration.investigation_manager import InvestigationManager
+from soc.agents.intelligence.investigator import InvestigatorAgent
 from soc.bootstrap import get_soc_path
 
 def test_alert_to_case_lifecycle():

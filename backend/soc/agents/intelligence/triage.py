@@ -32,7 +32,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from soc.bootstrap import get_soc_path
 from soc.bus.event_queue import EventBus
-from soc.agents.fuzzy_evaluator import FuzzyThreatEvaluator
+from soc.agents.intelligence.fuzzy_evaluator import FuzzyThreatEvaluator
 from soc.utils.audio import play_critical_alert, play_milestone_learning
 
 logger = logging.getLogger(__name__)

@@ -5,7 +5,7 @@ while allowing CRITICAL severity for TCP/ACK-confirmed and EDR-corroborated even
 import os
 import sys
 
-from soc.agents.triage import TriageEngine, TriageAlert
+from soc.agents.intelligence.triage import TriageEngine, TriageAlert
 
 def test_triage_spoofing_prevention():
     engine = TriageEngine()

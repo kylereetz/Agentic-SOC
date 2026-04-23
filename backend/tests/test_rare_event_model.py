@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Force testing Threshold to 2 seconds
 os.environ["SILENCE_THRESHOLD_TEST_SECONDS"] = "2"
 
-from soc.agents.historian import HistorianAgent, HISTORIAN_DB_PATH
+from soc.agents.business.historian import HistorianAgent, HISTORIAN_DB_PATH
 from soc.bus.event_queue import EventBus
 
 logging.basicConfig(level=logging.INFO)

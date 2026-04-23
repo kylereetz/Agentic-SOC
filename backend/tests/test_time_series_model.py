@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Force learning period to 0 so anomalies fire immediately
 os.environ["SIEVE_LEARNING_PERIOD"] = "0"
 
-from soc.agents.traffic_sieve import TrafficSieveAgent
+from soc.agents.operations.traffic_sieve import TrafficSieveAgent
 from soc.bus.event_queue import EventBus
 from soc.security.graph_persistence import GraphPersistenceManager, GRAPH_FILE
 

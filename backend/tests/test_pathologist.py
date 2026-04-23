@@ -1,5 +1,5 @@
 import pytest
-from soc.agents.malware_pathologist import MalwarePathologistAgent
+from soc.agents.intelligence.malware_pathologist import MalwarePathologistAgent
 
 @pytest.mark.asyncio
 async def test_pathologist_sandbox_parsing():

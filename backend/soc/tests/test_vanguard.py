@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 # Ensure project root is in path
 sys.path.append(os.getcwd())
 
-from soc.agents.vanguard import VanguardAgent
+from soc.agents.intelligence.vanguard import VanguardAgent
 from soc.bus.event_queue import EventBus
 
 async def test_vanguard_intelligence():

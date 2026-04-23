@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 # Ensure project root is in path
 sys.path.append(os.getcwd())
 
-from soc.agents.mirage import MirageAgent
+from soc.agents.intelligence.mirage import MirageAgent
 from soc.bus.event_queue import EventBus
 
 async def test_mirage_intelligence():

@@ -139,7 +139,7 @@ def patch(
     include_hardening: bool = typer.Option(False, help="Also draft scripts for local hardening failures")
 ):
     """Draft remediation scripts from alerts or hardening findings."""
-    from soc.agents.patch_advisor import PatchAdvisorAgent
+    from soc.agents.action.patch_advisor import PatchAdvisorAgent
     from engine.core.detector import run_local_hardening
 
     advisor = PatchAdvisorAgent()
@@ -211,7 +211,7 @@ def _start_polling_agent(module_name: str, class_name: str, log_message: str):
     logger.info("Agent gracefully shut down.")
 
 def _start_scout():
-    from soc.agents.scout import ScoutAgent
+    from soc.agents.operations.scout import ScoutAgent
     config_path = os.path.join("soc", "configs", "scout_config.json")
     agent_obj = ScoutAgent(config_path=config_path)
     asyncio.run(agent_obj.start())
@@ -223,7 +223,7 @@ def _start_api():
 
 def _start_specialist(class_name: str):
     import importlib
-    module = importlib.import_module("soc.agents.specialists")
+    module = importlib.import_module("soc.agents.intelligence.specialists")
     AgentClass = getattr(module, class_name)
     worker = AgentClass()
     worker.start()
@@ -234,24 +234,24 @@ AGENT_REGISTRY = {
     "scout": _start_scout,
     
     # Polling
-    "triage": lambda: _start_polling_agent("soc.agents.triage", "TriageAgent", "Triage agent starting in polling loop..."),
-    "responder": lambda: _start_polling_agent("soc.agents.responder", "ResponderAgent", "Responder agent starting in polling loop..."),
+    "triage": lambda: _start_polling_agent("soc.agents.intelligence.triage", "TriageAgent", "Triage agent starting in polling loop..."),
+    "responder": lambda: _start_polling_agent("soc.agents.action.responder", "ResponderAgent", "Responder agent starting in polling loop..."),
     
     # Async
-    "orchestrate": lambda: _start_async_agent("soc.agents.orchestrator", "OrchestratorAgent", "start_async"),
-    "correlator": lambda: _start_async_agent("soc.agents.correlator", "CorrelatorAgent", "run"),
-    "vanguard": lambda: _start_async_agent("soc.agents.vanguard", "VanguardAgent", "run"),
-    "watchdog": lambda: _start_async_agent("soc.agents.watchdog", "WatchdogAgent", "run"),
-    "log-guardian": lambda: _start_async_agent("soc.agents.log_guardian", "LogGuardianAgent", "run"),
-    "mirage": lambda: _start_async_agent("soc.agents.mirage", "MirageAgent", "run"),
-    "hunter": lambda: _start_async_agent("soc.agents.hunter", "HunterAgent", "run"),
+    "orchestrate": lambda: _start_async_agent("soc.agents.orchestration.orchestrator", "OrchestratorAgent", "start_async"),
+    "correlator": lambda: _start_async_agent("soc.agents.intelligence.correlator", "CorrelatorAgent", "run"),
+    "vanguard": lambda: _start_async_agent("soc.agents.intelligence.vanguard", "VanguardAgent", "run"),
+    "watchdog": lambda: _start_async_agent("soc.agents.operations.watchdog", "WatchdogAgent", "run"),
+    "log-guardian": lambda: _start_async_agent("soc.agents.operations.log_guardian", "LogGuardianAgent", "run"),
+    "mirage": lambda: _start_async_agent("soc.agents.intelligence.mirage", "MirageAgent", "run"),
+    "hunter": lambda: _start_async_agent("soc.agents.intelligence.hunter", "HunterAgent", "run"),
     "red-team": lambda: _start_async_agent("soc.agents.red_team", "RedTeamAgent", "run"),
-    "traffic-sieve": lambda: _start_async_agent("soc.agents.traffic_sieve", "TrafficSieveAgent", "run"),
-    "gatekeeper": lambda: _start_async_agent("soc.agents.gatekeeper", "GatekeeperAgent", "run"),
-    "governor": lambda: _start_async_agent("soc.agents.governor", "GovernorAgent", "run"),
-    "communicator": lambda: _start_async_agent("soc.agents.communicator", "CommunicatorAgent", "run"),
-    "librarian": lambda: _start_async_agent("soc.agents.librarian", "LibrarianAgent", "run"),
-    "malware-pathologist": lambda: _start_async_agent("soc.agents.malware_pathologist", "MalwarePathologistAgent", "run"),
+    "traffic-sieve": lambda: _start_async_agent("soc.agents.operations.traffic_sieve", "TrafficSieveAgent", "run"),
+    "gatekeeper": lambda: _start_async_agent("soc.agents.intelligence.gatekeeper", "GatekeeperAgent", "run"),
+    "governor": lambda: _start_async_agent("soc.agents.business.governor", "GovernorAgent", "run"),
+    "communicator": lambda: _start_async_agent("soc.agents.business.communicator", "CommunicatorAgent", "run"),
+    "librarian": lambda: _start_async_agent("soc.agents.intelligence.librarian", "LibrarianAgent", "run"),
+    "malware-pathologist": lambda: _start_async_agent("soc.agents.intelligence.malware_pathologist", "MalwarePathologistAgent", "run"),
     
     # Cemetery Async
     "dispatch": lambda: _start_async_agent("soc.cemetery.dispatch", "DispatchAgent", "run"),
@@ -456,7 +456,7 @@ def backup(output: str = typer.Option("rca_backup.zip", help="Output zip filenam
 @app.command()
 def approve(action_id: str = typer.Argument(..., help="ID of the action to approve")):
     """Approve a pending containment action by its ID (requires Vault secret)."""
-    from soc.agents.responder import ResponderAgent
+    from soc.agents.action.responder import ResponderAgent
     from soc.security.vault import Vault
     from soc.bootstrap import get_soc_path
     from soc.security.crypto_cat import sign_action

@@ -6,7 +6,7 @@ import logging
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from engine.core.sentinel import SentinelEngine
-from soc.agents.scout import ScoutAgent, InventoryDiff
+from soc.agents.operations.scout import ScoutAgent, InventoryDiff
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("Test-Scout-Features")

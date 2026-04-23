@@ -288,7 +288,7 @@ class InvestigationManager:
         )
         
         # Specialist Assignment logic (scaled behavior)
-        from soc.agents.specialists import get_specialist_for_alert
+        from soc.agents.intelligence.specialists import get_specialist_for_alert
         specialist = get_specialist_for_alert(alert)
         case.assigned_agent = specialist.agent_name
         

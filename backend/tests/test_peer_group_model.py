@@ -6,7 +6,7 @@ import os
 # Append project root to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from soc.agents.endpoint_analyst import EndpointAnalystAgent
+from soc.agents.intelligence.endpoint_analyst import EndpointAnalystAgent
 from soc.bus.event_queue import EventBus
 from soc.bootstrap import get_soc_path
 

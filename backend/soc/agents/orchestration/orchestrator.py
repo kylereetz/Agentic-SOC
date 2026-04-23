@@ -13,8 +13,8 @@ import time
 from typing import Any, Dict, List, Optional, Set
 
 from soc.bus.event_queue import EventBus
-from soc.agents.specialists import get_specialist_for_alert
-from soc.agents.investigation_manager import InvestigationManager
+from soc.agents.intelligence.specialists import get_specialist_for_alert
+from soc.agents.orchestration.investigation_manager import InvestigationManager
 
 logging.basicConfig(
     level=logging.INFO,
@@ -73,7 +73,7 @@ class OrchestratorAgent:
                 case = self.manager._open_case(alert)
 
                 # Step 1: Topic Routing Selection
-                from soc.agents.specialists import get_topic_for_alert
+                from soc.agents.intelligence.specialists import get_topic_for_alert
                 topic_a = get_topic_for_alert(alert)
                 
                 # [IQ] Consensus Logic: For CRITICAL, add a second specialist topic queue
@@ -130,7 +130,7 @@ class OrchestratorAgent:
                     if len(p["conclusions"]) >= p["expected"]:
                         logger.info(f"[{case_id}] [SYNC] Consensus reached!")
                         # Create memory struct for handoff
-                        from soc.agents.investigator import CaseMemory
+                        from soc.agents.intelligence.investigator import CaseMemory
                         memory = CaseMemory(case_id=case_id)
                         memory.findings = p["findings"]
                         

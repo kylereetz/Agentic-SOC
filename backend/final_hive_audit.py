@@ -10,12 +10,12 @@ from dataclasses import asdict
 # Ensure project root is in path
 sys.path.append(os.getcwd())
 
-from soc.agents.investigation_manager import InvestigationManager
-from soc.agents.librarian import LibrarianAgent
+from soc.agents.orchestration.investigation_manager import InvestigationManager
+from soc.agents.intelligence.librarian import LibrarianAgent
 from soc.agents.dispatch import DispatchAgent
-from soc.agents.correlator import CorrelatorAgent
-from soc.agents.triage import TriageAgent
-from soc.agents.investigator import InvestigatorAgent
+from soc.agents.intelligence.correlator import CorrelatorAgent
+from soc.agents.intelligence.triage import TriageAgent
+from soc.agents.intelligence.investigator import InvestigatorAgent
 
 async def run_hive_benchmark():
     print("="*60)

@@ -7,7 +7,7 @@ from datetime import datetime, timezone, timedelta
 # Ensure project root is in path
 sys.path.append(os.getcwd())
 
-from soc.agents.hunter import HunterAgent
+from soc.agents.intelligence.hunter import HunterAgent
 from soc.bus.event_queue import EventBus
 from soc.bootstrap import get_soc_path
 

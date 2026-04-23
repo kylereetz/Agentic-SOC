@@ -5,8 +5,8 @@ Verifies that specialized agents (OT, ID, FIX) can use their unique tools.
 
 import unittest
 from datetime import datetime
-from soc.agents.specialists import OTSecurityAnalyst, IdentityAnalyst, RemediationAnalyst
-from soc.agents.investigator import ReasoningStep
+from soc.agents.intelligence.specialists import OTSecurityAnalyst, IdentityAnalyst, RemediationAnalyst
+from soc.agents.intelligence.investigator import ReasoningStep
 
 class TestSpecializedTools(unittest.TestCase):
     

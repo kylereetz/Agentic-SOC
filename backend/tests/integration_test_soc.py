@@ -13,8 +13,8 @@ import shutil
 sys.path.append(os.getcwd())
 
 from soc.bus.event_queue import EventBus
-from soc.agents.triage import TriageAgent
-from soc.agents.responder import ResponderAgent
+from soc.agents.intelligence.triage import TriageAgent
+from soc.agents.action.responder import ResponderAgent
 from soc.bootstrap import bootstrap_soc, get_soc_path
 
 logging.basicConfig(level=logging.INFO)

@@ -7,7 +7,7 @@ adversary behaviors (OT, Network, Cloud, Identity).
 
 import logging
 from typing import Dict, Any, List, Optional
-from soc.agents.investigator import InvestigatorAgent, ReasoningStep, DEFAULT_CONFIG_PATH
+from soc.agents.intelligence.investigator import InvestigatorAgent, ReasoningStep, DEFAULT_CONFIG_PATH
 
 logger = logging.getLogger(__name__)
 
