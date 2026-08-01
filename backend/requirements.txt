@@ -15,7 +15,7 @@ typer==0.24.1
 rich==14.3.3
 python-multipart==0.0.22
 requests==2.34.2
-pydantic==2.12.5
+pydantic==2.13.4
 pydantic-settings
 networkx
 pydantic-ai==0.0.24
