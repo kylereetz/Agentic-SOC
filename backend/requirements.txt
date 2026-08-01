@@ -1,6 +1,6 @@
 scapy==2.7.0
 pandas==3.0.1
-paramiko==4.0.0
+paramiko==5.0.0
 python-nmap==0.7.1
 schedule==1.2.2
 reportlab==5.0.0
