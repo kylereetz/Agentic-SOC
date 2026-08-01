@@ -23,11 +23,7 @@ class OTSecurityAnalyst(InvestigatorAgent):
     """
 
     def __init__(self, config_path: str = DEFAULT_CONFIG_PATH):
-        super().__init__(config_path, routing_topic="topic_ot")
-        self.agent_name = "GAGGLE-SCOUT"
-        super().__init__(config_path, routing_topic="topic_ot")
-        self.agent_name = "GAGGLE-SCOUT"
-        # [IQ] Dynamic Ethos Loading: Base class now automatically loads ethos_sentinel_ot.md
+        super().__init__(agent_name="GAGGLE-SCOUT", routing_topic="topic_ot")
         self._reinit_model()
 
 
@@ -38,11 +34,7 @@ class NetworkAnalyst(InvestigatorAgent):
     """
 
     def __init__(self, config_path: str = DEFAULT_CONFIG_PATH):
-        super().__init__(config_path, routing_topic="topic_network")
-        self.agent_name = "GAGGLE-TRAFFIC-SIEVE"
-        super().__init__(config_path, routing_topic="topic_network")
-        self.agent_name = "GAGGLE-TRAFFIC-SIEVE"
-        # [IQ] Dynamic Ethos Loading: Base class now automatically loads ethos_sentinel_net.md
+        super().__init__(agent_name="GAGGLE-TRAFFIC-SIEVE", routing_topic="topic_network")
         self._reinit_model()
 
 
@@ -52,11 +44,7 @@ class IdentityAnalyst(InvestigatorAgent):
     """
 
     def __init__(self, config_path: str = DEFAULT_CONFIG_PATH):
-        super().__init__(config_path, routing_topic="topic_identity")
-        self.agent_name = "QUILL-GATEKEEPER"
-        super().__init__(config_path, routing_topic="topic_identity")
-        self.agent_name = "QUILL-GATEKEEPER"
-        # [IQ] Dynamic Ethos Loading: Base class now automatically loads ethos_sentinel_id.md
+        super().__init__(agent_name="QUILL-GATEKEEPER", routing_topic="topic_identity")
         self._reinit_model()
 
 

@@ -16,8 +16,10 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, Field
-from pydantic_ai import Agent, RunContext
-from pydantic_ai.models.openai import OpenAIModel
+try:
+    from pydantic_ai.models.openai import OpenAIModel
+except ImportError:
+    from pydantic_ai.models.openai import OpenAIChatModel as OpenAIModel
 
 from soc.bootstrap import get_soc_path
 from soc.bus.event_queue import EventBus
@@ -62,7 +64,10 @@ class CommunicatorAgent:
         self.model = ModelRegistry.get_syntactic_model()
 
         # Pydantic AI Agent
-        self.ai_agent = Agent(self.model, result_type=TriFactorReport, retries=2)
+        try:
+            self.ai_agent = Agent(self.model, output_type=TriFactorReport, retries=2)
+        except TypeError:
+            self.ai_agent = Agent(self.model, result_type=TriFactorReport, retries=2)
 
         # [IQ] Dynamic Ethos Loading
         self._load_ethos()

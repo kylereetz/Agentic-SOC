@@ -145,11 +145,11 @@ To optimize performance and eliminate cloud API costs, Sentinel utilizes a **Mul
                                     │
          ┌──────────────────────────┼──────────────────────────┐
          ▼                          ▼                          ▼
- ┌───────────────┐          ┌───────────────┐          ┌───────────────┐
- │Reasoning Head │          │Syntactic Head │          │Embedding Head │
- │  llama3.1:8b  │          │  gemma4:e4b   │          │nomic-embed-txt│
- │ (~7.0 GB VRAM)│          │ (~2.5 GB VRAM)│          │ (~1.5 GB VRAM)│
- └───────┬───────┘          └───────┬───────┘          └───────┬───────┘
+  ┌───────────────┐          ┌───────────────┐          ┌───────────────┐
+  │Reasoning Head │          │Syntactic Head │          │Embedding Head │
+  │ qwen2.5:7b    │          │ qwen2.5:3b    │          │    bge-m3     │
+  │ (~5.2 GB VRAM)│          │ (~2.2 GB VRAM)│          │ (~1.6 GB VRAM)│
+  └───────┬───────┘          └───────┬───────┘          └───────┬───────┘
          │                          │                          │
          ▼                          ▼                          ▼
   Deep Analysis             Executive Summaries         RAG Case Search
@@ -196,7 +196,7 @@ Agentic-SOC/
 
 ### Prerequisites
 * **Python**: 3.10+
-* **Ollama**: Installed locally with models (`llama3.1:8b`, `gemma4:e4b`, `nomic-embed-text`)
+* **Ollama**: Installed locally with models (`qwen2.5:7b-instruct`, `qwen2.5:3b-instruct`, `bge-m3`)
 * **Node.js**: 18+ (for Frontend Dashboard)
 
 ### 1. Backend Installation & Benchmark Audit

@@ -20,7 +20,10 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 from pydantic_ai import Agent, RunContext
-from pydantic_ai.models.openai import OpenAIModel
+try:
+    from pydantic_ai.models.openai import OpenAIModel
+except ImportError:
+    from pydantic_ai.models.openai import OpenAIChatModel as OpenAIModel
 
 from soc.bootstrap import get_soc_path
 from soc.bus.event_queue import EventBus
@@ -63,7 +66,10 @@ class LogGuardianAgent:
         self.model = ModelRegistry.get_reasoning_model()
 
         # Pydantic AI Agent
-        self.ai_agent = Agent(self.model, result_type=LogExtraction, retries=2)
+        try:
+            self.ai_agent = Agent(self.model, output_type=LogExtraction, retries=2)
+        except TypeError:
+            self.ai_agent = Agent(self.model, result_type=LogExtraction, retries=2)
 
         # Self-Healing Runtime Cache
         self.learned_decoders_file = get_soc_path(

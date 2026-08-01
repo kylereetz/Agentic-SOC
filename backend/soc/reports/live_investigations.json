@@ -1,10 +1,10 @@
 {
-  "last_update": "2026-03-16T21:18:27.022822+00:00",
+  "last_update": "2026-08-01T20:20:52.057525+00:00",
   "cases": [
     {
       "case_id": "INC-RAG-SYNC-TEST",
-      "created_at": "2026-03-16T21:17:46.824792+00:00",
-      "updated_at": "2026-03-16T21:17:46.824792+00:00",
+      "created_at": "2026-03-16T21:18:27.018494+00:00",
+      "updated_at": "2026-03-16T21:18:27.018494+00:00",
       "severity": "CRITICAL",
       "status": "TRIAGE",
       "summary": "RAG Synchronisation Stress Test",
@@ -12,7 +12,7 @@
       "mitre_ttp": "None",
       "nist_control": "",
       "alert_details": {},
-      "assigned_agent": "QUILL-INVESTIGATOR",
+      "assigned_agent": "SENTINEL-GENERAL",
       "evidence_ids": [],
       "reasoning_steps": [],
       "actions_taken": [],
@@ -45,7 +45,7 @@
           "DNS Exfil"
         ]
       },
-      "assigned_agent": "GAGGLE-TRAFFIC-SIEVE",
+      "assigned_agent": "SENTINEL-NET",
       "evidence_ids": [],
       "reasoning_steps": [],
       "actions_taken": [],
@@ -70,7 +70,7 @@
         "severity": "WARNING",
         "source_ip": "10.hive.audit.1"
       },
-      "assigned_agent": "GAGGLE-TRAFFIC-SIEVE",
+      "assigned_agent": "SENTINEL-NET",
       "evidence_ids": [],
       "reasoning_steps": [],
       "actions_taken": [],
@@ -95,7 +95,7 @@
         "severity": "WARNING",
         "source_ip": "10.hive.audit.1"
       },
-      "assigned_agent": "GAGGLE-TRAFFIC-SIEVE",
+      "assigned_agent": "SENTINEL-NET",
       "evidence_ids": [],
       "reasoning_steps": [],
       "actions_taken": [],
@@ -120,7 +120,7 @@
         "severity": "LOW",
         "source_ip": "10.hive.audit.1"
       },
-      "assigned_agent": "GAGGLE-TRAFFIC-SIEVE",
+      "assigned_agent": "SENTINEL-NET",
       "evidence_ids": [],
       "reasoning_steps": [],
       "actions_taken": [],
@@ -153,7 +153,7 @@
           "Data Exfiltration via DNS"
         ]
       },
-      "assigned_agent": "GAGGLE-TRAFFIC-SIEVE",
+      "assigned_agent": "SENTINEL-NET",
       "evidence_ids": [],
       "reasoning_steps": [],
       "actions_taken": [],
@@ -179,7 +179,7 @@
         "rule_id": "EXFIL_001",
         "description": "Anomalous DNS traffic volume to external.com."
       },
-      "assigned_agent": "GAGGLE-TRAFFIC-SIEVE",
+      "assigned_agent": "SENTINEL-NET",
       "evidence_ids": [],
       "reasoning_steps": [],
       "actions_taken": [],
@@ -205,7 +205,7 @@
         "rule_id": "LATERAL_001",
         "description": "Multiple failed SMB logins followed by success on srv-01."
       },
-      "assigned_agent": "GAGGLE-TRAFFIC-SIEVE",
+      "assigned_agent": "SENTINEL-NET",
       "evidence_ids": [],
       "reasoning_steps": [],
       "actions_taken": [],
@@ -231,7 +231,7 @@
         "rule_id": "RECON_001",
         "description": "Port scan detected targeting internal subnet."
       },
-      "assigned_agent": "GAGGLE-TRAFFIC-SIEVE",
+      "assigned_agent": "SENTINEL-NET",
       "evidence_ids": [],
       "reasoning_steps": [],
       "actions_taken": [],
@@ -257,7 +257,7 @@
         "rule_id": "RANSOM_001",
         "description": "Mass file encryption detected on FileServer-01"
       },
-      "assigned_agent": "GAGGLE-TRAFFIC-SIEVE",
+      "assigned_agent": "SENTINEL-NET",
       "evidence_ids": [],
       "reasoning_steps": [],
       "actions_taken": [],

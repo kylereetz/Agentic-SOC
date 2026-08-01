@@ -33,6 +33,10 @@ def track_compute_usage(
     business_bus.push(event)
 
 
+# Alias for backward compatibility across agents
+track_token_usage = track_compute_usage
+
+
 def track_business_loss(
     incident_id: str, loss_estimate: float, criticality: str, summary: str
 ):

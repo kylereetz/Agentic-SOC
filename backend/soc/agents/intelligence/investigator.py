@@ -21,12 +21,17 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 from pydantic_ai import Agent, RunContext
-from pydantic_ai.models.openai import OpenAIModel
+try:
+    from pydantic_ai.models.openai import OpenAIModel
+except ImportError:
+    from pydantic_ai.models.openai import OpenAIChatModel as OpenAIModel
 
 from soc.bootstrap import get_soc_path
 from soc.bus.event_queue import EventBus
 from soc.utils.telemetry import track_token_usage
 from soc.engine.core.model_registry import ModelRegistry
+
+DEFAULT_CONFIG_PATH = os.path.join(get_soc_path("configs"), "investigator_config.json")
 
 
 # --- Structured Output Models ---
@@ -100,8 +105,13 @@ class InvestigatorTools:
 # Investigator Agent
 # ---------------------------------------------------------------------------
 class InvestigatorAgent:
-    def __init__(self, agent_name: str = "QUILL-INVESTIGATOR"):
+    def __init__(
+        self,
+        agent_name: str = "QUILL-INVESTIGATOR",
+        routing_topic: Optional[str] = None,
+    ):
         self.agent_name = agent_name
+        self.routing_topic = routing_topic
         self.in_bus = EventBus("triage_alerts")
         self.out_bus = EventBus("investigation_reasoning")
         self.tools = InvestigatorTools()
@@ -110,12 +120,39 @@ class InvestigatorAgent:
         self.model = ModelRegistry.get_reasoning_model()
 
         # Pydantic AI Agent
-        self.ai_agent = Agent(
-            self.model,
-            deps_type=AgentDeps,
-            result_type=InvestigationConclusion,
-            retries=3,
-        )
+        try:
+            self.ai_agent = Agent(
+                self.model,
+                deps_type=AgentDeps,
+                output_type=InvestigationConclusion,
+                retries=3,
+            )
+        except TypeError:
+            self.ai_agent = Agent(
+                self.model,
+                deps_type=AgentDeps,
+                result_type=InvestigationConclusion,
+                retries=3,
+            )
+        self._register_tools()
+
+    def _reinit_model(self):
+        """Re-initializes the model and tools when agent name or ethos changes."""
+        self.model = ModelRegistry.get_reasoning_model()
+        try:
+            self.ai_agent = Agent(
+                self.model,
+                deps_type=AgentDeps,
+                output_type=InvestigationConclusion,
+                retries=3,
+            )
+        except TypeError:
+            self.ai_agent = Agent(
+                self.model,
+                deps_type=AgentDeps,
+                result_type=InvestigationConclusion,
+                retries=3,
+            )
         self._register_tools()
 
     def _register_tools(self):

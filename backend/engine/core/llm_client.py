@@ -23,7 +23,7 @@ class LLMClient:
         self,
         base_url: Optional[str] = None,
         api_key: Optional[str] = None,
-        default_model: str = "llama3-soc",
+        default_model: str = "qwen2.5:7b-instruct",
     ):
         self.base_url = base_url or os.environ.get(
             "OLLAMA_API_URL", "http://localhost:11434/v1"
@@ -167,7 +167,7 @@ class LLMClient:
             raise e
 
     async def get_embedding(
-        self, text: str, model: str = "nomic-embed-text"
+        self, text: str, model: str = "bge-m3"
     ) -> List[float]:
         """Generate semantic embeddings for RAG indexing."""
         try:

@@ -1,8 +1,8 @@
 {
   "_comment": "Agentic SOC Multi-Head Configuration (16GB VRAM Optimized)",
-  "reasoning_model": "llama3.1:8b",
-  "syntactic_model": "gemma4:e4b",
-  "num_ctx": 16384,
+  "reasoning_model": "qwen2.5:7b-instruct",
+  "syntactic_model": "qwen2.5:3b-instruct",
+  "num_ctx": 32768,
   "temperature": 0.2,
   "max_steps_per_investigation": 10,
   "agent_name": "QUILL-INVESTIGATOR",

@@ -41,6 +41,7 @@ class OrchestratorAgent:
         self.pending_cases: Dict[str, Dict[str, Any]] = (
             {}
         )  # Tracks distributed consensus
+        self.history: List[Dict[str, Any]] = []
         self.is_running = False
 
     async def enqueue_alerts(self):
@@ -78,7 +79,7 @@ class OrchestratorAgent:
 
             try:
                 # Step 0: Initialise CaseMemory for the hive
-                case = self.manager._open_case(alert)
+                case = await self.manager._open_case(alert)
 
                 # Step 1: Topic Routing Selection
                 from soc.agents.intelligence.specialists import get_topic_for_alert
@@ -212,6 +213,10 @@ class OrchestratorAgent:
             self._monitor_callbacks(),
             self._monitor_deadlocks(),
         )
+
+    async def run(self):
+        """Standard run alias for supervisor execution."""
+        await self.start_async()
 
 
 if __name__ == "__main__":

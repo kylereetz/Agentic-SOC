@@ -106,7 +106,7 @@ async def run_hive_benchmark():
         # TEST 2: RAG Institutional Memory (Librarian)
         print("\n[TEST 2] RAG Retrieval Accuracy...")
         query = "How did the campaign for 10.hive.audit.1 progress?"
-        memories = librarian.search(query, limit=1)
+        memories = await librarian.search(query, limit=1)
         if memories and memories[0]["case_id"] == campaign_cases[0].case_id:
             print(
                 f"  [PASS] Librarian retrieved historical context (Score: {memories[0]['similarity']})"
