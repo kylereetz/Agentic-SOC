@@ -62,6 +62,6 @@ def modify_files(ROOT):
                     print(f"Error renaming {old_filepath}: {e}")
 
 if __name__ == "__main__":
-    ROOT_DIR = r"c:\Users\kyler\Documents\GitHub\Agentic SOC"
+    ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
     modify_files(ROOT_DIR)
     print("Syrinx swap complete.")

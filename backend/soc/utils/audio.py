@@ -10,7 +10,9 @@ import random
 
 logger = logging.getLogger(__name__)
 
-SOUNDS_DIR = r"C:\Users\kyler\Music\Model Complete Sounds"
+# Project Root & Sounds Directory
+_PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+SOUNDS_DIR = os.getenv("SOUNDS_DIR", os.path.join(_PROJECT_ROOT, "Model Complete Sounds"))
 
 def play_sound(sound_name: str, sync: bool = False):
     """
@@ -18,6 +20,7 @@ def play_sound(sound_name: str, sync: bool = False):
     If sound_name is 'random', picks a random file.
     """
     if not os.path.exists(SOUNDS_DIR):
+        # Gracefully handle missing sound directory without breaking SOC execution
         logger.warning(f"Sound directory not found: {SOUNDS_DIR}")
         return
 

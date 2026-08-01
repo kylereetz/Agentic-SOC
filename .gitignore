@@ -56,3 +56,4 @@ tmp/
 *.tmp
 test*.txt
 pytest_out*.txt
+.agents/AGENTS.md

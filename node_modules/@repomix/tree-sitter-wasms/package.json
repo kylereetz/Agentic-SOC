@@ -1,6 +1,6 @@
 {
 	"name": "@repomix/tree-sitter-wasms",
-	"version": "0.1.16",
+	"version": "0.1.17",
 	"type": "module",
 	"description": "Prebuilt WASM binaries for tree-sitter's language parsers.",
 	"repository": "https://github.com/repomix/tree-sitter-wasms",

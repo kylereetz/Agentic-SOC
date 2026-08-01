@@ -7,12 +7,15 @@ import sqlite3
 from datetime import datetime, timezone
 from dataclasses import asdict
 
+from dotenv import load_dotenv
+load_dotenv()
+
 # Ensure project root is in path
 sys.path.append(os.getcwd())
 
 from soc.agents.orchestration.investigation_manager import InvestigationManager
 from soc.agents.intelligence.librarian import LibrarianAgent
-from soc.agents.dispatch import DispatchAgent
+from soc.agents.orchestration.orchestrator import OrchestratorAgent as DispatchAgent
 from soc.agents.intelligence.correlator import CorrelatorAgent
 from soc.agents.intelligence.triage import TriageAgent
 from soc.agents.intelligence.investigator import InvestigatorAgent

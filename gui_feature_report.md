@@ -18,7 +18,7 @@ This report provides a comprehensive breakdown of all features, tabs, and intera
 
 ---
 
-## 2. Investigations ([InvestigationCanvas](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/dashboard/src/components/InvestigationCanvas.jsx#188-297))
+## 2. Investigations ([InvestigationCanvas](./frontend/src/components/InvestigationCanvas.jsx#188-297))
 The primary workspace for deep forensic analysis.
 
 *   **Attack Chain Tab**:
@@ -35,7 +35,7 @@ The primary workspace for deep forensic analysis.
 
 ---
 
-## 3. Alert Queue ([AlertQueue](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/dashboard/src/components/AlertQueue.jsx#37-191))
+## 3. Alert Queue ([AlertQueue](./frontend/src/components/AlertQueue.jsx#37-191))
 High-fidelity alert management.
 
 *   **Triage Controls**:
@@ -52,7 +52,7 @@ High-fidelity alert management.
 
 ---
 
-## 4. Agents ([HiveHealth](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/dashboard/src/components/HiveHealth.jsx#202-384))
+## 4. Agents ([HiveHealth](./frontend/src/components/HiveHealth.jsx#202-384))
 The "Digital Hive Mind" management console.
 
 *   **Health Dashboard**:
@@ -68,7 +68,7 @@ The "Digital Hive Mind" management console.
 
 ---
 
-## 5. Threat Telemetry ([ThreatTelemetry](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/dashboard/src/components/ThreatTelemetry.jsx#140-293))
+## 5. Threat Telemetry ([ThreatTelemetry](./frontend/src/components/ThreatTelemetry.jsx#140-293))
 Intelligence-led risk prioritization.
 
 *   **Risk-Quantified Incident Queue**:
@@ -81,7 +81,7 @@ Intelligence-led risk prioritization.
 
 ---
 
-## 6. Governance & Compliance ([GovernanceDashboard](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/dashboard/src/components/GovernanceDashboard.jsx#157-288))
+## 6. Governance & Compliance ([GovernanceDashboard](./frontend/src/components/GovernanceDashboard.jsx#157-288))
 Strategic board-level reporting.
 
 *   **Compliance Posture**:
@@ -95,7 +95,7 @@ Strategic board-level reporting.
 
 ---
 
-## 7. Analytics ([AnalyticsDashboard](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/dashboard/src/components/AnalyticsDashboard.jsx#58-168))
+## 7. Analytics ([AnalyticsDashboard](./frontend/src/components/AnalyticsDashboard.jsx#58-168))
 Operational performance metrics.
 
 *   **KPI Scorecard**: Autonomy Ratio, FP Rate, Success Rate, and Mean-Time-To-Investigate.
@@ -106,7 +106,7 @@ Operational performance metrics.
 
 ---
 
-## 8. Simulation Mode ([SimulationMode](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/dashboard/src/components/SimulationMode.jsx#15-117))
+## 8. Simulation Mode ([SimulationMode](./frontend/src/components/SimulationMode.jsx#15-117))
 The cyber-range sandbox.
 
 *   **Scenario Engine**: Select between APT-29, Ransomware, or Insider Threat scenarios.
@@ -115,7 +115,7 @@ The cyber-range sandbox.
 
 ---
 
-## 9. Identity & Access ([LoginPage](file:///c:/Users/kyler/Documents/GitHub/Agentic%20SOC/dashboard/src/components/LoginPage.jsx#5-117))
+## 9. Identity & Access ([LoginPage](./frontend/src/components/LoginPage.jsx#5-117))
 *   **QUILL-GATEKEEPER Auth**: Secure entry point for operators.
 *   **MFA Proxy Status**: Visual confirmation of encrypted tunnel establishment.
 *   **Role Identification**: Categorizes access into Admin vs. Guest paths.
