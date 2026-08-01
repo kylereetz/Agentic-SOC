@@ -10,6 +10,9 @@
 
 Built on a **25-agent digital hive mind**, Sentinel transforms point-in-time security audits into **continuous, code-driven control evaluations**, while enforcing strict **AI governance guardrails**, cryptographic evidence integrity, and quantitative risk modeling.
 
+> [!IMPORTANT]
+> **Operational Technology (OT) & ICS Focus**: Sentinel Agentic SOC is engineered primarily for **non-invasive, passive-first security monitoring** across Operational Technology (OT), Industrial Control Systems (ICS), and enterprise networks. All asset discovery and protocol probing (Modbus/TCP, EtherNet/IP, PROFINET) strictly enforce polite, read-only function calls, passive packet inspection, and rate-limited SYN scans to guarantee zero operational disruption to legacy PLCs, RTUs, and SCADA control loops.
+
 ---
 
 ## Executive Summary & IT Audit Alignment
@@ -18,6 +21,7 @@ Modern enterprise security and IT audit teams face two critical challenges: **au
 
 Sentinel solves both by delivering an autonomous SOC ecosystem designed with auditing as a first-class citizen:
 
+* **Non-Invasive OT & ICS Monitoring**: Engineered for passive traffic analysis and polite, read-only discovery of industrial protocols (Modbus, EtherNet/IP, PROFINET) with zero write operations to safeguard legacy PLCs.
 * **Continuous Control Monitoring (CCM)**: Automatically evaluates incoming telemetry against **NIST SP 800-171** and **CMMC 2.0** control domains in real time.
 * **Auditable AI Guardrails**: Enforces human-in-the-loop (HITL) approval gates, separation of duties (SoD), and the "Rule of Zero" safety protocol for autonomous remediation.
 * **Tamper-Evident Evidence**: Cryptographically seals forensic artifacts with **SHA-256 hashes** at collection time and maintains state via Write-Ahead Logging (WAL).
