@@ -20,15 +20,16 @@ from soc.bootstrap import bootstrap_soc, get_soc_path
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("IntegrationTest")
 
+
 def run_test():
     logger.info("Starting RCA SOC Integration Test...")
-    
+
     # 1. Clean bootstrap
     logger.info("[1/5] Bootstrapping SOC...")
     if not bootstrap_soc():
         logger.error("Bootstrap failed.")
         return False
-    
+
     # 2. Simulate Scout: Push a 'Modbus Write' event
     logger.info("[2/5] Simulating Scout: Pushing Modbus Write event...")
     scout_bus = EventBus("discovery_events")
@@ -38,29 +39,29 @@ def run_test():
         "event_type": "industrial_activity",
         "protocol": "modbus",
         "function_code": 15,
-        "severity": "WARNING", # Initial severity from scout, triage will upgrade it
+        "severity": "WARNING",  # Initial severity from scout, triage will upgrade it
         "ip": "10.0.0.150",
         "mac": "aa:bb:cc:11:22:33",
-        "detail": "Modbus Force Multiple Coils detected"
+        "detail": "Modbus Force Multiple Coils detected",
     }
     scout_bus.push(test_event)
-    
+
     # 3. Use Triage: Classify discovery event
     logger.info("[3/5] Running Triage Agent...")
     triage = TriageAgent()
     alerts_created = triage.run_cycle()
     logger.info(f"Triage processed events. Alerts created: {alerts_created}")
-    
+
     if alerts_created == 0:
         logger.error("Triage failed to create alerts.")
         return False
-        
+
     # 4. Use Responder: Draft containment
     logger.info("[4/5] Running Responder Agent...")
     responder = ResponderAgent()
     actions_drafted = responder.run_cycle()
     logger.info(f"Responder cycle complete. Actions drafted: {actions_drafted}")
-    
+
     pending_path = get_soc_path("reports", "incidents", "pending_actions.json")
     if os.path.exists(pending_path):
         with open(pending_path, "r") as fh:
@@ -75,6 +76,7 @@ def run_test():
     # 5. Cleanup (Optional: Move events to processed already happened via pop)
     logger.info("[5/5] Integration Test SUCCESS.")
     return True
+
 
 if __name__ == "__main__":
     if run_test():

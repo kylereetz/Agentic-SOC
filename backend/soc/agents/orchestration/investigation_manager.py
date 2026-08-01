@@ -1,14 +1,14 @@
 """
 RCA Investigation Manager: The Incident Lifecycle Engine.
 
-The 'Brain' of the SOC that tracks security investigations from discovery to 
-closure. It listens for new alerts on the 'triage_alerts' bus and manages 
+The 'Brain' of the SOC that tracks security investigations from discovery to
+closure. It listens for new alerts on the 'triage_alerts' bus and manages
 the state of 'Cases' (Incidents).
 
 Responsibilities:
   1. Case Initiation: Opens a new INC-[YYYYMMDD]-[UUID] for every WARNING/CRITICAL alert.
   2. Lifecycle Tracking: TRIAGE -> SCOPING -> REMEDIATION -> CLOSED.
-  3. Evidence Aggregation: Links Investigator thoughts, Forensics artifacts, 
+  3. Evidence Aggregation: Links Investigator thoughts, Forensics artifacts,
      and Responder actions to a specific Case ID.
   4. State Persistence: Saves Case objects to 'soc/reports/incidents/cases/'.
 
@@ -52,11 +52,12 @@ LIVE_FEED_PATH = get_soc_path("reports", "live_investigations.json")
 @dataclass
 class CaseRecord:
     """Canonical record of a SOC investigation case."""
+
     case_id: str
     created_at: str
     updated_at: str
     severity: str
-    status: str = "TRIAGE"             # TRIAGE | SCOPING | REMEDIATION | CLOSED
+    status: str = "TRIAGE"  # TRIAGE | SCOPING | REMEDIATION | CLOSED
     summary: str = ""
     source_ip: str = ""
     mitre_ttp: str = "None"
@@ -75,11 +76,13 @@ class CaseRecord:
     def from_dict(cls, data: Dict[str, Any]) -> "CaseRecord":
         """Robustly create a CaseRecord even if fields are missing."""
         import dataclasses
+
         # Ensure cls is treated as a dataclass for fields()
-        fields = dataclasses.fields(cls) 
+        fields = dataclasses.fields(cls)
         valid_fields = {f.name for f in fields}
         filtered_data = {k: v for k, v in data.items() if k in valid_fields}
         return cls(**filtered_data)
+
 
 # ---------------------------------------------------------------------------
 # Investigation Manager
@@ -106,11 +109,12 @@ class InvestigationManager:
     def _init_db(self):
         """[SQ] Initialize SQLite database for scale."""
         from soc.network.service_mesh import ServiceMesh
+
         self.conn = ServiceMesh.connect_db(
             client_identity="manager",
             db_path=DB_PATH,
             check_same_thread=False,
-            negotiated_cipher="TLS_AES_256_GCM_SHA384"
+            negotiated_cipher="TLS_AES_256_GCM_SHA384",
         )
         self.conn.row_factory = sqlite3.Row
         # [EQ] Enable SQLite WAL mode natively
@@ -141,8 +145,11 @@ class InvestigationManager:
 
     def _load_existing_cases(self):
         """[SQ] Load cases from SQLite into memory (limited for performance)."""
-        if not self.conn: return
-        cursor = self.conn.execute("SELECT * FROM cases ORDER BY updated_at DESC LIMIT 100")
+        if not self.conn:
+            return
+        cursor = self.conn.execute(
+            "SELECT * FROM cases ORDER BY updated_at DESC LIMIT 100"
+        )
         for row in cursor:
             data = dict(row)
             # Deserialize JSON fields
@@ -156,41 +163,49 @@ class InvestigationManager:
     async def _save_case(self, case: CaseRecord):
         """[EQ] Persist a case record to SQLite with WAL backup."""
         case.updated_at = datetime.now(timezone.utc).isoformat()
-        
+
         # [EQ] Write-Ahead-Log transaction for data loss prevention
         with open(WAL_LOG_PATH, "a") as wal:
-            wal.write(f"{datetime.now(timezone.utc).isoformat()} | SAVE | {case.case_id}\n")
-            
+            wal.write(
+                f"{datetime.now(timezone.utc).isoformat()} | SAVE | {case.case_id}\n"
+            )
+
         data = asdict(case)
         # Serialize list/dict for SQL
         data["alert_details"] = json.dumps(data["alert_details"])
         data["evidence_ids"] = json.dumps(data["evidence_ids"])
         data["reasoning_steps"] = json.dumps(data["reasoning_steps"])
         data["actions_taken"] = json.dumps(data["actions_taken"])
-        
+
         columns = ", ".join(data.keys())
         placeholders = ", ".join("?" for _ in data)
         sql = f"INSERT OR REPLACE INTO cases ({columns}) VALUES ({placeholders})"
         if self.conn:
             self.conn.execute(sql, list(data.values()))
             self.conn.commit()
-        
+
         # [IQ] Librarian Sync: Push to shared memory for RAG indexing
         self.case_updates_bus.push(asdict(case))
-        
+
         # [IQ] Dispatch Sync: Push to external comms for CRITICAL incidents
         if case.severity == "CRITICAL" or case.actions_taken:
-            self.dispatch_bus.push({
-                "case_id": case.case_id,
-                "severity": case.severity,
-                "summary": case.summary,
-                "hypothesis": case.hypothesis,
-                "destinations": ["slack", "pagerduty"] if case.severity == "CRITICAL" else ["slack"]
-            })
-        
+            self.dispatch_bus.push(
+                {
+                    "case_id": case.case_id,
+                    "severity": case.severity,
+                    "summary": case.summary,
+                    "hypothesis": case.hypothesis,
+                    "destinations": (
+                        ["slack", "pagerduty"]
+                        if case.severity == "CRITICAL"
+                        else ["slack"]
+                    ),
+                }
+            )
+
         # [VQ] Update Live Feed for Dashboard
         self._update_live_feed()
-        
+
         # [SQ] Async Barrier: Yield 100ms to allow Bus propagation/Indexing
         await asyncio.sleep(0.1)
 
@@ -198,36 +213,42 @@ class InvestigationManager:
         """[VQ] Maintain a live view for the dashboard investigation view."""
         feed_data = [asdict(c) for c in list(self.active_cases.values())[:10]]
         with open(LIVE_FEED_PATH, "w") as f:
-            json.dump({
-                "last_update": datetime.now(timezone.utc).isoformat(),
-                "cases": feed_data
-            }, f, indent=2)
+            json.dump(
+                {
+                    "last_update": datetime.now(timezone.utc).isoformat(),
+                    "cases": feed_data,
+                },
+                f,
+                indent=2,
+            )
 
     def _generate_case_id(self) -> str:
         ts = datetime.now(timezone.utc).strftime("%Y%m%d")
-        id_part = str(uuid.uuid4()).split('-')[0].upper()
+        id_part = str(uuid.uuid4()).split("-")[0].upper()
         return f"INC-{ts}-{id_part}"
 
     async def run(self):
         """[SQ] Main async engine for lifecycle management."""
         self.is_running = True
         logger.info("[SQ] InvestigationManager High-Integrity Engine started.")
-        
+
         tasks = [
             asyncio.create_task(self._process_alerts()),
             asyncio.create_task(self._process_reasoning()),
-            asyncio.create_task(self._emit_heartbeat())
+            asyncio.create_task(self._emit_heartbeat()),
         ]
         await asyncio.gather(*tasks)
 
     async def _emit_heartbeat(self):
         """[EQ] Central Pulse for SOC-wide heartbeats."""
         while self.is_running:
-            self.heartbeat_bus.push({
-                "component": "InvestigationManager",
-                "timestamp": datetime.now(timezone.utc).isoformat(),
-                "status": "HEALTHY"
-            })
+            self.heartbeat_bus.push(
+                {
+                    "component": "InvestigationManager",
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "status": "HEALTHY",
+                }
+            )
             await asyncio.sleep(5)
 
     async def _process_alerts(self):
@@ -237,30 +258,36 @@ class InvestigationManager:
             if not alert:
                 await asyncio.sleep(1)
                 continue
-            
+
             if alert.get("severity") == "INFO":
                 continue
-            
+
             # [SQ] Deduplication Logic
             source = alert.get("source_ip", "unknown")
             rule = alert.get("rule_id", "unknown")
-            
+
             # [IQ] Feed to Correlator for temporal state tracking
             self.raw_alerts_bus.push(alert)
-            
+
             if existing:
-                logger.warning(f"[SQ] Deduplicated alert for {source} -> Appending to {existing.case_id}")
+                logger.warning(
+                    f"[SQ] Deduplicated alert for {source} -> Appending to {existing.case_id}"
+                )
                 existing.summary += f"\n[ALERT RECURRENCE] {datetime.now(timezone.utc).strftime('%H:%M')} - {alert.get('description')}"
                 await self._save_case(existing)
                 continue
-                
+
             case = await self._open_case(alert)
             logger.info(f"OPENED Case: {case.case_id} for {alert.get('rule_name')}")
 
     def _find_duplicate(self, source: str, rule: str) -> Optional[CaseRecord]:
         """[SQ] Search for open cases matching source+rule in last hour."""
         for case in self.active_cases.values():
-            if case.status != "CLOSED" and case.source_ip == source and case.alert_details.get("rule_id") == rule:
+            if (
+                case.status != "CLOSED"
+                and case.source_ip == source
+                and case.alert_details.get("rule_id") == rule
+            ):
                 return case
         return None
 
@@ -273,7 +300,7 @@ class InvestigationManager:
         """Create a new CaseRecord from a TriageAlert."""
         case_id = self._generate_case_id()
         ts = datetime.now(timezone.utc).isoformat()
-        
+
         case = CaseRecord(
             case_id=case_id,
             created_at=ts,
@@ -284,14 +311,15 @@ class InvestigationManager:
             source_ip=alert.get("source_ip", ""),
             mitre_ttp=alert.get("mitre_ttp", "None"),
             nist_control=alert.get("nist_control", ""),
-            alert_details=alert
+            alert_details=alert,
         )
-        
+
         # Specialist Assignment logic (scaled behavior)
         from soc.agents.intelligence.specialists import get_specialist_for_alert
+
         specialist = get_specialist_for_alert(alert)
         case.assigned_agent = specialist.agent_name
-        
+
         # Persist and return
         await self._save_case(case)
         self.active_cases[case_id] = case
@@ -304,28 +332,28 @@ class InvestigationManager:
             if not step:
                 await asyncio.sleep(1)
                 continue
-            
+
             case_id = step.get("investigation_id")
             if case_id in self.active_cases:
                 case = self.active_cases[case_id]
-                
+
                 # Link step
                 step_summary = f"[{step.get('type')}] {step.get('content')}"
                 if step_summary not in case.reasoning_steps:
                     case.reasoning_steps.append(step_summary)
-                    
+
                     # [IQ] Hypothesis Generator
                     self._generate_hypothesis(case, step)
-                    
+
                     # [VQ] Autonomy Drift Tracking
                     drift = step.get("autonomy_drift", 0.0)
                     case.autonomy_drift += drift
                     case.confidence_points -= int(drift * 100)
-                    
+
                     # Auto-promote
                     if case.status == "TRIAGE":
                         case.status = "SCOPING"
-                    
+
                     await self._save_case(case)
                     logger.debug(f"Linked reasoning step to {case_id}")
 
@@ -339,35 +367,44 @@ class InvestigationManager:
                 new_hypo += "Confirmed lateral movement attempt."
             elif "scan" in content:
                 new_hypo += "Reconnaissance activity verified."
-            
+
             if new_hypo not in case.hypothesis:
                 case.hypothesis = new_hypo
-                logger.info(f"[IQ] Hypothesis updated for {case.case_id}: {case.hypothesis}")
+                logger.info(
+                    f"[IQ] Hypothesis updated for {case.case_id}: {case.hypothesis}"
+                )
 
-    def update_case_status(self, case_id: str, new_status: str, summary_update: str = ""):
+    def update_case_status(
+        self, case_id: str, new_status: str, summary_update: str = ""
+    ):
         """Manual or automated status update."""
         if case_id in self.active_cases:
             case = self.active_cases[case_id]
             old_status = case.status
             case.status = new_status
             if summary_update:
-                case.summary += f"\nUpdate [{datetime.now().strftime('%H:%M')}]: {summary_update}"
-            
+                case.summary += (
+                    f"\nUpdate [{datetime.now().strftime('%H:%M')}]: {summary_update}"
+                )
+
             # [IQ] Business Telemetry for closed cases
             if new_status == "CLOSED" and old_status != "CLOSED":
                 track_business_loss(
                     incident_id=case_id,
-                    loss_estimate=500.0, # Strategy: Standard MVP loss estimate
+                    loss_estimate=500.0,  # Strategy: Standard MVP loss estimate
                     criticality=case.severity,
-                    summary=case.summary
+                    summary=case.summary,
                 )
                 # Notify Narrator and others
                 self.case_updates_bus.push(asdict(case))
 
-            asyncio.run_coroutine_threadsafe(self._save_case(case), asyncio.get_event_loop())
+            asyncio.run_coroutine_threadsafe(
+                self._save_case(case), asyncio.get_event_loop()
+            )
             logger.info(f"UPDATED Case {case_id} status to {new_status}")
             return True
         return False
+
 
 if __name__ == "__main__":
     manager = InvestigationManager()

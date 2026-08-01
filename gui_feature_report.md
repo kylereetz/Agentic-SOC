@@ -1,121 +1,132 @@
-# Agentic SOC GUI: Exhaustive Feature Report
+# Agentic SOC GUI: Feature Breakdown Report
 
-This report provides a comprehensive breakdown of all features, tabs, and interactive elements across the **Branta Agent** Dashboard (v1.0 MVP).
+This report provides an exhaustive breakdown of all user interface components, views, and interactive controls across the **Branta Agent Dashboard** (v1.0 MVP).
+
+The frontend is built with React, Vite, and Tailwind CSS, communicating with the backend API via REST and WebSocket event streams.
 
 ---
 
 ## 1. Global Navigation & Layout
-*   **Sidebar (Primary Navigation)**:
-    *   Collapsed/Expanded states.
-    *   Direct navigation to: Investigations, Alert Queue, Agents, Threat Intel, Governance, Analytics, and Simulation Mode.
-*   **Global Header**:
-    *   **Operator Identity**: Displays Alias and Role (Admin/Guest).
-    *   **Autonomy Indicator**: Real-time percentage of AI autonomy.
-    *   **AI Copilot**: Floating interactive assistant toggle.
-    *   **Global Exit**: Secure session termination.
-*   **Bottom Dock**: Quick-access status bar for system-wide health (always visible).
-*   **Command Palette (`Cmd+K`)**: Keyboard-driven navigation and action shortcut overlay.
+
+* **Sidebar (Primary Navigation)**:
+  * Collapsible/Expanded navigation states.
+  * Direct workspace routing to Investigations, Alert Queue, Agents, Threat Intel, Governance, Analytics, and Simulation Mode.
+* **Global Header Bar**:
+  * **Operator Identity**: Displays active operator alias and access tier (Admin / Operator / Guest).
+  * **Autonomy Indicator**: Real-time gauge of current autonomous action permissions.
+  * **AI Copilot Toggle**: Floating interactive assistant drawer for query assistance.
+  * **Session Controls**: Secure operator session termination.
+* **System Dock**: Persistent bottom dock displaying global real-time event throughput and system health metrics.
+* **Command Palette (`Cmd+K` / `Ctrl+K`)**: Keyboard-driven overlay for rapid search and action shortcuts.
 
 ---
 
-## 2. Investigations ([InvestigationCanvas](./frontend/src/components/InvestigationCanvas.jsx#188-297))
-The primary workspace for deep forensic analysis.
+## 2. Investigation Workspace ([InvestigationCanvas](./frontend/src/components/InvestigationCanvas.jsx))
 
-*   **Attack Chain Tab**:
-    *   **Interactive Graph**: Uses `ReactFlow` to visualize the intrusion lifecycle (Recon → Pivot → Credential → Persist → Exfil → C2).
-    *   **Campaign Indicator**: Live status for active campaigns (e.g., "ALPHA-7 ACTIVE").
-*   **CoT Explorer Tab (Chain-of-Thought)**:
-    *   **Reasoning Steps**: Sequential log of agent actions, findings, and confidence scores.
-    *   **MITRE Mapping**: Automatic tagging of steps with ATT&CK techniques (e.g., T1059.001).
-    *   **Agent attribution**: Identifies which agent (Investigator, Malware Path., etc.) performed the action.
-*   **HITL Queue Tab (Human-In-The-Loop)**:
-    *   **Action Gating**: Interactive cards for actions requiring manual approval (VLAN Isolation, Process Kill, Account Disable).
-    *   **Risk Assessment**: Contextual warnings about operational impact (e.g., "May disrupt 12 endpoints").
-    *   **Admin Controls**: Approve/Reject buttons (Role-based access control enabled).
+The primary workspace for deep incident response, root cause analysis, and forensic timeline exploration.
 
----
-
-## 3. Alert Queue ([AlertQueue](./frontend/src/components/AlertQueue.jsx#37-191))
-High-fidelity alert management.
-
-*   **Triage Controls**:
-    *   **Global Search**: Filter by Title, Asset, or ID.
-    *   **Severity Filters**: Critical, High, Medium, Low.
-    *   **Source Filters**: EDR, SIEM, IDS, SOAR.
-    *   **Temporal Filters**: 1h, 6h, 24h, 7d.
-*   **Alert Table**:
-    *   **Real-time Feed**: Color-coded alerts with pulse indicators for CRITICAL items.
-    *   **Metadata**: Links alerts to Assets, Agents, and MITRE techniques.
-*   **Alert Actions**:
-    *   **Manual Assignment**: Assign a specific specialist agent.
-    *   **Promotion**: Elevate an alert to a full Investigation Case.
+* **Attack Chain Tab**:
+  * **Interactive Intrusion Graph**: Renders the complete attack lifecycle using `ReactFlow` (Reconnaissance -> Lateral Movement -> Credential Access -> Persistence -> Exfiltration -> Command & Control).
+  * **Campaign Indicator**: Real-time status badge for active threat campaigns.
+* **Chain-of-Thought (CoT) Explorer Tab**:
+  * **Reasoning Steps**: Chronological log of agent actions, findings, and confidence scores.
+  * **MITRE ATT&CK Mapping**: Automatic tagging of reasoning steps with ATT&CK technique IDs (e.g., T1059.001).
+  * **Agent Attribution**: Identifies specific agent attribution per reasoning step.
+* **Human-in-the-Loop (HITL) Queue Tab**:
+  * **Action Gating**: Interactive approval cards for high-risk containment actions (VLAN Isolation, Process Termination, Credential Rotation).
+  * **Impact Assessment**: Contextual warning summaries detailing potential operational disruption before action approval.
+  * **Role-Based Controls**: Authorize or reject pending agent requests with full audit logging.
 
 ---
 
-## 4. Agents ([HiveHealth](./frontend/src/components/HiveHealth.jsx#202-384))
-The "Digital Hive Mind" management console.
+## 3. High-Fidelity Alert Queue ([AlertQueue](./frontend/src/components/AlertQueue.jsx))
 
-*   **Health Dashboard**:
-    *   **Global Kill Switch**: (Admin-only) Force-pause the `WEDGE-RESPONDER` agent.
-    *   **Health Metrics**: Real-time Avg Latency, HITL counts, and API Cost Rate ($/s).
-*   **Agent Matrix**:
-    *   **Pillar Filtering**: Filter the 24 agents by Core, Intel, Invest, Response, or Gov.
-    *   **Agent Cards**: Displays status (Online/Idle/Pending), live CPU/Memory Load bars, and current micro-task (e.g., "Normalizing Palo Alto logs").
-*   **Telemetry & Cost**:
-    *   **Burn Chart**: Real-time area chart of LLM Token Burn vs. API Cost.
-    *   **Autonomy Master Slider**: (Admin-only) Drag-and-drop adjustment of the system's autonomy level (Manual → Full-Auto).
-*   **Orchestrator Event Stream**: Live WebSocket console showing raw agent-to-agent communication strings.
+Centralized alert management and initial triage.
 
----
-
-## 5. Threat Telemetry ([ThreatTelemetry](./frontend/src/components/ThreatTelemetry.jsx#140-293))
-Intelligence-led risk prioritization.
-
-*   **Risk-Quantified Incident Queue**:
-    *   **Loss Magnitude Ranking**: Incidents sorted by financial impact ($/hr).
-    *   **Likelihood Analysis**: Percentage calculation of attack success.
-    *   **Exposure Meter**: Global indicator of total business risk per hour.
-*   **QUILL-MIRAGE DeceptionHits**:
-    *   **Zero-False-Positive Alerts**: magenta-themed banners for honeytoken/honeypot interactions.
-    *   **Immediate Isolation**: Bypass buttons to isolate source IPs instantly upon decoy hit.
+* **Triage Controls**:
+  * **Global Search**: Filter alerts by Title, Target Asset, or Incident ID.
+  * **Severity Filtering**: Filter by Critical, High, Medium, or Low severity tiers.
+  * **Source Filtering**: Filter telemetry source (EDR, SIEM, IDS, Deception).
+  * **Temporal Windows**: Quick filters for 1-hour, 6-hour, 24-hour, and 7-day windows.
+* **Alert Feed**:
+  * **Real-time Table**: Color-coded alert list with active pulse indicators for Critical priority items.
+  * **Metadata Association**: Links alerts directly to related Assets, Agents, and MITRE ATT&CK codes.
+* **Triage Actions**:
+  * **Manual Assignment**: Reassign an alert to a specific specialist agent.
+  * **Case Promotion**: Manually promote an alert into a full investigation case.
 
 ---
 
-## 6. Governance & Compliance ([GovernanceDashboard](./frontend/src/components/GovernanceDashboard.jsx#157-288))
-Strategic board-level reporting.
+## 4. Digital Hive Mind Console ([HiveHealth](./frontend/src/components/HiveHealth.jsx))
 
-*   **Compliance Posture**:
-    *   **Maturity Gauges**: Radial progress for NIST 800-171 and CMMC 2.0.
-    *   **Control Family Breakdown**: Progress bars for all 14 NIST control families (AC, AU, IR, etc.).
-*   **Auditor Feed**:
-    *   **Continuous Compliance**: Rolling log of control passes/failures found by the Auditor agent.
-*   **Executive Summary**:
-    *   **NARRATOR-AI**: Human-readable summary of the week's security posture.
-    *   **Board Actions**: Automated recommendations for resource allocation and isolation approvals.
+Real-time monitoring and control panel for all 24 agents in the SOC fleet.
 
----
-
-## 7. Analytics ([AnalyticsDashboard](./frontend/src/components/AnalyticsDashboard.jsx#58-168))
-Operational performance metrics.
-
-*   **KPI Scorecard**: Autonomy Ratio, FP Rate, Success Rate, and Mean-Time-To-Investigate.
-*   **Trend Analysis**:
-    *   **Autonomy Growth**: AI vs. Human action ratio over time.
-    *   **FP Reduction**: Line chart tracking the "tuning" of the hive.
-    *   **Agent Comparison**: Bar chart showing which specialist agents are most successful.
+* **Health Dashboard**:
+  * **Emergency Kill Switch**: Admin control to pause automated response agents.
+  * **Performance Metrics**: Real-time execution latency, pending HITL queue depth, and LLM API cost rates.
+* **Agent Fleet Matrix**:
+  * **Pillar Filter**: Filter agents across Core, Operations, Intelligence, Action, and Business pillars.
+  * **Agent Status Cards**: Live operational status (Online / Processing / Idle), resource utilization bars, and current active task description.
+* **Telemetry & Cost Analytics**:
+  * **Token Burn Chart**: Real-time area graph tracking LLM token burn versus cost over time.
+  * **Autonomy Slider**: Dynamic control slider adjusting systemic autonomy limits (Manual -> Semi-Autonomous -> Full Autonomy).
+* **Event Console**: Live WebSocket terminal streaming raw inter-agent communication logs.
 
 ---
 
-## 8. Simulation Mode ([SimulationMode](./frontend/src/components/SimulationMode.jsx#15-117))
-The cyber-range sandbox.
+## 5. Intelligence & Threat Telemetry ([ThreatTelemetry](./frontend/src/components/ThreatTelemetry.jsx))
 
-*   **Scenario Engine**: Select between APT-29, Ransomware, or Insider Threat scenarios.
-*   **Run/Pause Controls**: Start/Stop the simulation to see how the hive responds.
-*   **Efficiency Metrics**: Counts of AI actions taken per human intervention and projected automation savings.
+Risk-quantified incident prioritization and deception monitoring.
+
+* **Risk-Quantified Incident Queue**:
+  * **Loss Magnitude Ranking**: Incidents prioritized by estimated financial exposure rate ($/hr).
+  * **Likelihood Analysis**: Calculated probability score of threat progression.
+  * **Exposure Gauge**: Aggregate business financial risk indicator per hour.
+* **Deception Operations (`QUILL-MIRAGE`)**:
+  * **Zero-False-Positive Alerts**: High-visibility alert banners for honeypot or canary credential interactions.
+  * **Rapid Isolation**: One-click host isolation buttons upon verified deception triggers.
 
 ---
 
-## 9. Identity & Access ([LoginPage](./frontend/src/components/LoginPage.jsx#5-117))
-*   **QUILL-GATEKEEPER Auth**: Secure entry point for operators.
-*   **MFA Proxy Status**: Visual confirmation of encrypted tunnel establishment.
-*   **Role Identification**: Categorizes access into Admin vs. Guest paths.
+## 6. Governance & Compliance Panel ([GovernanceDashboard](./frontend/src/components/GovernanceDashboard.jsx))
+
+Strategic compliance posture tracking and executive reporting.
+
+* **Compliance Posture**:
+  * **Maturity Gauges**: Radial progress tracking for NIST SP 800-171 and CMMC 2.0 readiness.
+  * **Control Family Breakdown**: Detailed progress bars across all 14 NIST control families (Access Control, Audit & Accountability, Incident Response, etc.).
+* **Auditor Log**:
+  * **Continuous Compliance Stream**: Rolling audit log of automated control evaluations performed by `FLYWAY-GOVERNOR`.
+* **Executive Summaries**:
+  * **AI Narrative Summaries**: Human-readable weekly security posture summaries.
+  * **Board Action Recommendations**: Strategic recommendations for resource allocation and risk mitigation.
+
+---
+
+## 7. Operational Analytics ([AnalyticsDashboard](./frontend/src/components/AnalyticsDashboard.jsx))
+
+Performance analytics and system efficiency metrics.
+
+* **KPI Scorecard**: Real-time tracking of Autonomy Ratio, False Positive Rate, Mitigation Success Rate, and Mean-Time-To-Investigate (MTTI).
+* **Trend Analysis**:
+  * **Autonomy Growth**: Line chart comparing automated AI actions versus manual human interventions over time.
+  * **False Positive Reduction**: Visualization of triage accuracy improvement over time.
+  * **Agent Efficiency**: Comparative analysis showing resolution rates per agent.
+
+---
+
+## 8. Cyber Range Simulation Mode ([SimulationMode](./frontend/src/components/SimulationMode.jsx))
+
+Interactive sandbox for testing SOC agent responses against simulated attack vectors.
+
+* **Scenario Engine**: Select pre-configured attack scenarios (APT-29 Spearphishing, Ransomware Egress, Insider Threat Credential Abuse).
+* **Simulation Controls**: Play, pause, or reset attack simulations to observe multi-agent response flows in real time.
+* **Efficiency Benchmarking**: Tracks automated actions taken per human intervention and calculates projected time saved.
+
+---
+
+## 9. Identity & Access Control ([LoginPage](./frontend/src/components/LoginPage.jsx))
+
+* **Gatekeeper Authentication**: Operator authentication portal managed by `QUILL-GATEKEEPER`.
+* **Tunnel Verification**: Visual confirmation of encrypted mTLS proxy tunnels.
+* **Role-Based Access Control (RBAC)**: Enforces permission boundaries between Admin, Operator, and Auditor access tiers.

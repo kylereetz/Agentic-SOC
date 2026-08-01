@@ -48,7 +48,9 @@ class TestNISTMapperLoading(unittest.TestCase):
 
     def test_missing_schema_does_not_crash(self):
         """Loading a non-existent schema file should log an error but not raise."""
-        mapper = NISTMapper(rev2_path="/nonexistent/path.json", rev3_path="/nonexistent/path.json")
+        mapper = NISTMapper(
+            rev2_path="/nonexistent/path.json", rev3_path="/nonexistent/path.json"
+        )
         self.assertEqual(mapper.rev2_controls, {})
         self.assertEqual(mapper.rev3_controls, {})
 
@@ -115,13 +117,17 @@ class TestAuditControl(unittest.TestCase):
         col = self._first_r2_col()
         # col format: R2_<FAMILY>_<CTRL_ID>  e.g. "R2_AC_3.1.1"
         parts = col.split("_")
-        revision = parts[0]       # "R2"
-        family_code = parts[1]    # e.g. "AC"
+        revision = parts[0]  # "R2"
+        family_code = parts[1]  # e.g. "AC"
         # Remaining parts joined form the control ID (e.g. "3.1.1")
         control_id = "_".join(parts[i] for i in range(2, len(parts)))
 
-        self.mapper.audit_control("192.168.1.1", revision, family_code, control_id, "Compliant")
-        row = self.mapper.df_compliance[self.mapper.df_compliance["Asset_IP"] == "192.168.1.1"]
+        self.mapper.audit_control(
+            "192.168.1.1", revision, family_code, control_id, "Compliant"
+        )
+        row = self.mapper.df_compliance[
+            self.mapper.df_compliance["Asset_IP"] == "192.168.1.1"
+        ]
         self.assertEqual(row[col].values[0], "Compliant")
 
     def test_audit_control_does_not_affect_other_asset(self):
@@ -131,9 +137,13 @@ class TestAuditControl(unittest.TestCase):
         revision = parts[0]
         family_code = parts[1]
         control_id = "_".join(parts[i] for i in range(2, len(parts)))
-        self.mapper.audit_control("192.168.1.1", revision, family_code, control_id, "Compliant")
+        self.mapper.audit_control(
+            "192.168.1.1", revision, family_code, control_id, "Compliant"
+        )
 
-        other_row = self.mapper.df_compliance[self.mapper.df_compliance["Asset_IP"] == "192.168.1.2"]
+        other_row = self.mapper.df_compliance[
+            self.mapper.df_compliance["Asset_IP"] == "192.168.1.2"
+        ]
         self.assertEqual(other_row[col].values[0], "Untested")
 
     def test_audit_control_invalid_column(self):

@@ -16,9 +16,12 @@ logger = logging.getLogger("RCA-PolicyArchitect")
 logger.setLevel(logging.INFO)
 if not logger.handlers:
     ch = logging.StreamHandler()
-    formatter = logging.Formatter("%(asctime)s - %(levelname)s - RCA PolicyArchitect - %(message)s")
+    formatter = logging.Formatter(
+        "%(asctime)s - %(levelname)s - RCA PolicyArchitect - %(message)s"
+    )
     ch.setFormatter(formatter)
     logger.addHandler(ch)
+
 
 class PolicyArchitectAgent:
     def __init__(self):
@@ -27,7 +30,8 @@ class PolicyArchitectAgent:
     async def run(self):
         self.is_running = True
         logger.info("[SQ] Policy-Architect Specialist started.")
-        await asyncio.sleep(float('inf'))
+        await asyncio.sleep(float("inf"))
+
 
 if __name__ == "__main__":
     architect = PolicyArchitectAgent()

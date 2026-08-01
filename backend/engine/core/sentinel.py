@@ -78,7 +78,7 @@ class SentinelEngine:
         if packet.haslayer(IP):
             src_ip = packet[IP].src
             src_mac = packet[Ether].src if packet.haslayer(Ether) else "Unknown"
-            
+
             if src_ip not in self.seen_ips:
                 self.seen_ips.add(src_ip)
                 asset = {
@@ -87,18 +87,20 @@ class SentinelEngine:
                     "discovery_method": "passive_sniff",
                     "shadow_it": False,
                     "unpatched_legacy": False,
-                    "default_credentials_exposed": False
+                    "default_credentials_exposed": False,
                 }
                 self.inventory[src_ip] = asset
                 logger.info(f"[Passive] New asset: {src_ip} ({src_mac})")
-                
+
             # Passive detection of default PLC credentials and unauthenticated Modbus
             if packet.haslayer("TCP") and packet["TCP"].dport == 502:
                 # Flagging unauthenticated cleartext industrial protocols
                 self.inventory[src_ip]["shadow_it"] = True
                 # Mock logic for default credential exposure via cleartext
                 self.inventory[src_ip]["default_credentials_exposed"] = True
-                logger.warning(f"[Scout Audit] Discovered unauthenticated Modbus stream on {src_ip}")
+                logger.warning(
+                    f"[Scout Audit] Discovered unauthenticated Modbus stream on {src_ip}"
+                )
 
     # ------------------------------------------------------------------
     # 2. Active ARP Scan (Layer 2)
@@ -135,9 +137,7 @@ class SentinelEngine:
     # ------------------------------------------------------------------
     # 3. ICMP Sweep (Layer 3)
     # ------------------------------------------------------------------
-    def icmp_sweep(
-        self, targets: List[str], timeout: int = 1
-    ) -> List[Dict[str, str]]:
+    def icmp_sweep(self, targets: List[str], timeout: int = 1) -> List[Dict[str, str]]:
         """
         Send a single ICMP Echo Request to each target IP.
         Use sparingly on fragile OT segments — one packet per host.
@@ -173,10 +173,12 @@ class SentinelEngine:
     # ------------------------------------------------------------------
     # 4. Deep Service Probing (Banner Grabbing & TLS)
     # ------------------------------------------------------------------
-    def service_probe(self, ip: str, ports: List[int] = [80, 443, 445, 22]) -> Dict[str, Any]:
+    def service_probe(
+        self, ip: str, ports: List[int] = [80, 443, 445, 22]
+    ) -> Dict[str, Any]:
         """
         Attempt to identify services and OS hints via non-disruptive probing.
-        
+
         # Satisfies NIST 800-171 3.11.2 (Vulnerability scanning)
         """
         findings = {}
@@ -189,10 +191,10 @@ class SentinelEngine:
                 banner = self._grab_banner(ip, port)
                 if banner:
                     findings[f"port_{port}"] = banner
-                    
+
         if findings and ip in self.inventory:
             self.inventory[ip]["service_probes"] = findings
-            
+
             # Simple OS heuristic from banners
             combined = str(findings).lower()
             if "windows" in combined or "microsoft" in combined:
@@ -203,7 +205,7 @@ class SentinelEngine:
                 self.inventory[ip]["os_label"] = "Linux"
             elif "ssh-2.0-openssh" in combined:
                 self.inventory[ip]["os_label"] = "Linux/Unix"
-                
+
         return findings
 
     def _grab_banner(self, ip: str, port: int, timeout: int = 2) -> Optional[str]:
@@ -213,32 +215,34 @@ class SentinelEngine:
                 # Some protocols wait for us to speak (HTTP), some speak first (SSH)
                 if port == 80:
                     sock.sendall(b"GET / HTTP/1.0\r\n\r\n")
-                
+
                 banner = sock.recv(1024).decode(errors="ignore").strip()
                 return banner[:200] if banner else None
         except Exception:
             return None
 
-    def _get_tls_metadata(self, ip: str, port: int, timeout: int = 3) -> Optional[Dict[str, Any]]:
+    def _get_tls_metadata(
+        self, ip: str, port: int, timeout: int = 3
+    ) -> Optional[Dict[str, Any]]:
         """Extract TLS version metadata."""
         context = ssl.create_default_context()
         context.check_hostname = False
         context.verify_mode = ssl.CERT_NONE
-        
+
         try:
             with socket.create_connection((ip, port), timeout=timeout) as sock:
                 with context.wrap_socket(sock, server_hostname=ip) as ssock:
                     cert = ssock.getpeercert(binary_form=True)
                     if not cert:
                         return None
-                    
+
                     cipher_info = ssock.cipher()
                     cipher_name = cipher_info[0] if cipher_info else "UNKNOWN"
 
                     return {
                         "version": ssock.version(),
                         "cipher": cipher_name,
-                        "active": True
+                        "active": True,
                     }
         except Exception:
             return None

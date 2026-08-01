@@ -13,7 +13,7 @@ Usage:
     from soc.bus.event_queue import EventBus
     bus = EventBus("discovery_events")
     bus.push({"ip": "192.168.1.1", "event": "asset_new"})
-    
+
     # In another process
     event = bus.pop()
 """
@@ -40,6 +40,7 @@ _BUS_ROOT = os.path.join(_SOC_ROOT, "bus")
 
 logger = logging.getLogger(__name__)
 
+
 class EventBus:
     """
     A secured, file-based FIFO queue per channel.
@@ -50,24 +51,30 @@ class EventBus:
         self.channel_name = channel_name
         self.channel_dir = os.path.join(_BUS_ROOT, channel_name)
         self.processed_dir = os.path.join(self.channel_dir, "processed")
-        
+
         # [Hardening] Security Keys
         self.bus_key = os.environ.get("SOC_BUS_KEY")
         self.cipher = None
-        
+
         if not Fernet:
-            raise RuntimeError(f"Bus [{channel_name}]: 'cryptography' library missing. Failing secure.")
-        
+            raise RuntimeError(
+                f"Bus [{channel_name}]: 'cryptography' library missing. Failing secure."
+            )
+
         if not self.bus_key:
-            raise ValueError(f"Bus [{channel_name}]: NO SOC_BUS_KEY FOUND in environment! Failing secure.")
-            
+            raise ValueError(
+                f"Bus [{channel_name}]: NO SOC_BUS_KEY FOUND in environment! Failing secure."
+            )
+
         try:
             # Ensure key is valid Fernet (32 bit base64)
             key_encoded = self.bus_key.encode()
             self.cipher = Fernet(key_encoded)
             logger.info(f"Bus [{channel_name}] initialized with Encryption-at-Rest.")
         except Exception as e:
-            raise ValueError(f"Bus [{channel_name}]: Invalid SOC_BUS_KEY provided: {e}. Failing secure.")
+            raise ValueError(
+                f"Bus [{channel_name}]: Invalid SOC_BUS_KEY provided: {e}. Failing secure."
+            )
 
         # Ensure directories exist
         os.makedirs(self.processed_dir, exist_ok=True)
@@ -82,7 +89,7 @@ class EventBus:
     def _verify(self, data: bytes, signature: str) -> bool:
         """Verify the HMAC signature."""
         if not self.bus_key:
-            return True # In unsafe mode, we skip verification
+            return True  # In unsafe mode, we skip verification
         expected = self._sign(data)
         return hmac.compare_digest(expected, signature)
 
@@ -105,6 +112,7 @@ class EventBus:
         Push a secured event onto the channel.
         """
         import uuid
+
         ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S_%f")
         rand_id = uuid.uuid4().hex[:6]
         filename = f"event_{ts}_{rand_id}.json"
@@ -113,7 +121,7 @@ class EventBus:
         # [Hardening] Sanitize Prompt Injection Vectors
         safe_payload = self._sanitize_payload(payload)
         raw_json = json.dumps(safe_payload).encode()
-        
+
         # [Hardening] Encrypt and Sign
         if self.cipher and self.bus_key:
             encrypted_data = self.cipher.encrypt(raw_json)
@@ -122,30 +130,35 @@ class EventBus:
                 "version": "2.0",
                 "secure": True,
                 "payload": encrypted_data.decode(),
-                "signature": signature
+                "signature": signature,
             }
         else:
             storage_obj = {
                 "version": "1.0",
                 "secure": False,
-                "payload": safe_payload, # Plain dict
-                "signature": "unsigned"
+                "payload": safe_payload,  # Plain dict
+                "signature": "unsigned",
             }
 
         with open(filepath, "w") as fh:
             json.dump(storage_obj, fh, indent=2)
 
-        logger.debug(f"Bus [{self.channel_name}] PUSH: {filename} (Secure: {storage_obj['secure']})")
+        logger.debug(
+            f"Bus [{self.channel_name}] PUSH: {filename} (Secure: {storage_obj['secure']})"
+        )
         return filename
 
     def pop(self) -> Optional[Dict[str, Any]]:
         """
         Retrieve, verify, and decrypt the oldest event.
         """
-        files = sorted([
-            f for f in os.listdir(self.channel_dir)
-            if f.startswith("event_") and f.endswith(".json")
-        ])
+        files = sorted(
+            [
+                f
+                for f in os.listdir(self.channel_dir)
+                if f.startswith("event_") and f.endswith(".json")
+            ]
+        )
 
         if not files:
             return None
@@ -157,33 +170,39 @@ class EventBus:
         try:
             with open(src_path, "r") as fh:
                 storage_obj = json.load(fh)
-            
+
             # [Hardening] Verify and Decrypt
             if storage_obj.get("secure"):
                 if not self.cipher or not self.bus_key:
-                    raise PermissionError("Encrypted event detected but no SOC_BUS_KEY provided.")
-                
+                    raise PermissionError(
+                        "Encrypted event detected but no SOC_BUS_KEY provided."
+                    )
+
                 payload_str = storage_obj["payload"]
                 signature = storage_obj["signature"]
-                
+
                 if not self._verify(payload_str.encode(), signature):
-                    logger.critical(f"INTEGRITY FAILURE: Bus event {filename} has invalid signature!")
+                    logger.critical(
+                        f"INTEGRITY FAILURE: Bus event {filename} has invalid signature!"
+                    )
                     # Move to a quarantine folder? For now, move to processed but return None
                     os.replace(src_path, dst_path)
                     return None
-                
+
                 decrypted_json = self.cipher.decrypt(payload_str.encode())
                 payload = json.loads(decrypted_json)
             else:
                 payload = storage_obj["payload"]
-            
+
             # Move to processed
             os.replace(src_path, dst_path)
             logger.debug(f"Bus [{self.channel_name}] POP: {filename}")
             return payload
 
         except Exception as exc:
-            logger.error(f"Bus [{self.channel_name}] POP error on {filename}. Quarantining: {exc}")
+            logger.error(
+                f"Bus [{self.channel_name}] POP error on {filename}. Quarantining: {exc}"
+            )
             try:
                 os.replace(src_path, dst_path + ".corrupt")
             except Exception:
@@ -192,10 +211,13 @@ class EventBus:
 
     def peek(self) -> Optional[Dict[str, Any]]:
         """See the oldest event without moving it to processed."""
-        files = sorted([
-            f for f in os.listdir(self.channel_dir)
-            if f.startswith("event_") and f.endswith(".json")
-        ])
+        files = sorted(
+            [
+                f
+                for f in os.listdir(self.channel_dir)
+                if f.startswith("event_") and f.endswith(".json")
+            ]
+        )
 
         if not files:
             return None
@@ -209,10 +231,13 @@ class EventBus:
 
     def size(self) -> int:
         """Return the count of pending events in the channel."""
-        return len([
-            f for f in os.listdir(self.channel_dir)
-            if f.startswith("event_") and f.endswith(".json")
-        ])
+        return len(
+            [
+                f
+                for f in os.listdir(self.channel_dir)
+                if f.startswith("event_") and f.endswith(".json")
+            ]
+        )
 
 
 if __name__ == "__main__":

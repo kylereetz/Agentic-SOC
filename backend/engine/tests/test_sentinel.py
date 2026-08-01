@@ -17,8 +17,7 @@ class TestSentinelPassiveSniffing(unittest.TestCase):
         pkt = MagicMock()
         pkt.haslayer.side_effect = lambda layer: layer.__name__ in ("IP", "Ether")
         pkt.__getitem__ = lambda self, layer: (
-            MagicMock(src=src_ip) if layer.__name__ == "IP"
-            else MagicMock(src=src_mac)
+            MagicMock(src=src_ip) if layer.__name__ == "IP" else MagicMock(src=src_mac)
         )
         return pkt
 
@@ -46,12 +45,15 @@ class TestSentinelPassiveSniffing(unittest.TestCase):
         pkt.haslayer.side_effect = lambda cls: cls.__name__ in ("IP", "Ether")
 
         from scapy.all import IP, Ether
+
         pkt.__getitem__ = lambda _, cls: ip_layer if cls is IP else ether_layer
 
         sentinel._packet_callback(pkt)
 
         self.assertIn("10.0.0.5", sentinel.inventory)
-        self.assertEqual(sentinel.inventory["10.0.0.5"]["mac_address"], "de:ad:be:ef:00:01")
+        self.assertEqual(
+            sentinel.inventory["10.0.0.5"]["mac_address"], "de:ad:be:ef:00:01"
+        )
 
     def test_packet_callback_no_duplicate(self):
         """_packet_callback should not add the same IP twice."""
@@ -59,6 +61,7 @@ class TestSentinelPassiveSniffing(unittest.TestCase):
         sentinel.seen_ips.add("10.0.0.5")  # pre-populate
 
         from scapy.all import IP, Ether
+
         ip_layer = MagicMock()
         ip_layer.src = "10.0.0.5"
         pkt = MagicMock()

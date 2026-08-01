@@ -6,7 +6,12 @@ python-nmap is mocked; no real network scans are performed.
 import unittest
 from unittest.mock import MagicMock, patch
 
-from engine.core.portscanner import PortScanner, PortScanResult, OpenPort, HIGH_RISK_PORTS
+from engine.core.portscanner import (
+    PortScanner,
+    PortScanResult,
+    OpenPort,
+    HIGH_RISK_PORTS,
+)
 
 
 def _build_mock_nm(ip: str, state: str = "up", ports: dict = None):
@@ -25,8 +30,9 @@ def _build_mock_nm(ip: str, state: str = "up", ports: dict = None):
         state=lambda: state,
         hostname=lambda: "",
         all_protocols=lambda: ["tcp"] if ports else [],
-        __getitem__=lambda self, proto: MagicMock(keys=lambda: list(ports.keys()),
-                                                   __getitem__=lambda self, p: ports[p]),
+        __getitem__=lambda self, proto: MagicMock(
+            keys=lambda: list(ports.keys()), __getitem__=lambda self, p: ports[p]
+        ),
     )
     # Wire per-port data
     host_mock = nm_instance[ip]
@@ -41,9 +47,9 @@ class TestPortScannerInit(unittest.TestCase):
 
     def test_default_ports_set(self):
         scanner = PortScanner()
-        self.assertIn("502", scanner.ports)   # Modbus
-        self.assertIn("445", scanner.ports)   # SMB
-        self.assertIn("44818", scanner.ports) # EtherNet/IP
+        self.assertIn("502", scanner.ports)  # Modbus
+        self.assertIn("445", scanner.ports)  # SMB
+        self.assertIn("44818", scanner.ports)  # EtherNet/IP
 
     @patch.dict("sys.modules", {"nmap": None})
     def test_nmap_missing_does_not_raise(self):
@@ -59,7 +65,9 @@ class TestPortScannerSingleHost(unittest.TestCase):
     def test_scan_returns_port_scan_result(self, mock_load):
         """scan() should always return a PortScanResult."""
         mock_module = MagicMock()
-        mock_module.PortScanner.return_value = _build_mock_nm("10.0.0.1", state="up", ports={})
+        mock_module.PortScanner.return_value = _build_mock_nm(
+            "10.0.0.1", state="up", ports={}
+        )
         mock_load.return_value = mock_module
 
         scanner = PortScanner()
@@ -99,7 +107,9 @@ class TestPortScannerSingleHost(unittest.TestCase):
     @patch("engine.core.portscanner.PortScanner._load_nmap")
     def test_high_risk_port_flagged(self, mock_load):
         """Modbus port 502 should be flagged as high-risk."""
-        port_data = {502: {"state": "open", "name": "modbus", "product": "", "version": ""}}
+        port_data = {
+            502: {"state": "open", "name": "modbus", "product": "", "version": ""}
+        }
         mock_nm_instance = MagicMock()
         mock_nm_instance.all_hosts.return_value = ["10.0.0.1"]
         host_mock = MagicMock()
@@ -126,7 +136,7 @@ class TestPortScannerSingleHost(unittest.TestCase):
     def test_down_host_returns_empty_ports(self, mock_load):
         """A host that doesn't respond should return an empty open_ports list."""
         mock_nm_instance = MagicMock()
-        mock_nm_instance.all_hosts.return_value = []   # host not in results
+        mock_nm_instance.all_hosts.return_value = []  # host not in results
         mock_module = MagicMock()
         mock_module.PortScanner.return_value = mock_nm_instance
         mock_load.return_value = mock_module

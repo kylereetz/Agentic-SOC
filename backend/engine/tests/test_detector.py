@@ -117,9 +117,9 @@ class TestWindowsDetectorRunAll(unittest.TestCase):
         """run_all() should tolerate a mix of Pass/Fail results."""
         # First call (MFA): pass; second (Guest): fail; third (SMB): pass
         mock_run.side_effect = [
-            _make_ps_result("1"),    # MFA → Pass
-            _make_ps_result("True"), # Guest → Fail (True = enabled)
-            _make_ps_result("True"), # SMB → Pass
+            _make_ps_result("1"),  # MFA → Pass
+            _make_ps_result("True"),  # Guest → Fail (True = enabled)
+            _make_ps_result("True"),  # SMB → Pass
         ]
         detector = WindowsDetector()
         results = detector.run_all()

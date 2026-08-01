@@ -1,3 +1,7 @@
+"""
+Pytest Configuration & Fixture Registry for Sentinel Backend Test Suite.
+"""
+
 import os
 from dotenv import load_dotenv
 

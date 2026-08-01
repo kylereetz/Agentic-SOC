@@ -31,37 +31,50 @@ logger = logging.getLogger("RCA-Gatekeeper")
 logger.setLevel(logging.INFO)
 if not logger.handlers:
     ch = logging.StreamHandler()
-    formatter = logging.Formatter("%(asctime)s - %(levelname)s - RCA Gatekeeper - %(message)s")
+    formatter = logging.Formatter(
+        "%(asctime)s - %(levelname)s - RCA Gatekeeper - %(message)s"
+    )
     ch.setFormatter(formatter)
     logger.addHandler(ch)
 
 GATEKEEPER_RULES_PATH = get_soc_path("configs", "gatekeeper_rules.json")
 SECRETS_PATH = get_soc_path("configs", "secrets.json")
 
+
 def haversine(lat1, lon1, lat2, lon2):
     """Calculate the great circle distance in km between two points."""
-    R = 6371.0 # Earth radius in km
+    R = 6371.0  # Earth radius in km
     dlat = math.radians(lat2 - lat1)
     dlon = math.radians(lon2 - lon1)
-    a = math.sin(dlat / 2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2)**2
+    a = (
+        math.sin(dlat / 2) ** 2
+        + math.cos(math.radians(lat1))
+        * math.cos(math.radians(lat2))
+        * math.sin(dlon / 2) ** 2
+    )
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
     return R * c
+
 
 class GatekeeperAgent:
     """
     Guardian of Identity. Detects account compromise and rotates machine IDs.
     """
+
     def __init__(self, rules_path: str = GATEKEEPER_RULES_PATH):
         self.in_bus = EventBus("identity_events")
         self.triage_bus = EventBus("triage_alerts")
         self.vault = Vault(SECRETS_PATH, role="gatekeeper")
         self.rules = self._load_rules(rules_path)
         self.incident_history: List[Dict[str, Any]] = []
-        
+
         # [IQ] Doctrine Reference: QUILL-GATEKEEPER
         from soc.bootstrap import get_soc_path
-        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_quill_gatekeeper.md')}")
-        self.user_states: Dict[str, Dict[str, Any]] = {} # user_id -> state
+
+        logger.info(
+            f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_quill_gatekeeper.md')}"
+        )
+        self.user_states: Dict[str, Dict[str, Any]] = {}  # user_id -> state
         self.is_running = False
 
     def _load_rules(self, path: str) -> List[Dict[str, Any]]:
@@ -75,7 +88,7 @@ class GatekeeperAgent:
     async def run(self):
         self.is_running = True
         logger.info("[SQ] Gatekeeper Identity Specialist started.")
-        
+
         while self.is_running:
             event = await asyncio.to_thread(self.in_bus.pop)
             if event:
@@ -86,42 +99,49 @@ class GatekeeperAgent:
     async def _process_identity_event(self, event: Dict[str, Any]):
         user_id = event.get("user_id")
         event_type = event.get("event_type")
-        if not user_id: return
+        if not user_id:
+            return
 
         # Get/Initialize state
-        state = self.user_states.get(user_id, {
-            "last_login": None,
-            "mfa_fails": [],
-            "last_loc": None
-        })
+        state = self.user_states.get(
+            user_id, {"last_login": None, "mfa_fails": [], "last_loc": None}
+        )
 
         # --- 1. Detect MFA Fatigue ---
         if event_type == "mfa_failure":
             now = time.time()
             state["mfa_fails"] = [f for f in state["mfa_fails"] if now - f < 60]
             state["mfa_fails"].append(now)
-            
+
             rule = next((r for r in self.rules if r["id"] == "GK_MFA_001"), None)
             if rule and len(state["mfa_fails"]) >= rule["threshold"]:
                 await self._alert_identity_threat(user_id, rule, event)
-                state["mfa_fails"] = [] # Reset after alert
+                state["mfa_fails"] = []  # Reset after alert
 
         # --- 2. Detect Impossible Travel ---
         loc = event.get("location")
         if loc and state["last_loc"] and state["last_login"]:
             dist = haversine(
-                state["last_loc"]["lat"], state["last_loc"]["lon"],
-                loc["lat"], loc["lon"]
+                state["last_loc"]["lat"],
+                state["last_loc"]["lon"],
+                loc["lat"],
+                loc["lon"],
             )
-            time_diff = (datetime.fromisoformat(event["timestamp"]) - 
-                         datetime.fromisoformat(state["last_login"])).total_seconds() / 3600.0
-            
+            time_diff = (
+                datetime.fromisoformat(event["timestamp"])
+                - datetime.fromisoformat(state["last_login"])
+            ).total_seconds() / 3600.0
+
             if time_diff > 0:
                 speed = dist / time_diff
                 rule = next((r for r in self.rules if r["id"] == "GK_TRAV_001"), None)
                 if rule and speed > rule["min_speed_kmh"]:
-                    await self._alert_identity_threat(user_id, rule, event, 
-                        detail=f"Speed: {speed:.2f} km/h over {dist:.2f} km")
+                    await self._alert_identity_threat(
+                        user_id,
+                        rule,
+                        event,
+                        detail=f"Speed: {speed:.2f} km/h over {dist:.2f} km",
+                    )
 
         # Update state
         if event_type in ["login_success", "mfa_success"]:
@@ -131,7 +151,13 @@ class GatekeeperAgent:
 
         self.user_states[user_id] = state
 
-    async def _alert_identity_threat(self, user_id: str, rule: Dict[str, Any], event: Dict[str, Any], detail: str = ""):
+    async def _alert_identity_threat(
+        self,
+        user_id: str,
+        rule: Dict[str, Any],
+        event: Dict[str, Any],
+        detail: str = "",
+    ):
         logger.warning(f"[IQ] Identity Threat Detected for {user_id}: {rule['name']}")
         alert = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -141,8 +167,8 @@ class GatekeeperAgent:
             "source_ip": event.get("source_ip", "Unknown"),
             "description": f"{rule['description']} (User: {user_id}) {detail}",
             "nist_control": "3.5.1",
-            "mitre_ttp": "T1621", # Multi-Factor Authentication Request Generation
-            "raw_event": event
+            "mitre_ttp": "T1621",  # Multi-Factor Authentication Request Generation
+            "raw_event": event,
         }
         self.triage_bus.push(alert)
 
@@ -151,7 +177,7 @@ class GatekeeperAgent:
         logger.info("[EQ] Triggering Non-Human Identity (NHI) rotation...")
         try:
             secrets_data = self.vault.load()
-            
+
             if not secrets_data.get("agents"):
                 logger.warning("No agent identities found in vault to rotate.")
                 return
@@ -160,13 +186,15 @@ class GatekeeperAgent:
                 new_key = f"sk-{agent.lower()}-{secrets.token_hex(8)}"
                 data["api_key"] = new_key
                 data["last_rotated"] = datetime.now(timezone.utc).isoformat()
-            
+
             self.vault.save(secrets_data)
             logger.info("[EQ] All agent identities rotated and secured in Vault.")
         except Exception as e:
             logger.error(f"Identity rotation failed: {e}")
 
+
 if __name__ == "__main__":
     import time
+
     gk = GatekeeperAgent()
     asyncio.run(gk.run())

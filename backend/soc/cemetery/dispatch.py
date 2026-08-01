@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 
 DISPATCH_LOG_PATH = get_soc_path("reports", "dispatch_history.json")
 
+
 # ---------------------------------------------------------------------------
 # Provider Plugins
 # ---------------------------------------------------------------------------
@@ -41,16 +42,21 @@ class BaseProvider(ABC):
     async def send(self, recipient: str, subject: str, body: str) -> bool:
         pass
 
+
 class MockSlackProvider(BaseProvider):
     async def send(self, recipient: str, subject: str, body: str) -> bool:
-        logger.info(f"[Slack] >>> Sending to #{recipient}\nSubject: {subject}\nBody: {body}\n")
+        logger.info(
+            f"[Slack] >>> Sending to #{recipient}\nSubject: {subject}\nBody: {body}\n"
+        )
         return True
+
 
 class MockPagerDutyProvider(BaseProvider):
     async def send(self, recipient: str, subject: str, body: str) -> bool:
         # PagerDuty usually ignores the body and takes a summary
         logger.info(f"[PagerDuty] >>> Triggering Incident for {recipient}: {subject}")
         return True
+
 
 # ---------------------------------------------------------------------------
 # Dispatch Agent
@@ -64,24 +70,24 @@ class DispatchAgent:
     def __init__(self):
         self.in_bus = EventBus("dispatch_requests")
         self.out_bus = EventBus("dispatch_status")
-        
+
         # [SQ] Provider Registry
         self.providers = {
             "slack": MockSlackProvider(),
-            "pagerduty": MockPagerDutyProvider()
+            "pagerduty": MockPagerDutyProvider(),
         }
-        
+
         # [EQ] Storm Protection: bucket = {case_id/ip: timestamp}
         self.sent_bucket: Dict[str, float] = {}
         self.rate_limit_seconds = 60
-        
+
         self.is_running = False
         self.history: List[Dict[str, Any]] = []
 
     async def run(self):
         self.is_running = True
         logger.info("[SQ] Dispatch Communications Agent started.")
-        
+
         while self.is_running:
             request = await asyncio.to_thread(self.in_bus.pop)
             if request:
@@ -95,16 +101,21 @@ class DispatchAgent:
         severity = request.get("severity", "INFO")
         summary = request.get("summary", "No summary provided.")
         hypothesis = request.get("hypothesis", "")
-        
+
         # [EQ] Rate Limiting / Storm Protection
         now = time.time()
-        if case_id in self.sent_bucket and (now - self.sent_bucket[case_id]) < self.rate_limit_seconds:
-            logger.warning(f"[EQ] Suppression active for {case_id}. Skipping duplicate notification.")
+        if (
+            case_id in self.sent_bucket
+            and (now - self.sent_bucket[case_id]) < self.rate_limit_seconds
+        ):
+            logger.warning(
+                f"[EQ] Suppression active for {case_id}. Skipping duplicate notification."
+            )
             return
 
         # [IQ] Platform Aggregation
         destinations = request.get("destinations", ["slack"])
-        
+
         for dest in destinations:
             provider = self.providers.get(dest)
             if not provider:
@@ -113,19 +124,19 @@ class DispatchAgent:
             # [IQ] Platform-aware formatting
             subject = f"[{severity}] RCA Alert: {case_id}"
             body = self._format_body(dest, summary, hypothesis)
-            
+
             success = await provider.send("soc-alerts", subject, body)
-            
+
             # [VQ] Delivery Reporting
             status_event = {
                 "case_id": case_id,
                 "destination": dest,
                 "status": "SENT" if success else "FAILED",
-                "timestamp": datetime.now(timezone.utc).isoformat()
+                "timestamp": datetime.now(timezone.utc).isoformat(),
             }
             self.out_bus.push(status_event)
             self.history.append(status_event)
-            
+
         self.sent_bucket[case_id] = now
         self._save_history()
 
@@ -145,9 +156,10 @@ class DispatchAgent:
         """Persist dispatch logs."""
         try:
             with open(DISPATCH_LOG_PATH, "w") as f:
-                json.dump(self.history[-100:], f, indent=2) # Keep last 100
+                json.dump(self.history[-100:], f, indent=2)  # Keep last 100
         except Exception as e:
             logger.error(f"Failed to save dispatch history: {e}")
+
 
 if __name__ == "__main__":
     agent = DispatchAgent()

@@ -1,3 +1,8 @@
+"""
+Network & Asset Graph Persistence Layer.
+Manages storage and relationship queries for the SOC asset topology graph.
+"""
+
 import os
 import json
 import logging
@@ -8,9 +13,10 @@ logger = logging.getLogger("GraphPersistence")
 
 GRAPH_FILE = get_soc_path("reports", "network_graph.json")
 
+
 class GraphPersistenceManager:
     """Manages the serialization and deserialization of the NetworkX DiGraph."""
-    
+
     @staticmethod
     def load_graph() -> nx.DiGraph:
         """Loads the saved network graph or initializes a new one."""
@@ -19,11 +25,13 @@ class GraphPersistenceManager:
                 with open(GRAPH_FILE, "r") as f:
                     data = json.load(f)
                     graph = nx.node_link_graph(data, directed=True)
-                    logger.debug(f"Loaded network graph with {graph.number_of_nodes()} nodes.")
+                    logger.debug(
+                        f"Loaded network graph with {graph.number_of_nodes()} nodes."
+                    )
                     return graph
             except Exception as e:
                 logger.error(f"Failed to load graph, starting fresh: {e}")
-                
+
         # Return a new directed graph if it doesn't exist or failed to load
         return nx.DiGraph()
 

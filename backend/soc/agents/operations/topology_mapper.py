@@ -29,6 +29,7 @@ TOPOLOGY_PATH = get_soc_path("reports", "topology.json")
 SUBNETS_PATH = get_soc_path("configs", "subnets.json")
 TOKENS_DB_PATH = get_soc_path("reports", "topology_tokens.db")
 
+
 class TopologyMapper:
     """
     Maintains a live relationship graph of the network environment.
@@ -39,28 +40,30 @@ class TopologyMapper:
         self.identity_bus = EventBus("identity_events")
         self.network_bus = EventBus("network_telemetry")
         self.dhcp_bus = EventBus("dhcp_logs")
-        
+
         # Graph Structure: nodes and edges
         # nodes: { id: { type, label, metadata } }
         # edges: { id: { source, target, type } }
         self.nodes: Dict[str, Dict[str, Any]] = {}
         self.edges: Dict[str, Dict[str, Any]] = {}
-        
+
         self.lock = asyncio.Lock()
         self.is_running = False
-        
+
         # Protocol Heuristic Tracking
         self.port_counters = defaultdict(lambda: defaultdict(int))
-        
+
         # Load Subnets Config
         self.subnets = self._load_subnets()
-        
+
         # Initialize SQLite Token Database
         self._init_token_db()
-        
+
         # [IQ] Doctrine Reference: GAGGLE-TOPOLOGY
-        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_gaggle_topology.md')}")
-        
+        logger.info(
+            f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_gaggle_topology.md')}"
+        )
+
         self._load_topology()
 
     def _load_subnets(self):
@@ -75,14 +78,14 @@ class TopologyMapper:
     def _init_token_db(self):
         try:
             with sqlite3.connect(TOKENS_DB_PATH) as conn:
-                conn.execute('''
+                conn.execute("""
                     CREATE TABLE IF NOT EXISTS tokens (
                         ip TEXT PRIMARY KEY,
                         type TEXT,
                         label TEXT,
                         updated_at TEXT
                     )
-                ''')
+                """)
         except Exception as e:
             logger.error(f"Failed to initialize token database: {e}")
 
@@ -102,10 +105,13 @@ class TopologyMapper:
     def _save_token(self, ip: str, type: str, label: str):
         try:
             with sqlite3.connect(TOKENS_DB_PATH) as conn:
-                conn.execute('''
+                conn.execute(
+                    """
                     INSERT OR REPLACE INTO tokens (ip, type, label, updated_at)
                     VALUES (?, ?, ?, ?)
-                ''', (ip, type, label, datetime.now(timezone.utc).isoformat()))
+                """,
+                    (ip, type, label, datetime.now(timezone.utc).isoformat()),
+                )
         except Exception as e:
             logger.error(f"Failed to save token for {ip}: {e}")
 
@@ -117,7 +123,9 @@ class TopologyMapper:
                     data = json.load(f)
                     self.nodes = data.get("nodes", {})
                     self.edges = data.get("edges", {})
-                logger.info(f"Loaded topology with {len(self.nodes)} nodes and {len(self.edges)} edges.")
+                logger.info(
+                    f"Loaded topology with {len(self.nodes)} nodes and {len(self.edges)} edges."
+                )
             except Exception as e:
                 logger.error(f"Failed to load topology: {e}")
 
@@ -125,11 +133,15 @@ class TopologyMapper:
         """Persist graph to disk."""
         try:
             with open(TOPOLOGY_PATH, "w") as f:
-                json.dump({
-                    "nodes": self.nodes,
-                    "edges": self.edges,
-                    "updated_at": datetime.now(timezone.utc).isoformat()
-                }, f, indent=2)
+                json.dump(
+                    {
+                        "nodes": self.nodes,
+                        "edges": self.edges,
+                        "updated_at": datetime.now(timezone.utc).isoformat(),
+                    },
+                    f,
+                    indent=2,
+                )
         except Exception as e:
             logger.error(f"Failed to save topology: {e}")
 
@@ -137,12 +149,12 @@ class TopologyMapper:
         """Main loop for the Topology Mapper."""
         self.is_running = True
         logger.info("[SQ] Topology Mapper started.")
-        
+
         tasks = [
             asyncio.create_task(self._monitor_discovery()),
             asyncio.create_task(self._monitor_identity()),
             asyncio.create_task(self._monitor_network()),
-            asyncio.create_task(self._monitor_dhcp())
+            asyncio.create_task(self._monitor_dhcp()),
         ]
         await asyncio.gather(*tasks)
 
@@ -187,7 +199,9 @@ class TopologyMapper:
                 if ip:
                     async with self.lock:
                         token = self._get_token(ip)
-                        if not token: # Only tag Dynamic if it's not explicitly locked via token
+                        if (
+                            not token
+                        ):  # Only tag Dynamic if it's not explicitly locked via token
                             if ip in self.nodes:
                                 self.nodes[ip]["type"] = "EndUser"
                                 self.nodes[ip]["label"] = "Dynamic"
@@ -212,22 +226,33 @@ class TopologyMapper:
                         self._add_node(src, "Host", src)
                         self._add_node(dst, "Host", dst)
                         self._add_edge(src, dst, f"COMMUNICATED_{proto}")
-                        
+
                         # Protocol heuristics on destination
                         if proto in ["TCP/389", "TCP/88", "TCP/53"]:
                             self.port_counters[dst][proto] += 1
                             # Threshold logic: 50 packets/flows on all 3 critical ports
-                            if (self.port_counters[dst].get("TCP/389", 0) > 50 and 
-                                self.port_counters[dst].get("TCP/88", 0) > 50 and 
-                                self.port_counters[dst].get("TCP/53", 0) > 50):
-                                
+                            if (
+                                self.port_counters[dst].get("TCP/389", 0) > 50
+                                and self.port_counters[dst].get("TCP/88", 0) > 50
+                                and self.port_counters[dst].get("TCP/53", 0) > 50
+                            ):
+
                                 token = self._get_token(dst)
-                                if not token or token["label"] != "Static: Domain Controller":
-                                    self._save_token(dst, "Server", "Static: Domain Controller")
+                                if (
+                                    not token
+                                    or token["label"] != "Static: Domain Controller"
+                                ):
+                                    self._save_token(
+                                        dst, "Server", "Static: Domain Controller"
+                                    )
                                     if dst in self.nodes:
                                         self.nodes[dst]["type"] = "Server"
-                                        self.nodes[dst]["label"] = "Static: Domain Controller"
-                                    logger.info(f"Topology [Heuristic]: Upgraded {dst} to Static: Domain Controller")
+                                        self.nodes[dst][
+                                            "label"
+                                        ] = "Static: Domain Controller"
+                                    logger.info(
+                                        f"Topology [Heuristic]: Upgraded {dst} to Static: Domain Controller"
+                                    )
                     self._save_topology()
             else:
                 await asyncio.sleep(0.5)
@@ -254,14 +279,14 @@ class TopologyMapper:
                     if not matched and not ip_obj.is_private:
                         label = "External"
             except ValueError:
-                pass # Not an IP address, proceed with passed values
+                pass  # Not an IP address, proceed with passed values
 
             self.nodes[node_id] = {
                 "id": node_id,
                 "type": type,
                 "label": label,
                 "metadata": metadata or {},
-                "first_seen": datetime.now(timezone.utc).isoformat()
+                "first_seen": datetime.now(timezone.utc).isoformat(),
             }
         else:
             if metadata:
@@ -275,15 +300,13 @@ class TopologyMapper:
                 "source": source,
                 "target": target,
                 "type": edge_type,
-                "last_seen": datetime.now(timezone.utc).isoformat()
+                "last_seen": datetime.now(timezone.utc).isoformat(),
             }
 
     def get_topology(self) -> Dict[str, Any]:
         """Return the current graph in a ReactFlow compatible format."""
-        return {
-            "nodes": list(self.nodes.values()),
-            "edges": list(self.edges.values())
-        }
+        return {"nodes": list(self.nodes.values()), "edges": list(self.edges.values())}
+
 
 if __name__ == "__main__":
     mapper = TopologyMapper()

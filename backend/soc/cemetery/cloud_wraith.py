@@ -22,14 +22,18 @@ logger = logging.getLogger("RCA-CloudWraith")
 logger.setLevel(logging.INFO)
 if not logger.handlers:
     ch = logging.StreamHandler()
-    formatter = logging.Formatter("%(asctime)s - %(levelname)s - RCA CloudWraith - %(message)s")
+    formatter = logging.Formatter(
+        "%(asctime)s - %(levelname)s - RCA CloudWraith - %(message)s"
+    )
     ch.setFormatter(formatter)
     logger.addHandler(ch)
+
 
 class CloudWraithAgent:
     """
     Expert in Cloud Security.
     """
+
     def __init__(self):
         self.cloud_bus = EventBus("cloud_events")
         self.triage_bus = EventBus("triage_alerts")
@@ -38,7 +42,7 @@ class CloudWraithAgent:
     async def run(self):
         self.is_running = True
         logger.info("[SQ] Cloud-Wraith Specialist started.")
-        
+
         while self.is_running:
             event = await asyncio.to_thread(self.cloud_bus.pop)
             if event:
@@ -50,21 +54,24 @@ class CloudWraithAgent:
         event_name = event.get("event_name", "")
         identity = event.get("identity", "Unknown")
         provider = event.get("cloud_provider", "Unknown")
-        
+
         # [IQ] IAM Privilege Escalation Pattern
         if "AttachedUserPolicy" in event_name or "PutUserPolicy" in event_name:
-             logger.warning(f"[IQ] Critical IAM modification detected in {provider} by {identity}")
-             alert = {
-                 "timestamp": datetime.now(timezone.utc).isoformat(),
-                 "rule_id": "CLOUD_IAM_ESCALATION",
-                 "rule_name": "Cloud IAM Privilege Escalation",
-                 "severity": "CRITICAL",
-                 "source_ip": "CloudAPI",
-                 "description": f"Potential privilege escalation in {provider}: {event_name} by {identity}",
-                 "mitre_ttp": "T1548.005",
-                 "raw_event": event
-             }
-             self.triage_bus.push(alert)
+            logger.warning(
+                f"[IQ] Critical IAM modification detected in {provider} by {identity}"
+            )
+            alert = {
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "rule_id": "CLOUD_IAM_ESCALATION",
+                "rule_name": "Cloud IAM Privilege Escalation",
+                "severity": "CRITICAL",
+                "source_ip": "CloudAPI",
+                "description": f"Potential privilege escalation in {provider}: {event_name} by {identity}",
+                "mitre_ttp": "T1548.005",
+                "raw_event": event,
+            }
+            self.triage_bus.push(alert)
+
 
 if __name__ == "__main__":
     wraith = CloudWraithAgent()

@@ -9,7 +9,14 @@ from soc.bus.event_queue import EventBus
 
 business_bus = EventBus("business_intel")
 
-def track_compute_usage(agent_name: str, model: str, prompt_cycles: int, completion_cycles: int, case_id: str = "SYSTEM"):
+
+def track_compute_usage(
+    agent_name: str,
+    model: str,
+    prompt_cycles: int,
+    completion_cycles: int,
+    case_id: str = "SYSTEM",
+):
     """
     Push a compute load event to the business intelligence bus.
     """
@@ -21,11 +28,14 @@ def track_compute_usage(agent_name: str, model: str, prompt_cycles: int, complet
         "prompt_cycles": prompt_cycles,
         "completion_cycles": completion_cycles,
         "total_cycles": total,
-        "case_id": case_id
+        "case_id": case_id,
     }
     business_bus.push(event)
 
-def track_business_loss(incident_id: str, loss_estimate: float, criticality: str, summary: str):
+
+def track_business_loss(
+    incident_id: str, loss_estimate: float, criticality: str, summary: str
+):
     """
     Push an estimated fiscal impact event.
     """
@@ -35,6 +45,6 @@ def track_business_loss(incident_id: str, loss_estimate: float, criticality: str
         "loss_estimate": loss_estimate,
         "criticality": criticality,
         "summary": summary,
-        "type": "fiscal_impact"
+        "type": "fiscal_impact",
     }
     business_bus.push(event)

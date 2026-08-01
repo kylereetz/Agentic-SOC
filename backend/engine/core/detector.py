@@ -40,16 +40,18 @@ logger = logging.getLogger(__name__)
 @dataclass
 class HardeningResult:
     """Single check result."""
+
     check_name: str
-    nist_control: str          # e.g. "3.5.3"
-    os_target: str             # e.g. "Windows 10/11"
-    status: str                # "Pass", "Fail", "Error", "Skipped"
+    nist_control: str  # e.g. "3.5.3"
+    os_target: str  # e.g. "Windows 10/11"
+    status: str  # "Pass", "Fail", "Error", "Skipped"
     detail: str = ""
 
 
 @dataclass
 class HostReport:
     """Aggregated results for one host."""
+
     hostname: str
     os_type: str
     results: List[HardeningResult] = field(default_factory=list)
@@ -141,8 +143,7 @@ class WindowsDetector:
         # Satisfies NIST 800-171 3.13.8
         """
         output = self._ps(
-            "Get-SmbServerConfiguration | "
-            "Select-Object -ExpandProperty EncryptData"
+            "Get-SmbServerConfiguration | " "Select-Object -ExpandProperty EncryptData"
         )
         if output.lower() == "true":
             return HardeningResult(
@@ -219,7 +220,9 @@ class RockyDetector:
 
         # Satisfies NIST 800-171 3.5.3
         """
-        output = self._exec("grep -c 'pam_google_authenticator\\|pam_totp' /etc/pam.d/sshd")
+        output = self._exec(
+            "grep -c 'pam_google_authenticator\\|pam_totp' /etc/pam.d/sshd"
+        )
         if output.isdigit() and int(output) > 0:
             return HardeningResult(
                 check_name="PAM MFA Module",
@@ -342,7 +345,9 @@ def run_local_hardening() -> HostReport:
         detector = WindowsDetector()
         report.results = detector.run_all()
     elif os_type == "rocky9":
-        logger.info("Rocky 9 detected — local checks require SSH self-connect or direct PAM inspection.")
+        logger.info(
+            "Rocky 9 detected — local checks require SSH self-connect or direct PAM inspection."
+        )
         # For local Rocky 9 checks we inspect files directly
         # (In production you'd use RockyDetector against localhost)
         report.results = []

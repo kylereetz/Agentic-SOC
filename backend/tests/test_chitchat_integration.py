@@ -1,3 +1,8 @@
+"""
+Automated Test Suite: Test Chitchat Integration.
+Verifies functionality, security controls, and regression safety for target component.
+"""
+
 import requests
 import json
 import os
@@ -5,6 +10,7 @@ import time
 from datetime import datetime
 
 import pytest
+
 
 @pytest.mark.skip(reason="Requires Live FastAPI backend running on port 8000")
 def test_chitchat_endpoint():
@@ -17,9 +23,9 @@ def test_chitchat_endpoint():
     4. Audit logging persistence.
     """
     base_url = "http://127.0.0.1:8000"
-    
+
     print("--- [RCA ChitChat Integration Test] ---")
-    
+
     # 1. Login to get token
     print("[1/3] Authenticating as admin...")
     login_data = {"username": "admin", "password": "admin123"}
@@ -29,19 +35,24 @@ def test_chitchat_endpoint():
         return
     token = response.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
-    
+
     # 2. Test ChitChat query
     print("[2/3] Sending query to ChitChat...")
     payload = {
         "query": "Based on the latest incident reports, what is the primary threat vector?",
         "history": [
-            {"role": "assistant", "text": "ChitChat ready. I have full context on the SOC reports."}
-        ]
+            {
+                "role": "assistant",
+                "text": "ChitChat ready. I have full context on the SOC reports.",
+            }
+        ],
     }
-    
+
     start_time = time.time()
     try:
-        response = requests.post(f"{base_url}/api/v1/chitchat", headers=headers, json=payload, timeout=30)
+        response = requests.post(
+            f"{base_url}/api/v1/chitchat", headers=headers, json=payload, timeout=30
+        )
     except requests.exceptions.Timeout:
         print("❌ Request timed out (Ollama might be slow/loading model)")
         return
@@ -52,7 +63,7 @@ def test_chitchat_endpoint():
     duration = time.time() - start_time
     print(f"    - Status: {response.status_code}")
     print(f"    - Time: {duration:.2f}s")
-    
+
     if response.status_code == 200:
         data = response.json()
         ai_response = data.get("response", "EMPTY")
@@ -69,7 +80,7 @@ def test_chitchat_endpoint():
     log_dir = "soc/reports/chitchat"
     session_id = f"admin_{datetime.utcnow().strftime('%Y%m%d')}"
     log_file = os.path.join(log_dir, f"{session_id}.json")
-    
+
     if os.path.exists(log_file):
         with open(log_file, "r") as f:
             logs = json.load(f)
@@ -79,6 +90,7 @@ def test_chitchat_endpoint():
                 print("❌ Log entry mismatch or empty.")
     else:
         print(f"❌ Audit log not found at {log_file}")
+
 
 if __name__ == "__main__":
     try:

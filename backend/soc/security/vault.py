@@ -1,3 +1,8 @@
+"""
+Encrypted Secrets Vault Service.
+Provides Fernet-encrypted storage and retrieval for agent API keys and credentials.
+"""
+
 import os
 import json
 import logging
@@ -5,11 +10,13 @@ from cryptography.fernet import Fernet
 
 logger = logging.getLogger("RCA-Vault")
 
+
 class Vault:
     """
     Secure storage for SOC secrets.
     Encrypts data at rest using AES-256 (Fernet).
     """
+
     def __init__(self, vault_path: str, role: str = "default"):
         self.vault_path = vault_path
         self.vault_key = os.environ.get("SOC_VAULT_KEY")
@@ -17,8 +24,10 @@ class Vault:
         self.role = role
 
         if not self.vault_key:
-            raise ValueError("SOC_VAULT_KEY NOT FOUND in environment! Vault is failing secure and halting execution.")
-            
+            raise ValueError(
+                "SOC_VAULT_KEY NOT FOUND in environment! Vault is failing secure and halting execution."
+            )
+
         try:
             self.cipher = Fernet(self.vault_key.encode())
         except Exception as e:
@@ -42,9 +51,11 @@ class Vault:
                     decrypted_data = self.cipher.decrypt(raw_data)
                     return self._namespace_data(json.loads(decrypted_data))
                 except Exception:
-                    # If decryption fails but we have a key, it might be a newly set key on old data 
-                    # or the data is plain-text. 
-                    logger.error("Decryption failed. Data might be corrupted or key is incorrect.")
+                    # If decryption fails but we have a key, it might be a newly set key on old data
+                    # or the data is plain-text.
+                    logger.error(
+                        "Decryption failed. Data might be corrupted or key is incorrect."
+                    )
                     return {}
             else:
                 # Fallback to plain-text JSON if no cipher
@@ -56,18 +67,18 @@ class Vault:
     def _namespace_data(self, data: dict) -> dict:
         """[SECURITY] Enforces Ephemeral Namespacing by stripping unauthorized keys."""
         ADMIN_ROLES = {"admin", "api", "orchestrator", "responder"}
-        
+
         if self.role not in ADMIN_ROLES:
             # Strip highly sensitive tokens from standard worker agents (Confused Deputy Prevention)
             data.pop("api_secret_key", None)
-            
+
         return data
 
     def save(self, data: dict):
         """Encrypt and save data to the vault."""
         try:
             raw_json = json.dumps(data, indent=2).encode()
-            
+
             if self.cipher:
                 encrypted_data = self.cipher.encrypt(raw_json)
                 with open(self.vault_path, "wb") as f:
@@ -75,7 +86,7 @@ class Vault:
             else:
                 with open(self.vault_path, "wb") as f:
                     f.write(raw_json)
-            
+
             # Restrict permissions (Unix-like systems)
             try:
                 os.chmod(self.vault_path, 0o600)

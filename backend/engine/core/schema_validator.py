@@ -44,6 +44,7 @@ def _get_validator():
     """
     try:
         import jsonschema  # noqa: PLC0415
+
         validator = jsonschema.Draft7Validator(_SCHEMA)
         return validator, None
     except ImportError:
@@ -82,7 +83,9 @@ def validate_asset(asset: Dict[str, Any]) -> bool:
     errors = list(validator.iter_errors(asset))
     if errors:
         for e in errors:
-            logger.warning(f"Asset validation error: {e.message} (path: {list(e.path)})")
+            logger.warning(
+                f"Asset validation error: {e.message} (path: {list(e.path)})"
+            )
         return False
 
     return True
@@ -123,5 +126,6 @@ def get_validation_errors(asset: Dict[str, Any]) -> Tuple[bool, list]:
         return False, [err or "Validator unavailable"]
 
     import jsonschema  # noqa: PLC0415
+
     errors = [e.message for e in validator.iter_errors(asset)]
     return (len(errors) == 0), errors

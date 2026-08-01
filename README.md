@@ -1,5 +1,6 @@
 # Sentinel Agentic SOC: Autonomous Security Operations & Continuous Compliance Engine
 
+[![Project Status](https://img.shields.io/badge/Status-Alpha%20%7C%20Active%20Development-yellow.svg)](#current-status--roadmap)
 [![Compliance Mapping](https://img.shields.io/badge/Compliance-NIST%20800--171%20%7C%20CMMC%202.0-blue.svg)](#governance-risk--compliance-grc-architecture)
 [![AI Governance](https://img.shields.io/badge/AI%20Governance-NIST%20AI%20RMF%20%7C%20HITL%20Guardrails-green.svg)](#ai-governance--safety-guardrails)
 [![Architecture](https://img.shields.io/badge/Architecture-25--Agent%20Hive%20Mind-purple.svg)](#the-25-agent-hive-mind-matrix)
@@ -21,6 +22,19 @@ Sentinel solves both by delivering an autonomous SOC ecosystem designed with aud
 * **Auditable AI Guardrails**: Enforces human-in-the-loop (HITL) approval gates, separation of duties (SoD), and the "Rule of Zero" safety protocol for autonomous remediation.
 * **Tamper-Evident Evidence**: Cryptographically seals forensic artifacts with **SHA-256 hashes** at collection time and maintains state via Write-Ahead Logging (WAL).
 * **Local & Cost-Efficient**: Runs entirely on edge hardware (VRAM-constrained to **16GB**) using a **Multi-Head LLM architecture** managed by Pydantic AI.
+
+---
+
+## Project Origins & Vision
+
+Sentinel Agentic SOC was born out of a specific engineering challenge: **what are the practical limits of a closed-system, air-gapped Agentic SOC built entirely on locally available hardware?**
+
+Many small-to-medium businesses (SMBs) and Defense Industrial Base (DIB) suppliers face significant hurdles meeting rigorous **NIST SP 800-171** and **CMMC 2.0** compliance standards required to bid on Tier 2 and Tier 3 government contracts. Traditional enterprise SOC solutions and cloud-based AI tools are often cost-prohibitive or introduce unacceptable data exposure risks for sensitive defense telemetry.
+
+This project was designed to test the feasibility of a **100% local, human-in-the-loop (HITL) agentic framework** that:
+* **Preserves Data Sovereignty**: Operates in a closed system with zero dependency on third-party cloud LLM APIs or internet connectivity, ensuring security data never leaves the local environment.
+* **Optimizes Edge Hardware**: Maximizes local GPU resource constraints (VRAM-bounded to **16GB**) using a multi-head LLM architecture.
+* **Democratizes Compliance Operations**: Provides smaller security shops with continuous control evaluation, automated evidence collection, and auditable AI guardrails necessary to compete for tier 2/3 government defense contracts.
 
 ---
 
@@ -219,6 +233,26 @@ npm run dev
 ```
 
 Navigate to `http://localhost:5173` to access the **Branta Agent Dashboard**.
+
+---
+
+## Current Status & Roadmap
+
+Sentinel Agentic SOC is an active open-source project in **Alpha / Active Development**.
+
+### Completed & Functional Capabilities
+* **Multi-Agent Core Engine**: 25 specialized agents operating across 5 strategic pillars.
+* **Continuous Control Mapping**: Real-time cross-mapping of telemetry to NIST SP 800-171 and CMMC 2.0 (`FLYWAY-GOVERNOR`).
+* **AI Guardrails & HITL Safety**: Enforcement of the "Rule of Zero" (`WEDGE-PATCHADVISOR`), host isolation dead-man switch (`WEDGE-RESPONDER`), and human approval gating.
+* **Audit Log Integrity**: SHA-256 evidence hashing (`QUILL-FORENSICS`) and Write-Ahead Logging (WAL) case state persistence (`SYRINX-MANAGER`).
+* **Local Hardware Optimization**: Multi-head local LLM execution tuned for 16GB VRAM hardware bounds using Pydantic AI.
+* **Automated Security Pipelines**: Trivy vulnerability scanning, Dependabot dependency updates, and GitHub Code Scanning integration.
+
+### In Progress & Upcoming Features
+* **Live SIEM / MISP Ingestion Adapters**: Direct connectors for real-time STIX/TAXII threat intel feeds and enterprise SIEM log streams.
+* **Expanded Interactive Cyber Range Scenarios**: Additional automated red-team simulations (e.g., Ransomware Egress, Active Directory Lateral Movement).
+* **Exportable GRC Audit Packages**: One-click generation of auditor-ready evidence packages containing signed forensic logs and compliance scorecards.
+* **Multi-Tenant Authorization & RBAC Refinements**: Fine-grained role-based access controls for multi-operator SOC teams.
 
 ---
 

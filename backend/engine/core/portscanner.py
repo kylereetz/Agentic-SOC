@@ -50,12 +50,13 @@ HIGH_RISK_PORTS = {
 @dataclass
 class OpenPort:
     """A single open port on a scanned host."""
+
     port: int
-    protocol: str          # "tcp" or "udp"
-    state: str             # "open", "filtered", etc.
-    service: str           # e.g. "ssh", "http", "modbus"
-    product: str = ""      # e.g. "OpenSSH"
-    version: str = ""      # e.g. "8.9p1"
+    protocol: str  # "tcp" or "udp"
+    state: str  # "open", "filtered", etc.
+    service: str  # e.g. "ssh", "http", "modbus"
+    product: str = ""  # e.g. "OpenSSH"
+    version: str = ""  # e.g. "8.9p1"
     is_high_risk: bool = False
     risk_reason: str = ""
 
@@ -63,9 +64,10 @@ class OpenPort:
 @dataclass
 class PortScanResult:
     """Complete scan result for a single host."""
+
     ip_address: str
     hostname: str = ""
-    scan_status: str = "unknown"   # "up", "down", "error", "nmap_missing"
+    scan_status: str = "unknown"  # "up", "down", "error", "nmap_missing"
     open_ports: List[OpenPort] = field(default_factory=list)
     nist_control: str = "3.11.2"
 
@@ -123,6 +125,7 @@ class PortScanner:
         """
         try:
             import nmap
+
             return nmap
         except ImportError:
             logger.warning(
@@ -164,7 +167,9 @@ class PortScanner:
 
         try:
             nm = self._nm.PortScanner()
-            logger.info(f"Scanning {ip} on ports {port_str} (timeout={host_timeout}s) …")
+            logger.info(
+                f"Scanning {ip} on ports {port_str} (timeout={host_timeout}s) …"
+            )
 
             # -sS SYN scan where available; fall back to -sT (connect) if no raw sockets
             # --host-timeout limits wall-clock time per host

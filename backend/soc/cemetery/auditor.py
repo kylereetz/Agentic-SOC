@@ -74,9 +74,7 @@ def _risk_label(score: float) -> str:
 # ---------------------------------------------------------------------------
 # Per-family statistics
 # ---------------------------------------------------------------------------
-def _family_stats(
-    df: pd.DataFrame, prefix: str
-) -> List[Dict[str, Any]]:
+def _family_stats(df: pd.DataFrame, prefix: str) -> List[Dict[str, Any]]:
     """
     Break down compliance by NIST family for a given revision prefix
     (e.g. "R2" or "R3").
@@ -145,7 +143,9 @@ class AuditorAgent:
     def _get_cached_mapping(self, key: str) -> Optional[str]:
         try:
             with sqlite3.connect(self.db_path) as conn:
-                res = conn.execute("SELECT nist_control FROM mapping_cache WHERE event_key = ?", (key,)).fetchone()
+                res = conn.execute(
+                    "SELECT nist_control FROM mapping_cache WHERE event_key = ?", (key,)
+                ).fetchone()
                 return res[0] if res else None
         except Exception:
             return None
@@ -153,7 +153,9 @@ class AuditorAgent:
     def _save_mapping(self, key: str, control: str):
         try:
             with sqlite3.connect(self.db_path) as conn:
-                conn.execute("INSERT OR REPLACE INTO mapping_cache VALUES (?, ?)", (key, control))
+                conn.execute(
+                    "INSERT OR REPLACE INTO mapping_cache VALUES (?, ?)", (key, control)
+                )
         except Exception:
             pass
 
@@ -163,12 +165,12 @@ class AuditorAgent:
         """
         if df.empty:
             return False, "Inventory is empty. No assets to audit."
-        
+
         required_cols = ["ip_address"]
         missing = [c for c in required_cols if c not in df.columns]
         if missing:
             return False, f"Critical metadata missing: {missing}"
-            
+
         return True, "OK"
 
     def map_events_to_nist(self, event_type: str, detail: str) -> str:
@@ -183,15 +185,17 @@ class AuditorAgent:
 
         # Heuristic / Fallback
         control = "3.12.1 (General Assessment)"
-        if event_type == "asset_new": control = "3.4.1 (Inventory)"
-        elif event_type == "asset_changed": control = "3.4.1 (Baseline Configuration)"
-        
+        if event_type == "asset_new":
+            control = "3.4.1 (Inventory)"
+        elif event_type == "asset_changed":
+            control = "3.4.1 (Baseline Configuration)"
+
         detail_lower = detail.lower()
         if "password" in detail_lower or "auth" in detail_lower:
             control = "3.5.3 (Password Complexity)"
         elif "firewall" in detail_lower or "block" in detail_lower:
             control = "3.13.1 (Boundary Protection)"
-            
+
         self._save_mapping(cache_key, control)
         return control
 
@@ -221,9 +225,7 @@ class AuditorAgent:
 
         if output_path is None:
             ts = datetime.utcnow().strftime("%Y%m%d")
-            output_path = os.path.join(
-                _REPORT_DIR, f"gap_analysis_{ts}.pdf"
-            )
+            output_path = os.path.join(_REPORT_DIR, f"gap_analysis_{ts}.pdf")
 
         doc = SimpleDocTemplate(
             output_path,
@@ -262,9 +264,7 @@ class AuditorAgent:
                 styles["Normal"],
             )
         )
-        elements.append(
-            Paragraph(f"Auditor: {self.auditor_name}", styles["Normal"])
-        )
+        elements.append(Paragraph(f"Auditor: {self.auditor_name}", styles["Normal"]))
         elements.append(Spacer(1, 0.3 * inch))
         elements.append(
             Paragraph(
@@ -279,9 +279,7 @@ class AuditorAgent:
         elements.append(PageBreak())
 
         # -- Executive Summary --
-        elements.append(
-            Paragraph("Executive Summary", styles["Heading1"])
-        )
+        elements.append(Paragraph("Executive Summary", styles["Heading1"]))
         elements.append(Spacer(1, 0.2 * inch))
 
         total_assets = len(df)
@@ -292,7 +290,10 @@ class AuditorAgent:
             )
         )
 
-        for prefix, label in [("R2", "Rev 2 (CMMC Baseline)"), ("R3", "Rev 3 (Future Baseline)")]:
+        for prefix, label in [
+            ("R2", "Rev 2 (CMMC Baseline)"),
+            ("R3", "Rev 3 (Future Baseline)"),
+        ]:
             cols = [c for c in df.columns if c.startswith(prefix)]
             if not cols:
                 continue
@@ -328,7 +329,12 @@ class AuditorAgent:
                         ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
                         ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
                         ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
-                        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f5f5f5")]),
+                        (
+                            "ROWBACKGROUNDS",
+                            (0, 1),
+                            (-1, -1),
+                            [colors.white, colors.HexColor("#f5f5f5")],
+                        ),
                     ]
                 )
             )
@@ -337,15 +343,16 @@ class AuditorAgent:
         elements.append(PageBreak())
 
         # -- Per-family breakdown --
-        for prefix, label in [("R2", "NIST 800-171 Rev 2"), ("R3", "NIST 800-171 Rev 3")]:
+        for prefix, label in [
+            ("R2", "NIST 800-171 Rev 2"),
+            ("R3", "NIST 800-171 Rev 3"),
+        ]:
             fstats = _family_stats(df, prefix)
             if not fstats:
                 continue
 
             elements.append(
-                Paragraph(
-                    f"{label} — Family Breakdown", styles["Heading1"]
-                )
+                Paragraph(f"{label} — Family Breakdown", styles["Heading1"])
             )
             elements.append(Spacer(1, 0.15 * inch))
 
@@ -374,7 +381,12 @@ class AuditorAgent:
                         ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
                         ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
                         ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
-                        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f5f5f5")]),
+                        (
+                            "ROWBACKGROUNDS",
+                            (0, 1),
+                            (-1, -1),
+                            [colors.white, colors.HexColor("#f5f5f5")],
+                        ),
                         ("ALIGN", (1, 0), (-1, -1), "CENTER"),
                     ]
                 )
@@ -384,9 +396,7 @@ class AuditorAgent:
 
         # -- Remediation Priority Matrix --
         elements.append(PageBreak())
-        elements.append(
-            Paragraph("Remediation Priority Matrix", styles["Heading1"])
-        )
+        elements.append(Paragraph("Remediation Priority Matrix", styles["Heading1"]))
         elements.append(Spacer(1, 0.15 * inch))
         elements.append(
             Paragraph(
@@ -429,7 +439,12 @@ class AuditorAgent:
                         ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
                         ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
                         ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-                        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#ffebee")]),
+                        (
+                            "ROWBACKGROUNDS",
+                            (0, 1),
+                            (-1, -1),
+                            [colors.white, colors.HexColor("#ffebee")],
+                        ),
                     ]
                 )
             )
@@ -441,7 +456,7 @@ class AuditorAgent:
 
         # [VQ] Export Metadata JSON for Dashboard
         self._export_metadata_json(df, output_path)
-        
+
         return output_path
 
     def _export_metadata_json(self, df: pd.DataFrame, pdf_path: str):
@@ -449,7 +464,7 @@ class AuditorAgent:
         [VQ] Generate a machine-readable audit summary for the Dashboard.
         """
         meta_path = pdf_path.replace(".pdf", ".json")
-        
+
         # Calculate summary stats
         cols_r2 = [c for c in df.columns if c.startswith("R2")]
         vals = df[cols_r2].values.flatten().tolist()
@@ -457,21 +472,23 @@ class AuditorAgent:
             "compliant": vals.count("Compliant"),
             "non_compliant": vals.count("Non-Compliant"),
             "untested": vals.count("Untested"),
-            "risk_score": _compute_risk_score({
-                "Compliant": vals.count("Compliant"),
-                "Non-Compliant": vals.count("Non-Compliant")
-            })
+            "risk_score": _compute_risk_score(
+                {
+                    "Compliant": vals.count("Compliant"),
+                    "Non-Compliant": vals.count("Non-Compliant"),
+                }
+            ),
         }
-        
+
         meta = {
             "audit_id": os.path.basename(pdf_path).replace(".pdf", ""),
             "timestamp": datetime.utcnow().isoformat(),
             "client": self.client_name,
             "overall_stats": stats,
             "pdf_link": pdf_path,
-            "families": _family_stats(df, "R2")
+            "families": _family_stats(df, "R2"),
         }
-        
+
         with open(meta_path, "w") as f:
             json.dump(meta, f, indent=2)
         logger.info(f"Audit metadata exported → {meta_path}")

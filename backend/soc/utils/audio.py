@@ -11,8 +11,13 @@ import random
 logger = logging.getLogger(__name__)
 
 # Project Root & Sounds Directory
-_PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
-SOUNDS_DIR = os.getenv("SOUNDS_DIR", os.path.join(_PROJECT_ROOT, "Model Complete Sounds"))
+_PROJECT_ROOT = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "..", "..")
+)
+SOUNDS_DIR = os.getenv(
+    "SOUNDS_DIR", os.path.join(_PROJECT_ROOT, "Model Complete Sounds")
+)
+
 
 def play_sound(sound_name: str, sync: bool = False):
     """
@@ -33,7 +38,7 @@ def play_sound(sound_name: str, sync: bool = False):
         # Ensure .wav extension
         if not sound_name.endswith(".wav"):
             sound_name += ".wav"
-        
+
         potential_path = os.path.join(SOUNDS_DIR, sound_name)
         if os.path.exists(potential_path):
             target_file = potential_path
@@ -53,23 +58,28 @@ def play_sound(sound_name: str, sync: bool = False):
     # Using [System.Media.SoundPlayer] for .wav files
     method = "PlaySync()" if sync else "Play()"
     ps_command = f"(New-Object System.Media.SoundPlayer '{target_file}').{method}"
-    
+
     try:
         # Run in background to avoid blocking agent execution
-        subprocess.Popen(["powershell", "-Command", ps_command], 
-                         stdout=subprocess.DEVNULL, 
-                         stderr=subprocess.DEVNULL)
+        subprocess.Popen(
+            ["powershell", "-Command", ps_command],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
         logger.info(f"Triggered audio notification: {os.path.basename(target_file)}")
     except Exception as e:
         logger.error(f"Failed to play sound {sound_name}: {e}")
+
 
 def play_milestone_learning():
     """Triggered when a MARL Q-Value milestone is reached."""
     play_sound("Orge MAgi - We're not Brainless anymore.wav")
 
+
 def play_critical_alert():
     """Triggered when a CRITICAL alert is detected by Triage."""
     play_sound("Human - The Town is under Attack.wav")
+
 
 def play_action_completed():
     """Triggered when a containment action is successfully applied."""

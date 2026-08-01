@@ -2,6 +2,7 @@
 Hardening test: validates that the Vault encrypts secrets at rest, fails safely when no key is
 provided, and enforces role-based namespacing to prevent confused-deputy privilege escalation.
 """
+
 import os
 import json
 import pytest
@@ -18,9 +19,7 @@ def test_vault_hardening(monkeypatch, tmp_path):
     vault = Vault(vault_path, role="admin")
     secrets_payload = {
         "api_secret_key": "top-secret-hitl-token",
-        "agents": {
-            "scout": {"api_key": "old-key", "last_rotated": "never"}
-        }
+        "agents": {"scout": {"api_key": "old-key", "last_rotated": "never"}},
     }
 
     # ── 2. Save ──────────────────────────────────────────────────────────────
@@ -52,12 +51,16 @@ def test_vault_hardening(monkeypatch, tmp_path):
 
     vault_admin = Vault(vault_path, role="admin")
     admin_data = vault_admin.load()
-    assert "api_secret_key" in admin_data, "Admin Vault incorrectly stripped api_secret_key!"
+    assert (
+        "api_secret_key" in admin_data
+    ), "Admin Vault incorrectly stripped api_secret_key!"
     print("[SUCCESS] Admin Vault namespace correctly retained api_secret_key.")
 
     vault_scout = Vault(vault_path, role="scout")
     scout_data = vault_scout.load()
-    assert "api_secret_key" not in scout_data, "Confused Deputy Vulnerability! Scout retained api_secret_key!"
+    assert (
+        "api_secret_key" not in scout_data
+    ), "Confused Deputy Vulnerability! Scout retained api_secret_key!"
     print("[SUCCESS] Scout Vault namespace correctly stripped api_secret_key.")
 
 

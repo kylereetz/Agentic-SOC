@@ -95,83 +95,105 @@ class InventoryDiff:
 
         for asset in self.new_assets:
             ip = asset.get("ip_address", "Unknown")
-            events.append({
-                "timestamp": ts,
-                "event_type": "asset_new",
-                "severity": "WARNING",
-                "ip": ip,
-                "mac": asset.get("mac_address"),
-                "detail": "New asset appeared on network",
-                "semantic_detail": f"NEW DEVICE: {ip} discovered on network."
-            })
+            events.append(
+                {
+                    "timestamp": ts,
+                    "event_type": "asset_new",
+                    "severity": "WARNING",
+                    "ip": ip,
+                    "mac": asset.get("mac_address"),
+                    "detail": "New asset appeared on network",
+                    "semantic_detail": f"NEW DEVICE: {ip} discovered on network.",
+                }
+            )
 
         for asset in self.missing_assets:
             ip = asset.get("ip_address", "Unknown")
-            events.append({
-                "timestamp": ts,
-                "event_type": "asset_missing",
-                "severity": "INFO",
-                "ip": ip,
-                "mac": asset.get("mac_address"),
-                "detail": "Previously known asset no longer responding",
-                "semantic_detail": f"OFFLINE: {ip} is no longer responding to discovery probes."
-            })
+            events.append(
+                {
+                    "timestamp": ts,
+                    "event_type": "asset_missing",
+                    "severity": "INFO",
+                    "ip": ip,
+                    "mac": asset.get("mac_address"),
+                    "detail": "Previously known asset no longer responding",
+                    "semantic_detail": f"OFFLINE: {ip} is no longer responding to discovery probes.",
+                }
+            )
 
         for change in self.changed_assets:
             ip = change["ip"]
             before = change["before"]
             after = change["after"]
-            
+
             # Identify specific changes for semantic detail
             changed_fields = []
             if before.get("hostname") != after.get("hostname"):
-                changed_fields.append(f"Hostname: {before.get('hostname')} -> {after.get('hostname')}")
+                changed_fields.append(
+                    f"Hostname: {before.get('hostname')} -> {after.get('hostname')}"
+                )
             if before.get("os_label") != after.get("os_label"):
-                changed_fields.append(f"OS: {before.get('os_label')} -> {after.get('os_label')}")
-            
+                changed_fields.append(
+                    f"OS: {before.get('os_label')} -> {after.get('os_label')}"
+                )
+
             # [OT Tracking] Shadow IT, Legacy, and PLC defaults
             if after.get("shadow_it", False) and not before.get("shadow_it", False):
-                events.append({
+                events.append(
+                    {
+                        "timestamp": ts,
+                        "event_type": "asset_shadow_it_detected",
+                        "severity": "CRITICAL",
+                        "ip": ip,
+                        "detail": "Asset identified as unauthorized or Shadow IT operating within industrial zones",
+                        "semantic_detail": f"SHADOW IT: Unauthorized device or protocol detected at {ip}.",
+                    }
+                )
+
+            if after.get("unpatched_legacy", False) and not before.get(
+                "unpatched_legacy", False
+            ):
+                events.append(
+                    {
+                        "timestamp": ts,
+                        "event_type": "asset_unpatched_legacy",
+                        "severity": "WARNING",
+                        "ip": ip,
+                        "detail": "Asset is running an unpatched legacy OS (e.g., Windows 7/XP)",
+                        "semantic_detail": f"LEGACY OS: {ip} is running an unsupported operating system.",
+                    }
+                )
+
+            if after.get("default_credentials_exposed", False) and not before.get(
+                "default_credentials_exposed", False
+            ):
+                events.append(
+                    {
+                        "timestamp": ts,
+                        "event_type": "asset_default_credentials",
+                        "severity": "CRITICAL",
+                        "ip": ip,
+                        "detail": "Asset is exposing default credentials or unauthenticated PLC industrial protocols",
+                        "semantic_detail": f"PLC CREDENTIALS EXPOSED: Unauthenticated/default protocol stream at {ip}.",
+                    }
+                )
+
+            summary = (
+                ", ".join(changed_fields) if changed_fields else "Attributes updated"
+            )
+
+            events.append(
+                {
                     "timestamp": ts,
-                    "event_type": "asset_shadow_it_detected",
-                    "severity": "CRITICAL",
-                    "ip": ip,
-                    "detail": "Asset identified as unauthorized or Shadow IT operating within industrial zones",
-                    "semantic_detail": f"SHADOW IT: Unauthorized device or protocol detected at {ip}."
-                })
-                
-            if after.get("unpatched_legacy", False) and not before.get("unpatched_legacy", False):
-                events.append({
-                    "timestamp": ts,
-                    "event_type": "asset_unpatched_legacy",
+                    "event_type": "asset_changed",
                     "severity": "WARNING",
                     "ip": ip,
-                    "detail": "Asset is running an unpatched legacy OS (e.g., Windows 7/XP)",
-                    "semantic_detail": f"LEGACY OS: {ip} is running an unsupported operating system."
-                })
-                
-            if after.get("default_credentials_exposed", False) and not before.get("default_credentials_exposed", False):
-                events.append({
-                    "timestamp": ts,
-                    "event_type": "asset_default_credentials",
-                    "severity": "CRITICAL",
-                    "ip": ip,
-                    "detail": "Asset is exposing default credentials or unauthenticated PLC industrial protocols",
-                    "semantic_detail": f"PLC CREDENTIALS EXPOSED: Unauthenticated/default protocol stream at {ip}."
-                })
-
-            summary = ", ".join(changed_fields) if changed_fields else "Attributes updated"
-
-            events.append({
-                "timestamp": ts,
-                "event_type": "asset_changed",
-                "severity": "WARNING",
-                "ip": ip,
-                "before": before,
-                "after": after,
-                "detail": "Asset attributes changed between scans",
-                "semantic_detail": f"CHANGE on {ip}: {summary}"
-            })
+                    "before": before,
+                    "after": after,
+                    "detail": "Asset attributes changed between scans",
+                    "semantic_detail": f"CHANGE on {ip}: {summary}",
+                }
+            )
 
         return events
 
@@ -197,14 +219,15 @@ class ScoutAgent:
         self.cfg = _load_config(config_path)
         # Standard reports path via bootstrap
         self.snapshot_dir = get_soc_path("reports", "inventory")
-        
+
         # Inter-agent communication via Event Bus
         self.bus = EventBus("discovery_events")
-        
-        
+
         # [IQ] Doctrine Reference: GAGGLE-SCOUT
-        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_gaggle_scout.md')}")
-        
+        logger.info(
+            f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_gaggle_scout.md')}"
+        )
+
         self.previous_inventory: Dict[str, Dict[str, str]] = {}
 
     # ------------------------------------------------------------------
@@ -238,9 +261,7 @@ class ScoutAgent:
         # --- Industrial discovery (optional) ---
         if self.cfg.get("enable_industrial", False):
             ind_scanner = IndustrialScanner(
-                inter_probe_delay=self.cfg.get(
-                    "industrial_probe_delay_seconds", 0.5
-                )
+                inter_probe_delay=self.cfg.get("industrial_probe_delay_seconds", 0.5)
             )
             ot_assets = ind_scanner.scan_targets(
                 targets=discovered_ips,
@@ -263,10 +284,11 @@ class ScoutAgent:
         current_inventory = sentinel.get_inventory()
 
         # --- OSINT Schema Whitelisting (Prompt Injection Mitigation) ---
-        if not hasattr(self, 'osint_sandbox'):
+        if not hasattr(self, "osint_sandbox"):
             from soc.security.osint_sandbox import OSINTSandbox
+
             self.osint_sandbox = OSINTSandbox()
-            
+
         for ip, asset in current_inventory.items():
             logger.info(f"Sandbox sanitizing OSINT for {ip} ...")
             # We enforce Pydantic structured whitelisting on external intel
@@ -286,9 +308,7 @@ class ScoutAgent:
 
         # --- Persist snapshot ---
         ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-        snapshot_path = os.path.join(
-            self.snapshot_dir, f"inventory_{ts}.json"
-        )
+        snapshot_path = os.path.join(self.snapshot_dir, f"inventory_{ts}.json")
         with open(snapshot_path, "w") as fh:
             json.dump(current_inventory, fh, indent=2)
         logger.info(f"Snapshot saved → {snapshot_path}")
@@ -330,10 +350,10 @@ class ScoutAgent:
         try:
             while True:
                 # Run the scan cycle
-                # Since engine calls are blocking, we run them in an executor if needed, 
+                # Since engine calls are blocking, we run them in an executor if needed,
                 # but for now we just keep them here as they are part of our 'active scan duration'.
                 await self._run_async_cycle()
-                
+
                 logger.debug(f"Scout sleeping for {interval_seconds}s...")
                 await asyncio.sleep(interval_seconds)
         except asyncio.CancelledError:
@@ -350,11 +370,13 @@ class ScoutAgent:
                 # We use loop.run_in_executor for the blocking SentinelEngine calls
                 loop = asyncio.get_running_loop()
                 await loop.run_in_executor(None, lambda: self._run_scan_cycle())
-                break # Success
+                break  # Success
             except Exception as exc:
                 if attempt < max_retries:
                     wait_time = (attempt + 1) * 5
-                    logger.warning(f"Scan attempt {attempt+1} failed ({exc}). Retrying in {wait_time}s...")
+                    logger.warning(
+                        f"Scan attempt {attempt+1} failed ({exc}). Retrying in {wait_time}s..."
+                    )
                     await asyncio.sleep(wait_time)
                 else:
                     logger.error(f"Scan failed after {max_retries+1} attempts: {exc}")
@@ -363,14 +385,14 @@ class ScoutAgent:
         """Run a single scan cycle (useful for testing / CLI)."""
         self._run_scan_cycle()
 
-
-
     def get_latest_events(self) -> List[Dict[str, Any]]:
         """
         [DEPRECATED] Use the Event Bus instead.
         Returns empty list as events are now streamed to the bus.
         """
-        logger.warning("get_latest_events() is deprecated. Use EventBus('discovery_events') instead.")
+        logger.warning(
+            "get_latest_events() is deprecated. Use EventBus('discovery_events') instead."
+        )
         return []
 
 

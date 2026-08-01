@@ -39,9 +39,10 @@ _REPORT_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "reports"
 @dataclass
 class PatchDraft:
     """Represents a single drafted remediation script."""
+
     patch_id: str
     title: str
-    target_os: str              # "windows" or "linux"
+    target_os: str  # "windows" or "linux"
     nist_control: str
     finding_description: str
     script_content: str
@@ -57,7 +58,7 @@ class PatchDraft:
 # ---------------------------------------------------------------------------
 # Script templates
 # ---------------------------------------------------------------------------
-_PS_TEMPLATE = '''# ===========================================================================
+_PS_TEMPLATE = """# ===========================================================================
 # RCA Patch Advisor — Remediation Script (PowerShell)
 # ===========================================================================
 # Patch ID   : {patch_id}
@@ -82,9 +83,9 @@ Write-Host "[RCA_EVENT] {{ 'task': 'verify', 'status': 'executing' }}"
 
 Write-Host "[RCA_EVENT] {{ 'task': 'complete', 'status': 'success' }}"
 Write-Host "[RCA Patch Advisor] Remediation complete. Please verify manually."
-'''
+"""
 
-_PS_ROLLBACK_TEMPLATE = '''# ===========================================================================
+_PS_ROLLBACK_TEMPLATE = """# ===========================================================================
 # RCA Patch Advisor — ROLLBACK Script (PowerShell)
 # ===========================================================================
 # Patch ID   : {patch_id}
@@ -96,9 +97,9 @@ Write-Host "[RCA Patch Advisor] Rolling back: {title}"
 {rollback_commands}
 
 Write-Host "[RCA Patch Advisor] Rollback complete."
-'''
+"""
 
-_BASH_TEMPLATE = '''#!/bin/bash
+_BASH_TEMPLATE = """#!/bin/bash
 # ===========================================================================
 # RCA Patch Advisor — Remediation Script (Bash)
 # ===========================================================================
@@ -125,9 +126,9 @@ echo "[RCA_EVENT] {{ \\"task\\": \\"verify\\", \\"status\\": \\"executing\\" }}"
 
 echo "[RCA_EVENT] {{ \\"task\\": \\"complete\\", \\"status\\": \\"success\\" }}"
 echo "[RCA Patch Advisor] Remediation complete. Please verify manually."
-'''
+"""
 
-_BASH_ROLLBACK_TEMPLATE = '''#!/bin/bash
+_BASH_ROLLBACK_TEMPLATE = """#!/bin/bash
 # ===========================================================================
 # RCA Patch Advisor — ROLLBACK Script (Bash)
 # ===========================================================================
@@ -141,7 +142,7 @@ echo "[RCA_EVENT] {{ \\"task\\": \\"rollback\\", \\"status\\": \\"executing\\", 
 {rollback_commands}
 
 echo "[RCA_EVENT] {{ \\"task\\": \\"rollback\\", \\"status\\": \\"success\\" }}"
-'''
+"""
 
 
 # ---------------------------------------------------------------------------
@@ -154,7 +155,7 @@ REMEDIATION_LIBRARY: Dict[str, Dict[str, Any]] = {
         "title": "Enable Credential Guard",
         "nist_control": "3.5.3",
         "target_os": "windows",
-        "guard_cmd": "if ((Get-CimInstance -ClassName Win32_DeviceGuard -Namespace root\\Microsoft\\Windows\\DeviceGuard).SecurityServicesRunning -contains 1) { Write-Host '[RCA_EVENT] { \"task\": \"preflight\", \"status\": \"skipped\", \"reason\": \"already_enabled\" }'; exit 0 }",
+        "guard_cmd": 'if ((Get-CimInstance -ClassName Win32_DeviceGuard -Namespace root\\Microsoft\\Windows\\DeviceGuard).SecurityServicesRunning -contains 1) { Write-Host \'[RCA_EVENT] { "task": "preflight", "status": "skipped", "reason": "already_enabled" }\'; exit 0 }',
         "fix_commands": (
             "Set-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\DeviceGuard' "
             "-Name 'EnableVirtualizationBasedSecurity' -Value 1 -Type DWord\n"
@@ -179,7 +180,7 @@ REMEDIATION_LIBRARY: Dict[str, Dict[str, Any]] = {
         "title": "Disable Guest Account",
         "nist_control": "3.1.1",
         "target_os": "windows",
-        "guard_cmd": "if ((Get-LocalUser -Name 'Guest').Enabled -eq $false) { Write-Host '[RCA_EVENT] { \"task\": \"preflight\", \"status\": \"skipped\", \"reason\": \"already_disabled\" }'; exit 0 }",
+        "guard_cmd": 'if ((Get-LocalUser -Name \'Guest\').Enabled -eq $false) { Write-Host \'[RCA_EVENT] { "task": "preflight", "status": "skipped", "reason": "already_disabled" }\'; exit 0 }',
         "fix_commands": "Disable-LocalUser -Name 'Guest'",
         "verify_commands": (
             "Get-LocalUser -Name 'Guest' | Select-Object Name, Enabled"
@@ -192,9 +193,7 @@ REMEDIATION_LIBRARY: Dict[str, Dict[str, Any]] = {
         "nist_control": "3.13.8",
         "target_os": "windows",
         "fix_commands": "Set-SmbServerConfiguration -EncryptData $true -Force",
-        "verify_commands": (
-            "Get-SmbServerConfiguration | Select-Object EncryptData"
-        ),
+        "verify_commands": ("Get-SmbServerConfiguration | Select-Object EncryptData"),
         "rollback_commands": "Set-SmbServerConfiguration -EncryptData $false -Force",
     },
     # --- Linux: PAM MFA ---
@@ -205,14 +204,14 @@ REMEDIATION_LIBRARY: Dict[str, Dict[str, Any]] = {
         "variants": {
             "rocky": {
                 "fix_commands": "dnf install -y google-authenticator\nsystemctl restart sshd",
-                "guard_cmd": "if rpm -q google-authenticator; then echo 'already_installed'; exit 0; fi"
+                "guard_cmd": "if rpm -q google-authenticator; then echo 'already_installed'; exit 0; fi",
             },
             "ubuntu": {
                 "fix_commands": "apt-get update && apt-get install -y libpam-google-authenticator\nsystemctl restart ssh",
-                "guard_cmd": "if dpkg -l | grep -q google-authenticator; then echo 'already_installed'; exit 0; fi"
-            }
+                "guard_cmd": "if dpkg -l | grep -q google-authenticator; then echo 'already_installed'; exit 0; fi",
+            },
         },
-        "fix_commands": "dnf install -y google-authenticator", # Fallback
+        "fix_commands": "dnf install -y google-authenticator",  # Fallback
         "verify_commands": "grep 'pam_google_authenticator' /etc/pam.d/sshd",
         "rollback_commands": "sed -i '/pam_google_authenticator/d' /etc/pam.d/sshd",
     },
@@ -221,7 +220,7 @@ REMEDIATION_LIBRARY: Dict[str, Dict[str, Any]] = {
         "title": "Lock Guest Account",
         "nist_control": "3.1.1",
         "target_os": "linux",
-        "guard_cmd": "if ! grep -q 'guest:[!|*]' /etc/shadow; then echo '[RCA_EVENT] { \"task\": \"preflight\", \"status\": \"skipped\", \"reason\": \"already_locked\" }'; exit 0; fi",
+        "guard_cmd": 'if ! grep -q \'guest:[!|*]\' /etc/shadow; then echo \'[RCA_EVENT] { "task": "preflight", "status": "skipped", "reason": "already_locked" }\'; exit 0; fi',
         "fix_commands": (
             "# Lock the guest account if it exists\n"
             "id guest &>/dev/null && usermod -L guest || echo 'No guest account found.'"
@@ -241,8 +240,7 @@ REMEDIATION_LIBRARY: Dict[str, Dict[str, Any]] = {
         ),
         "verify_commands": "cat /etc/exports | grep 'sec=krb5'",
         "rollback_commands": (
-            "sed -i 's/sec=krb5p/sec=sys/g' /etc/exports\n"
-            "exportfs -ra"
+            "sed -i 's/sec=krb5p/sec=sys/g' /etc/exports\n" "exportfs -ra"
         ),
     },
 }
@@ -262,14 +260,15 @@ class PatchAdvisorAgent:
     def __init__(self):
         os.makedirs(_DRAFTS_DIR, exist_ok=True)
         self.drafts: List[PatchDraft] = []
-        
+
         # [IQ] Doctrine Reference: WEDGE-PATCHADVISOR
         from soc.bootstrap import get_soc_path
-        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_wedge_patchadvisor.md')}")
 
-    def draft_from_alerts(
-        self, alerts_path: Optional[str] = None
-    ) -> List[PatchDraft]:
+        logger.info(
+            f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_wedge_patchadvisor.md')}"
+        )
+
+    def draft_from_alerts(self, alerts_path: Optional[str] = None) -> List[PatchDraft]:
         """
         Read triage alerts and generate remediation scripts for
         actionable findings.
@@ -280,6 +279,7 @@ class PatchAdvisorAgent:
         alerts = []
         try:
             import sqlite3
+
             conn = sqlite3.connect(alerts_path)
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
@@ -297,9 +297,7 @@ class PatchAdvisorAgent:
 
         return self.drafts
 
-    def draft_from_hardening(
-        self, results: List[Dict[str, Any]]
-    ) -> List[PatchDraft]:
+    def draft_from_hardening(self, results: List[Dict[str, Any]]) -> List[PatchDraft]:
         """
         Generate remediation scripts from RCADetector hardening results.
         Only drafts for findings with status 'Fail'.
@@ -320,12 +318,10 @@ class PatchAdvisorAgent:
             self._generate_script(
                 REMEDIATION_LIBRARY[remediation_key],
                 finding_description=alert.get("description", ""),
-                target_host=alert.get("ip_address", "unknown")
+                target_host=alert.get("ip_address", "unknown"),
             )
 
-    def _draft_for_hardening_finding(
-        self, result: Dict[str, Any]
-    ) -> None:
+    def _draft_for_hardening_finding(self, result: Dict[str, Any]) -> None:
         """Map a hardening check failure to a remediation."""
         nist = result.get("nist_control", "")
         check = result.get("check_name", "").lower()
@@ -343,12 +339,10 @@ class PatchAdvisorAgent:
             self._generate_script(
                 REMEDIATION_LIBRARY[key],
                 finding_description=result.get("detail", ""),
-                target_host=result.get("ip_address", "unknown")
+                target_host=result.get("ip_address", "unknown"),
             )
 
-    def _match_remediation(
-        self, nist_control: str, description: str
-    ) -> Optional[str]:
+    def _match_remediation(self, nist_control: str, description: str) -> Optional[str]:
         """Best-effort match of an alert to a remediation key."""
         for key, rem in REMEDIATION_LIBRARY.items():
             if rem["nist_control"] == nist_control:
@@ -370,7 +364,7 @@ class PatchAdvisorAgent:
         # [IQ] Context-Aware Logic: Check for OS variants
         fix_cmds = remediation["fix_commands"]
         guard_cmd = remediation.get("guard_cmd", "")
-        
+
         # Determine variant (simplified mockup)
         variant = "ubuntu" if "ubuntu" in finding_description.lower() else "rocky"
         if "variants" in remediation and variant in remediation["variants"]:
@@ -435,8 +429,7 @@ class PatchAdvisorAgent:
         )
         self.drafts.append(draft)
         logger.info(
-            f"[DRAFT] {patch_id} — {title} → {fix_path} "
-            f"(STATUS: PENDING_APPROVAL)"
+            f"[DRAFT] {patch_id} — {title} → {fix_path} " f"(STATUS: PENDING_APPROVAL)"
         )
         return draft
 
@@ -449,21 +442,23 @@ class PatchAdvisorAgent:
         [SQ] Write a JSON manifest of all drafts, grouped by host.
         """
         manifest_path = os.path.join(_DRAFTS_DIR, "manifest.json")
-        
+
         # Group by host for parallel responder dispatch
         grouped_data: Dict[str, List[Dict[str, Any]]] = {}
         for d in self.drafts:
             if d.target_host not in grouped_data:
                 grouped_data[d.target_host] = []
-            grouped_data[d.target_host].append({
-                "patch_id": d.patch_id,
-                "title": d.title,
-                "target_os": d.target_os,
-                "nist_control": d.nist_control,
-                "status": d.status,
-                "filepath": d.filepath,
-                "created_at": d.created_at,
-            })
+            grouped_data[d.target_host].append(
+                {
+                    "patch_id": d.patch_id,
+                    "title": d.title,
+                    "target_os": d.target_os,
+                    "nist_control": d.nist_control,
+                    "status": d.status,
+                    "filepath": d.filepath,
+                    "created_at": d.created_at,
+                }
+            )
 
         with open(manifest_path, "w") as fh:
             json.dump(grouped_data, fh, indent=2)

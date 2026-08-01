@@ -56,10 +56,11 @@ ENIP_LIST_IDENTITY_CMD = 0x0063
 @dataclass
 class IndustrialAsset:
     """Represents a discovered industrial device."""
+
     ip_address: str
-    protocol: str               # "modbus", "ethernetip", "profinet"
+    protocol: str  # "modbus", "ethernetip", "profinet"
     port: int
-    device_info: str = ""       # Protocol-specific identification string
+    device_info: str = ""  # Protocol-specific identification string
     discovery_method: str = "industrial_probe"
 
 
@@ -84,9 +85,9 @@ class ModbusProbe:
         # Build a minimal Modbus/TCP ADU:
         #   Transaction ID (2B) | Protocol ID (2B) | Length (2B) | Unit ID (1B) | FC (1B)
         transaction_id = 0x0001
-        protocol_id = 0x0000        # Modbus protocol
-        length = 0x0002             # Unit ID + FC
-        unit_id = 0x01              # Default unit
+        protocol_id = 0x0000  # Modbus protocol
+        length = 0x0002  # Unit ID + FC
+        unit_id = 0x01  # Default unit
         fc = MODBUS_REPORT_SERVER_ID_FC
 
         request = struct.pack(
@@ -142,12 +143,12 @@ class EtherNetIPProbe:
         #   Sender Context (8B) | Options (4B)
         header = struct.pack(
             "<HH I I 8s I",
-            ENIP_LIST_IDENTITY_CMD,     # Command: ListIdentity
-            0,                          # Data length: 0
-            0,                          # Session handle
-            0,                          # Status
-            b"\x00" * 8,                # Sender context
-            0,                          # Options
+            ENIP_LIST_IDENTITY_CMD,  # Command: ListIdentity
+            0,  # Data length: 0
+            0,  # Session handle
+            0,  # Status
+            b"\x00" * 8,  # Sender context
+            0,  # Options
         )
 
         try:
@@ -206,9 +207,7 @@ class PROFINETProbe:
     PROFINET_ETHERTYPE = 0x8892
 
     @staticmethod
-    def probe(
-        iface: str = None, timeout: float = 3.0
-    ) -> List[IndustrialAsset]:
+    def probe(iface: str = None, timeout: float = 3.0) -> List[IndustrialAsset]:
         """
         Send a DCP Identify All broadcast and collect responses.
         Returns a list of discovered PROFINET devices.
@@ -221,14 +220,14 @@ class PROFINETProbe:
         #   Option(1B)=0xFF (All) | SubOption(1B)=0xFF (All) | BlockLength(2B)=0
         dcp_payload = struct.pack(
             ">BB I HH BB H",
-            0x05,           # ServiceID: Identify
-            0x00,           # ServiceType: Request
-            0x00000001,     # Xid (transaction)
-            0x0080,         # ResponseDelay factor
-            0x0004,         # DCPDataLength
-            0xFF,           # Option: All
-            0xFF,           # SubOption: All
-            0x0000,         # BlockLength
+            0x05,  # ServiceID: Identify
+            0x00,  # ServiceType: Request
+            0x00000001,  # Xid (transaction)
+            0x0080,  # ResponseDelay factor
+            0x0004,  # DCPDataLength
+            0xFF,  # Option: All
+            0xFF,  # SubOption: All
+            0x0000,  # BlockLength
         )
 
         # Build the raw Ethernet frame
@@ -324,9 +323,7 @@ class IndustrialScanner:
                     self.discovered.append(result)
                 time.sleep(self.delay)
 
-        logger.info(
-            f"Industrial scan complete — {len(self.discovered)} devices found."
-        )
+        logger.info(f"Industrial scan complete — {len(self.discovered)} devices found.")
         return self.discovered
 
     def scan_profinet(self, iface: str = None) -> List[IndustrialAsset]:

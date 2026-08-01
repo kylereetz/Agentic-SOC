@@ -46,11 +46,12 @@ DEFAULT_RULES_PATH = get_soc_path("configs", "triage_rules.json")
 @dataclass
 class TriageAlert:
     """A single classified alert."""
+
     timestamp: str
     rule_id: str
     rule_name: str
-    severity: str           # INFO, WARNING, CRITICAL
-    classification: str     # benign, suspicious, malicious
+    severity: str  # INFO, WARNING, CRITICAL
+    classification: str  # benign, suspicious, malicious
     source_ip: str
     description: str
     nist_control: str
@@ -60,7 +61,7 @@ class TriageAlert:
     semantic_detail: str = "No detail."
     vector_id: str = "unknown"
     is_correlated: bool = False
-    suppression_status: str = "none" # none, suppressed, auto_tuned
+    suppression_status: str = "none"  # none, suppressed, auto_tuned
 
 
 # ---------------------------------------------------------------------------
@@ -79,22 +80,22 @@ class TriageEngine:
         self.whitelisted_sources: List[str] = []
         self.ot_subnets: List[str] = []
         self.printer_prefixes: List[str] = []
-        
+
         # [IQ] Stateful state
         self.alert_history: Dict[str, List[TriageAlert]] = {}
-        self.noise_counters: Dict[str, Dict[str, int]] = {} # IP -> rule_id -> count
-        self.known_bad_entities: Dict[str, float] = {} # entity_id -> confidence
-        self.known_bad_hashes: Dict[str, float] = {} # file_hash -> confidence
-        
+        self.noise_counters: Dict[str, Dict[str, int]] = {}  # IP -> rule_id -> count
+        self.known_bad_entities: Dict[str, float] = {}  # entity_id -> confidence
+        self.known_bad_hashes: Dict[str, float] = {}  # file_hash -> confidence
+
         self.fuzzy_evaluator = FuzzyThreatEvaluator()
-        
+
         # [IQ] Layer 4: MARL properties
         self.qtable_path = get_soc_path("configs", "triage_qtable.json")
         self.q_table: Dict[str, Dict[str, float]] = self._load_qtable()
         self.alpha = 0.1
         self.gamma = 0.9
         self.epsilon = 0.05
-        
+
         self._load_rules(rules_path)
 
     def _load_qtable(self) -> Dict[str, Dict[str, float]]:
@@ -119,9 +120,7 @@ class TriageEngine:
                 self.whitelisted_sources = data.get("whitelisted_sources", [])
                 self.ot_subnets = data.get("ot_subnets", [])
                 self.printer_prefixes = data.get("printer_mac_prefixes", [])
-                logger.info(
-                    f"Loaded {len(self.rules)} triage rules from {path}"
-                )
+                logger.info(f"Loaded {len(self.rules)} triage rules from {path}")
         except FileNotFoundError:
             logger.error(f"Triage rules not found: {path}")
         except Exception as exc:
@@ -147,8 +146,7 @@ class TriageEngine:
             return False
         mac_upper = mac.upper().replace("-", ":")
         return any(
-            mac_upper.startswith(prefix.upper())
-            for prefix in self.printer_prefixes
+            mac_upper.startswith(prefix.upper()) for prefix in self.printer_prefixes
         )
 
     def _is_whitelisted(self, ip: str) -> bool:
@@ -167,17 +165,25 @@ class TriageEngine:
         """
         # [OCSF Compatibility] Normalize OCSF payload fields to legacy fields for the rule engine
         if "ocsf_class_uid" in event:
-            event_type_map = {3002: "authentication", 4001: "network_activity", 9999: "proprietary_ot"}
-            event["event_type"] = event_type_map.get(event["ocsf_class_uid"], "unknown_ocsf")
-            
+            event_type_map = {
+                3002: "authentication",
+                4001: "network_activity",
+                9999: "proprietary_ot",
+            }
+            event["event_type"] = event_type_map.get(
+                event["ocsf_class_uid"], "unknown_ocsf"
+            )
+
             # Extract IP
             if "src_endpoint" in event and event["src_endpoint"]:
                 event["ip"] = event["src_endpoint"].get("ip", "")
-                
+
             # Bring unmapped context to the top level for rules
             unmapped = event.get("unmapped", {})
-            event["semantic_detail"] = unmapped.get("inferred_meaning", event.get("message", "OCSF Event"))
-                
+            event["semantic_detail"] = unmapped.get(
+                "inferred_meaning", event.get("message", "OCSF Event")
+            )
+
         best_match: Optional[TriageAlert] = None
         severity_order = {"INFO": 0, "WARNING": 1, "CRITICAL": 2}
 
@@ -199,8 +205,7 @@ class TriageEngine:
             if "mac_prefix" in pattern and matched:
                 mac = event.get("mac", "")
                 if not any(
-                    mac.upper().startswith(p.upper())
-                    for p in pattern["mac_prefix"]
+                    mac.upper().startswith(p.upper()) for p in pattern["mac_prefix"]
                 ):
                     matched = False
 
@@ -249,9 +254,9 @@ class TriageEngine:
                     nist_control=rule.get("nist_control", ""),
                     mitre_ttp=rule.get("mitre_ttp", "None"),
                     raw_event=event,
-                    semantic_detail=event.get("semantic_detail", "No detail.")
+                    semantic_detail=event.get("semantic_detail", "No detail."),
                 )
-                
+
                 # [IQ] Add vector_id (pattern hash)
                 pattern_str = json.dumps(rule.get("pattern", {}), sort_keys=True)
                 alert.vector_id = hashlib.md5(pattern_str.encode()).hexdigest()
@@ -274,14 +279,18 @@ class TriageEngine:
             file_hash = event.get("file_hash")
             boost = False
 
-            if ip in self.known_bad_entities or (file_hash and file_hash in self.known_bad_hashes):
+            if ip in self.known_bad_entities or (
+                file_hash and file_hash in self.known_bad_hashes
+            ):
                 boost = True
 
             if boost and best_match.severity != "CRITICAL":
                 old_sev = best_match.severity
                 best_match.severity = "CRITICAL" if old_sev == "WARNING" else "WARNING"
                 best_match.description += f" [INTEL BOOST from {old_sev}]"
-                logger.info(f"[IQ] Boosted {best_match.source_ip} to {best_match.severity}")
+                logger.info(
+                    f"[IQ] Boosted {best_match.source_ip} to {best_match.severity}"
+                )
 
         # [IQ] Fuzzy Logic Override (FTSE)
         if best_match:
@@ -290,10 +299,13 @@ class TriageEngine:
             # Gather generic contextual math metrics pushed from Scout, Sieve, Gatekeeper, EndpointAnalyst, etc.
             if "time_series_math" in event.get("unmapped", {}):
                 math_dict = event["unmapped"]["time_series_math"]
-                if "sigma_deviation" in math_dict: metrics["entropy_sigma"] = math_dict["sigma_deviation"]
-                if "resource_variance" in math_dict: metrics["resource_variance"] = math_dict["resource_variance"]
-                if "lineage_depth" in math_dict: metrics["process_lineage_depth"] = math_dict["lineage_depth"]
-            
+                if "sigma_deviation" in math_dict:
+                    metrics["entropy_sigma"] = math_dict["sigma_deviation"]
+                if "resource_variance" in math_dict:
+                    metrics["resource_variance"] = math_dict["resource_variance"]
+                if "lineage_depth" in math_dict:
+                    metrics["process_lineage_depth"] = math_dict["lineage_depth"]
+
             if "out_degree" in event.get("unmapped", {}):
                 metrics["out_degree"] = event["unmapped"]["out_degree"]
             if "in_degree_velocity" in event.get("unmapped", {}):
@@ -309,17 +321,24 @@ class TriageEngine:
             logins = 0
             if best_match.source_ip in self.alert_history:
                 for a in self.alert_history[best_match.source_ip]:
-                    if "auth" in a.rule_id.lower() or "login" in a.rule_id.lower() or "fail" in a.description.lower():
+                    if (
+                        "auth" in a.rule_id.lower()
+                        or "login" in a.rule_id.lower()
+                        or "fail" in a.description.lower()
+                    ):
                         logins += 1
-            if event.get("event_type") == "authentication" and str(event.get("action", "")).lower() == "failed":
+            if (
+                event.get("event_type") == "authentication"
+                and str(event.get("action", "")).lower() == "failed"
+            ):
                 logins += 1
-            
+
             if logins > 0:
                 metrics["failed_logins"] = logins
 
             if metrics:
                 threat_score = self.fuzzy_evaluator.evaluate(metrics)
-                
+
                 fuzzy_sev = "INFO"
                 if threat_score >= 0.8:
                     fuzzy_sev = "CRITICAL"
@@ -328,11 +347,15 @@ class TriageEngine:
                 elif threat_score >= 0.3:
                     fuzzy_sev = "WARNING"
 
-                if severity_order.get(fuzzy_sev, 0) > severity_order.get(best_match.severity, 0):
+                if severity_order.get(fuzzy_sev, 0) > severity_order.get(
+                    best_match.severity, 0
+                ):
                     old_sev = best_match.severity
                     best_match.severity = fuzzy_sev
                     best_match.description = f"[FTSE Override] {best_match.description} (Threat Score: {threat_score:.2f}, escalated from {old_sev})"
-                    logger.info(f"[IQ] Fuzzy Logic Overrode severity to {fuzzy_sev} for {best_match.source_ip}. Driving Metrics: {list(metrics.keys())}")
+                    logger.info(
+                        f"[IQ] Fuzzy Logic Overrode severity to {fuzzy_sev} for {best_match.source_ip}. Driving Metrics: {list(metrics.keys())}"
+                    )
 
         # [IQ] Layer 4: MARL Epsilon-Greedy Policy
         if best_match:
@@ -349,15 +372,21 @@ class TriageEngine:
                         elif best_match.severity == "WARNING":
                             best_match.severity = "INFO"
                         best_match.description += f" [MARL Action: SUPPRESSED from {old_sev} due to historical Q-Value aversion]."
-                        logger.info(f"[MARL] Suppressed {q_state_key} for {best_match.source_ip}")
+                        logger.info(
+                            f"[MARL] Suppressed {q_state_key} for {best_match.source_ip}"
+                        )
                     elif q_state["ESCALATE"] > q_state["SUPPRESS"] + 0.1:
                         old_sev = best_match.severity
                         best_match.severity = "CRITICAL"
                         if old_sev != "CRITICAL":
                             best_match.description += f" [MARL Action: ESCALATED from {old_sev} due to historical Q-Value reinforcement]."
-                            logger.info(f"[MARL] Escalated {q_state_key} for {best_match.source_ip}")
+                            logger.info(
+                                f"[MARL] Escalated {q_state_key} for {best_match.source_ip}"
+                            )
                 else:
-                    best_match.description += " [MARL: Random Exploration Selected (Epsilon).]"
+                    best_match.description += (
+                        " [MARL: Random Exploration Selected (Epsilon).]"
+                    )
 
         # [SECURITY] Structural Is_Stateful Check (Anti-Spoofing DoS Mitigation)
         if best_match and best_match.severity == "CRITICAL":
@@ -378,43 +407,44 @@ class TriageEngine:
         """[EQ] Downgrade recurring low-level alerts from the same source."""
         ip = alert.source_ip
         rid = alert.rule_id
-        
+
         if ip not in self.noise_counters:
             self.noise_counters[ip] = {}
-        
+
         self.noise_counters[ip][rid] = self.noise_counters[ip].get(rid, 0) + 1
-        
+
         # If > 50 hits of a WARNING rule, downgrade to INFO
         if self.noise_counters[ip][rid] > 50 and alert.severity == "WARNING":
             alert.severity = "INFO"
             alert.suppression_status = "auto_tuned"
             alert.description += " (Auto-tuned: noisy source)"
-            
+
         return alert
 
     def _check_correlation(self, alert: TriageAlert) -> TriageAlert:
         """[IQ] Multi-stage attack detection."""
         ip = alert.source_ip
         now = datetime.fromisoformat(alert.timestamp)
-        
+
         if ip not in self.alert_history:
             self.alert_history[ip] = []
-            
+
         # Clean old history (24h)
         self.alert_history[ip] = [
-            a for a in self.alert_history[ip] 
+            a
+            for a in self.alert_history[ip]
             if (now - datetime.fromisoformat(a.timestamp)) < timedelta(hours=24)
         ]
-        
+
         # If we have multiple unique WARNINGs from same IP, upgrade to CRITICAL
         unique_rules = {a.rule_id for a in self.alert_history[ip]}
         unique_rules.add(alert.rule_id)
-        
+
         if len(unique_rules) >= 2 and alert.severity == "WARNING":
             alert.severity = "CRITICAL"
             alert.is_correlated = True
             alert.description = f"[CORRELATED] {alert.description}"
-            
+
         self.alert_history[ip].append(alert)
         return alert
 
@@ -427,7 +457,7 @@ class TriageEngine:
         # 1. Check for explicit EDR correlation flag
         if event.get("edr_correlated") is True:
             return True
-            
+
         # 2. Check protocol statefulness
         protocol = str(event.get("protocol", "")).upper()
         if protocol == "TCP":
@@ -435,7 +465,7 @@ class TriageEngine:
             # If it's TCP, we need evidence of an established connection
             if "ACK" in flags or "PSH" in flags or "FIN" in flags or "RST" in flags:
                 return True
-                
+
         # 3. Connectionless/uncorroborated
         return False
 
@@ -458,10 +488,12 @@ class TriageAgent:
         self.dlq_bus = EventBus("triage_dlq")
         self.intel_bus = EventBus("intel_feedback")
         self.marl_bus = EventBus("marl_rewards")
-        
+
         # [IQ] Doctrine Reference: QUILL-TRIAGE
-        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_quill_triage.md')}")
-        
+        logger.info(
+            f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_quill_triage.md')}"
+        )
+
         self.report_path = get_soc_path("reports", "triage", "triage_alerts.db")
         self.alert_buffer = []
         self.last_flush = time.time()
@@ -473,7 +505,7 @@ class TriageAgent:
         os.makedirs(os.path.dirname(self.report_path), exist_ok=True)
         conn = sqlite3.connect(self.report_path)
         conn.execute("PRAGMA journal_mode=WAL;")
-        conn.execute('''
+        conn.execute("""
             CREATE TABLE IF NOT EXISTS alerts (
                 timestamp TEXT,
                 rule_id TEXT,
@@ -491,8 +523,10 @@ class TriageAgent:
                 suppression_status TEXT,
                 raw_event TEXT
             )
-        ''')
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_timestamp ON alerts (timestamp DESC);")
+        """)
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_timestamp ON alerts (timestamp DESC);"
+        )
         conn.commit()
         conn.close()
 
@@ -500,11 +534,11 @@ class TriageAgent:
         """Async main loop for Triage."""
         self.is_running = True
         logger.info("[SQ] Triage Agent started in async mode.")
-        
+
         tasks = [
             asyncio.create_task(self._process_events()),
             asyncio.create_task(self._marl_worker()),
-            asyncio.create_task(self._db_flush_worker())
+            asyncio.create_task(self._db_flush_worker()),
         ]
         await asyncio.gather(*tasks)
 
@@ -521,10 +555,10 @@ class TriageAgent:
     def _flush_buffer(self):
         if not self.alert_buffer:
             return
-        
+
         batch = self.alert_buffer[:]
         self.alert_buffer.clear()
-        
+
         try:
             conn = sqlite3.connect(self.report_path)
             cursor = conn.cursor()
@@ -532,21 +566,37 @@ class TriageAgent:
             for a in batch:
                 s = self._serialise_alert(a)
                 raw_e = json.dumps(a.raw_event) if hasattr(a, "raw_event") else "{}"
-                rows.append((
-                    s["timestamp"], s["rule_id"], s["rule_name"], s["severity"],
-                    s["classification"], s["source_ip"], s["description"], s["nist_control"],
-                    s["mitre_ttp"], s["confidence"], s["semantic_detail"], s["vector_id"],
-                    s["is_correlated"], s["suppression_status"], raw_e
-                ))
-            
-            cursor.executemany('''
+                rows.append(
+                    (
+                        s["timestamp"],
+                        s["rule_id"],
+                        s["rule_name"],
+                        s["severity"],
+                        s["classification"],
+                        s["source_ip"],
+                        s["description"],
+                        s["nist_control"],
+                        s["mitre_ttp"],
+                        s["confidence"],
+                        s["semantic_detail"],
+                        s["vector_id"],
+                        s["is_correlated"],
+                        s["suppression_status"],
+                        raw_e,
+                    )
+                )
+
+            cursor.executemany(
+                """
                 INSERT INTO alerts (
                     timestamp, rule_id, rule_name, severity, classification, source_ip, 
                     description, nist_control, mitre_ttp, confidence, semantic_detail, 
                     vector_id, is_correlated, suppression_status, raw_event
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', rows)
-            
+            """,
+                rows,
+            )
+
             conn.commit()
             conn.close()
             self._update_heatmap_feed(batch)
@@ -564,30 +614,39 @@ class TriageAgent:
                 if not q_state_key:
                     # Backward compatibility safely assumed if rule missing context
                     q_state_key = reward_event.get("source_rule")
-                    
+
                 reward = float(reward_event.get("reward", 0.0))
-                
+
                 if q_state_key not in self.engine.q_table:
-                    self.engine.q_table[q_state_key] = {"ESCALATE": 0.0, "SUPPRESS": 0.0}
-                    
+                    self.engine.q_table[q_state_key] = {
+                        "ESCALATE": 0.0,
+                        "SUPPRESS": 0.0,
+                    }
+
                 # Bellman update for ESCALATE actions (Since Responder handles actions driven by escalations)
                 old_q = self.engine.q_table[q_state_key]["ESCALATE"]
                 new_q = old_q + self.engine.alpha * (reward - old_q)
-                
+
                 # [IQ] Audio Milestone Trigger: crossing 0.1 threshold (decile)
                 if int(new_q * 10) > int(old_q * 10):
                     play_milestone_learning()
-                    logger.info(f"[MARL] Q-Value Milestone Reached for {q_state_key}: {new_q}")
-                
+                    logger.info(
+                        f"[MARL] Q-Value Milestone Reached for {q_state_key}: {new_q}"
+                    )
+
                 self.engine.q_table[q_state_key]["ESCALATE"] = round(new_q, 3)
-                
+
                 # If reward is explicitly negative (human rejection), SUPPRESS implicitly gains relative expected value
                 if reward < 0:
                     old_sup_q = self.engine.q_table[q_state_key]["SUPPRESS"]
-                    self.engine.q_table[q_state_key]["SUPPRESS"] = round(old_sup_q + self.engine.alpha * (1.0 - old_sup_q), 3)
-                
+                    self.engine.q_table[q_state_key]["SUPPRESS"] = round(
+                        old_sup_q + self.engine.alpha * (1.0 - old_sup_q), 3
+                    )
+
                 self.engine.save_qtable()
-                logger.debug(f"[MARL] Q-Table updated for {q_state_key}: {self.engine.q_table[q_state_key]}")
+                logger.debug(
+                    f"[MARL] Q-Table updated for {q_state_key}: {self.engine.q_table[q_state_key]}"
+                )
             else:
                 await asyncio.sleep(2)
 
@@ -598,7 +657,7 @@ class TriageAgent:
                 intel = await asyncio.to_thread(self.intel_bus.pop)
                 if not intel:
                     break
-                
+
                 entity = intel.get("entity_id")
                 hashes = intel.get("file_hashes", [])
                 conf = intel.get("confidence", 1.0)
@@ -606,7 +665,9 @@ class TriageAgent:
                     self.engine.known_bad_entities[entity] = conf
                 for h in hashes:
                     self.engine.known_bad_hashes[h] = conf
-                logger.info(f"[IQ] Intel Feedback incorporated for {entity} from Correlator")
+                logger.info(
+                    f"[IQ] Intel Feedback incorporated for {entity} from Correlator"
+                )
 
             # 2. Process discovery events
             event = await asyncio.to_thread(self.in_bus.pop)
@@ -614,13 +675,15 @@ class TriageAgent:
                 alert = self.engine.classify_event(event)
                 if alert:
                     if alert.severity == "INFO":
-                        logger.info(f"[DLQ] Suppressed benign alert: {alert.rule_name}. Routing to DLQ.")
+                        logger.info(
+                            f"[DLQ] Suppressed benign alert: {alert.rule_name}. Routing to DLQ."
+                        )
                         self.dlq_bus.push(self._serialise_alert(alert))
                         self._update_persistent_log([alert])
                     else:
                         self.out_bus.push(self._serialise_alert(alert))
                         self._update_persistent_log([alert])
-                        
+
                         # [IQ] Audio Trigger: Critical Alert detected
                         if alert.severity == "CRITICAL":
                             play_critical_alert()
@@ -675,11 +738,11 @@ class TriageAgent:
             ip = a.source_ip
             if ip not in heatmap:
                 heatmap[ip] = {"hits": 0, "max_severity": "INFO", "last_seen": ""}
-            
+
             entry = heatmap[ip]
             entry["hits"] += 1
             entry["last_seen"] = a.timestamp
-            
+
             # Simple severity upgrade logic
             sev_levels = {"INFO": 0, "WARNING": 1, "CRITICAL": 2}
             cur_sev = entry.get("max_severity", "INFO")
@@ -700,5 +763,6 @@ class TriageAgent:
 
 if __name__ == "__main__":
     import asyncio
+
     agent = TriageAgent()
     asyncio.run(agent.run())

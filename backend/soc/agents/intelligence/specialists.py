@@ -1,21 +1,27 @@
 """
 RCA Specialist Agents: Specialized Analyst Personas.
 
-This module provides specialized investigator agents tailored to specific 
+This module provides specialized investigator agents tailored to specific
 adversary behaviors (OT, Network, Cloud, Identity).
 """
 
 import logging
 from typing import Dict, Any, List, Optional
-from soc.agents.intelligence.investigator import InvestigatorAgent, ReasoningStep, DEFAULT_CONFIG_PATH
+from soc.agents.intelligence.investigator import (
+    InvestigatorAgent,
+    ReasoningStep,
+    DEFAULT_CONFIG_PATH,
+)
 
 logger = logging.getLogger(__name__)
+
 
 class OTSecurityAnalyst(InvestigatorAgent):
     """
     Expert in Industrial Control Systems (ICS) and Operational Technology (OT).
     Specializes in Modbus, Profinet, EtherNet/IP, and PLC safety.
     """
+
     def __init__(self, config_path: str = DEFAULT_CONFIG_PATH):
         super().__init__(config_path, routing_topic="topic_ot")
         self.agent_name = "GAGGLE-SCOUT"
@@ -24,11 +30,13 @@ class OTSecurityAnalyst(InvestigatorAgent):
         # [IQ] Dynamic Ethos Loading: Base class now automatically loads ethos_sentinel_ot.md
         self._reinit_model()
 
+
 class NetworkAnalyst(InvestigatorAgent):
     """
     Expert in Network Traffic Analysis (NTA) and Lateral Movement.
     Focuses on beaconing patterns, C2 infrastructure, and pivoting.
     """
+
     def __init__(self, config_path: str = DEFAULT_CONFIG_PATH):
         super().__init__(config_path, routing_topic="topic_network")
         self.agent_name = "GAGGLE-TRAFFIC-SIEVE"
@@ -37,10 +45,12 @@ class NetworkAnalyst(InvestigatorAgent):
         # [IQ] Dynamic Ethos Loading: Base class now automatically loads ethos_sentinel_net.md
         self._reinit_model()
 
+
 class IdentityAnalyst(InvestigatorAgent):
     """
     Expert in Active Directory, Privilege Escalation, and Credential Theft.
     """
+
     def __init__(self, config_path: str = DEFAULT_CONFIG_PATH):
         super().__init__(config_path, routing_topic="topic_identity")
         self.agent_name = "QUILL-GATEKEEPER"
@@ -49,11 +59,13 @@ class IdentityAnalyst(InvestigatorAgent):
         # [IQ] Dynamic Ethos Loading: Base class now automatically loads ethos_sentinel_id.md
         self._reinit_model()
 
+
 class RemediationAnalyst(InvestigatorAgent):
     """
     Expert in Containment and Recovery.
     Translates forensic findings into actionable remediation steps.
     """
+
     def __init__(self, config_path: str = DEFAULT_CONFIG_PATH):
         super().__init__(config_path, routing_topic="topic_remediation")
         self.agent_name = "WEDGE-RESPONDER"
@@ -67,6 +79,7 @@ class MalwarePathologist(InvestigatorAgent):
     """
     Expert in Static/Dynamic Binary Analysis and Sandbox execution.
     """
+
     def __init__(self, config_path: str = DEFAULT_CONFIG_PATH):
         super().__init__(config_path, routing_topic="topic_malware")
         self.agent_name = "QUILL-MALWARE-PATHOLOGIST"
@@ -86,10 +99,12 @@ Your goal:
 """
         self._reinit_model(custom_prompt=prompt)
 
+
 class ThreatHunter(InvestigatorAgent):
     """
     Proactive Hunter focusing on Living-off-the-Land (LotL) and Persistence.
     """
+
     def __init__(self, config_path: str = DEFAULT_CONFIG_PATH):
         super().__init__(config_path, routing_topic="topic_network")
         self.agent_name = "QUILL-HUNTER"
@@ -105,28 +120,36 @@ Your goal:
 """
         self._reinit_model(custom_prompt=prompt)
 
+
 def get_specialist_for_alert(alert: Dict[str, Any]) -> InvestigatorAgent:
     """
     Factory to return the most appropriate specialist based on alert metadata.
     """
     rule_name = alert.get("rule_name", "").lower()
     mitre_ttp = alert.get("mitre_ttp", "")
-    
+
     # OT Protocols
-    if any(p in rule_name for p in ["modbus", "profinet", "ethernetip", "plc"]) or mitre_ttp.startswith("T08"):
+    if any(
+        p in rule_name for p in ["modbus", "profinet", "ethernetip", "plc"]
+    ) or mitre_ttp.startswith("T08"):
         return OTSecurityAnalyst()
-    
+
     # Identity / Creds
-    if any(p in rule_name for p in ["credential", "mimikatz", "identity", "active directory", "account"]):
+    if any(
+        p in rule_name
+        for p in ["credential", "mimikatz", "identity", "active directory", "account"]
+    ):
         return IdentityAnalyst()
-    
 
     # Malware / Lab
-    if any(p in rule_name for p in ["malicious", "beacon", "injected", "malware", "lsass"]):
+    if any(
+        p in rule_name for p in ["malicious", "beacon", "injected", "malware", "lsass"]
+    ):
         return MalwarePathologist()
 
     # Default to Network or Generalist
     return NetworkAnalyst()
+
 
 def get_topic_for_alert(alert: Dict[str, Any]) -> str:
     """
@@ -134,18 +157,24 @@ def get_topic_for_alert(alert: Dict[str, Any]) -> str:
     """
     rule_name = alert.get("rule_name", "").lower()
     mitre_ttp = alert.get("mitre_ttp", "")
-    
+
     # OT Protocols
-    if any(p in rule_name for p in ["modbus", "profinet", "ethernetip", "plc"]) or mitre_ttp.startswith("T08"):
+    if any(
+        p in rule_name for p in ["modbus", "profinet", "ethernetip", "plc"]
+    ) or mitre_ttp.startswith("T08"):
         return "topic_ot"
-    
+
     # Identity / Creds
-    if any(p in rule_name for p in ["credential", "mimikatz", "identity", "active directory", "account"]):
+    if any(
+        p in rule_name
+        for p in ["credential", "mimikatz", "identity", "active directory", "account"]
+    ):
         return "topic_identity"
-    
 
     # Malware / Lab
-    if any(p in rule_name for p in ["malicious", "beacon", "injected", "malware", "lsass"]):
+    if any(
+        p in rule_name for p in ["malicious", "beacon", "injected", "malware", "lsass"]
+    ):
         return "topic_malware"
 
     # Default to Network or Generalist

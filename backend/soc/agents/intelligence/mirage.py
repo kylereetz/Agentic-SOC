@@ -27,16 +27,20 @@ logger = logging.getLogger("RCA-Mirage")
 logger.setLevel(logging.INFO)
 if not logger.handlers:
     ch = logging.StreamHandler()
-    formatter = logging.Formatter("%(asctime)s - %(levelname)s - RCA Mirage - %(message)s")
+    formatter = logging.Formatter(
+        "%(asctime)s - %(levelname)s - RCA Mirage - %(message)s"
+    )
     ch.setFormatter(formatter)
     logger.addHandler(ch)
 
 MIRAGE_RULES_PATH = get_soc_path("configs", "mirage_rules.json")
 
+
 class MirageAgent:
     """
     Deception Specialist. Catching intruders via bait.
     """
+
     def __init__(self, rules_path: str = MIRAGE_RULES_PATH):
         self.in_bus = EventBus("deception_events")
         self.triage_bus = EventBus("triage_alerts")
@@ -44,9 +48,11 @@ class MirageAgent:
         self.is_running = False
 
         self.active_lures: Dict[str, Dict[str, Any]] = {}
-        
+
         # [IQ] Doctrine Reference: QUILL-MIRAGE
-        logger.info(f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_quill_mirage.md')}")
+        logger.info(
+            f"Synchronized with doctrine: {get_soc_path('ethos', 'ethos_quill_mirage.md')}"
+        )
 
     def _load_rules(self, path: str) -> Dict[str, Any]:
         try:
@@ -59,7 +65,7 @@ class MirageAgent:
     async def run(self):
         self.is_running = True
         logger.info("[SQ] Mirage Deception Specialist started.")
-        
+
         while self.is_running:
             event = await asyncio.to_thread(self.in_bus.pop)
             if event:
@@ -70,21 +76,27 @@ class MirageAgent:
     async def _process_deception_event(self, event: Dict[str, Any]):
         decoy_id = event.get("decoy_id")
         source_ip = event.get("source_ip", "Unknown IP")
-        
+
         # Match decoy with rules
-        decoy_rule = next((d for d in self.rules.get("decoys", []) if d["id"] == decoy_id), None)
-        
+        decoy_rule = next(
+            (d for d in self.rules.get("decoys", []) if d["id"] == decoy_id), None
+        )
+
         if decoy_rule:
-             await self._escalate_deception_hit(source_ip, decoy_rule, event)
+            await self._escalate_deception_hit(source_ip, decoy_rule, event)
         else:
             logger.warning(f"Decoy hit on unregistered ID: {decoy_id} from {source_ip}")
 
-    async def _escalate_deception_hit(self, source_ip: str, rule: Dict[str, Any], event: Dict[str, Any]):
+    async def _escalate_deception_hit(
+        self, source_ip: str, rule: Dict[str, Any], event: Dict[str, Any]
+    ):
         """[EQ] High-Fidelity Escalation: Bypass queue logic."""
-        logger.warning(f"[EQ] DECEPTION HIT on {rule['name']} ({rule['type']}) from {source_ip} - ESCALATING IMMEDIATELY")
-        
+        logger.warning(
+            f"[EQ] DECEPTION HIT on {rule['name']} ({rule['type']}) from {source_ip} - ESCALATING IMMEDIATELY"
+        )
+
         escalation_logic = self.rules.get("escalation_logic", {})
-        
+
         alert = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "rule_id": f"MIRAGE_{rule['id']}",
@@ -93,18 +105,25 @@ class MirageAgent:
             "source_ip": source_ip,
             "description": f"High-fidelity decoy interaction detected. {rule['description']} Action: {event.get('action')}",
             "nist_control": "3.14.6",
-            "mitre_ttp": "T1021", # Lateral Movement (Baiting)
+            "mitre_ttp": "T1021",  # Lateral Movement (Baiting)
             "metadata": {
-                "BYPASS_STANDARD_QUEUE": escalation_logic.get("bypass_standard_queue", True),
-                "IMMEDIATE_TRIAGE_BOOST": escalation_logic.get("immediate_triage_boost", True),
-                "decoy_type": rule["type"]
+                "BYPASS_STANDARD_QUEUE": escalation_logic.get(
+                    "bypass_standard_queue", True
+                ),
+                "IMMEDIATE_TRIAGE_BOOST": escalation_logic.get(
+                    "immediate_triage_boost", True
+                ),
+                "decoy_type": rule["type"],
             },
-            "raw_event": event
+            "raw_event": event,
         }
-        
+
         # Pushing to triage bus
         self.triage_bus.push(alert)
-        logger.info(f"[VQ] Deception Alert dispatched for {source_ip} (Standard Queue Bypass: {escalation_logic.get('bypass_standard_queue')})")
+        logger.info(
+            f"[VQ] Deception Alert dispatched for {source_ip} (Standard Queue Bypass: {escalation_logic.get('bypass_standard_queue')})"
+        )
+
 
 if __name__ == "__main__":
     mirage = MirageAgent()
