@@ -9,16 +9,16 @@ openai
 nest-asyncio
 python-jose[cryptography]==3.5.0
 passlib[bcrypt]==1.7.4
-fastapi==0.140.13
-uvicorn==0.52.0
-typer==0.24.1
+fastapi==0.141.1
+uvicorn==0.52.4
+typer==0.27.1
 rich==15.0.0
 python-multipart==0.0.32
 requests==2.34.2
 pydantic==2.13.4
 pydantic-settings
 networkx
-pydantic-ai==2.20.0
+pydantic-ai==2.32.0
 # Test dependencies
 pytest
 pytest-asyncio>=1.4.0
