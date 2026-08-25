@@ -9,7 +9,7 @@ openai
 nest-asyncio
 python-jose[cryptography]==3.5.0
 passlib[bcrypt]==1.7.4
-fastapi==0.140.13
+fastapi==0.141.1
 uvicorn==0.52.4
 typer==0.24.1
 rich==15.0.0
