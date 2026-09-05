@@ -18,7 +18,7 @@ requests==2.34.2
 pydantic==2.13.4
 pydantic-settings
 networkx
-pydantic-ai==2.32.0
+pydantic-ai==2.37.0
 # Test dependencies
 pytest
 pytest-asyncio>=1.4.0
